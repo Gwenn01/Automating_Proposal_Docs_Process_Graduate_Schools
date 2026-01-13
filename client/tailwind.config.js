@@ -8,15 +8,9 @@ export default {
     extend: {
       colors: {
         // Existing colors
-        bgDark: "#0F172A",
-        cardDark: "#1E293B",
-        accent: "#2563EB",
+        primaryGreen: "#058C42",
+        secondary: "#08AA52"
 
-        // New Custom Palette
-        midnightBlue: "#00478f",
-        redOrange: "#ff5d00",
-        ebony: "#2a231f",
-        mistyBlue: "#d8e1e7",
       },
     },
   },
