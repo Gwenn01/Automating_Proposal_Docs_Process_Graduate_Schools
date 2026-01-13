@@ -28,7 +28,8 @@ def login():
             return jsonify({"message": "User not found"}), 404
 
         if not check_password_hash(user['password'], password):
-            return jsonify({"message": "Incorrect password"}), 401
+            return jsonify({"message": "Invalid email or password"
+        }), 401
 
         # Login success
         return jsonify({
