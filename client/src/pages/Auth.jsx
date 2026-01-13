@@ -19,13 +19,97 @@ const Auth = () => {
     password: "",
   });
 
-  const handleLogin = () => {
-    console.log("LOGIN DATA:", loginData);
-  };
+  const handleLogin = async () => {
+  console.log("LOGIN DATA:", loginData);
 
-  const handleRegister = () => {
-    console.log("REGISTER DATA:", registerData);
-  };
+  try {
+    const response = await fetch("http://127.0.0.1:5000/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: loginData.identifier,  
+        password: loginData.password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Backend error message
+      alert(data.message || "Login failed");
+      return;
+    }
+
+    //  Login success
+    console.log("LOGIN SUCCESS:", data);
+
+    alert("Login successful");
+
+    // Optional: store user data
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    // Example redirect (adjust as needed)
+    // navigate("/dashboard");
+
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
+    alert("Server error. Please try again.");
+  }
+};
+
+
+  const handleRegister = async () => {
+  console.log("REGISTER DATA:", registerData);
+  
+  try {
+    const response = await fetch("http://127.0.0.1:5000/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fullname: registerData.name,      
+        email: registerData.email,
+        password: registerData.password,
+        role: "instructor",              
+
+        campus: registerData.campus,
+        department: registerData.department,
+        position: registerData.position,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Registration failed");
+      return;
+    }
+
+    console.log("REGISTER SUCCESS:", data);
+    alert("Registration successful!");
+
+    // Optional: reset form
+    setRegisterData({
+      name: "",
+      email: "",
+      campus: "",
+      department: "",
+      position: "",
+      password: "",
+    });
+
+    // Optional: redirect to login
+    // navigate("/login");
+
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
+    alert("Server error. Please try again.");
+  }
+};
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
