@@ -5,6 +5,10 @@ import { CustomButton, FormInput } from "../components";
 const Auth = () => {
   const [mode, setMode] = useState("login");
 
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [registerLoading, setRegisterLoading] = useState(false);
+
+
   const [loginData, setLoginData] = useState({
     identifier: "",
     password: "",
@@ -19,17 +23,18 @@ const Auth = () => {
     password: "",
   });
 
-  const handleLogin = async () => {
+const handleLogin = async () => {
+  if (loginLoading) return;
+
+  setLoginLoading(true);
   console.log("LOGIN DATA:", loginData);
 
   try {
     const response = await fetch("http://127.0.0.1:5000/api/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: loginData.identifier,  
+        email: loginData.identifier,
         password: loginData.password,
       }),
     });
@@ -37,44 +42,38 @@ const Auth = () => {
     const data = await response.json();
 
     if (!response.ok) {
-      // Backend error message
       alert(data.message || "Login failed");
       return;
     }
 
-    //  Login success
-    console.log("LOGIN SUCCESS:", data);
-
     alert("Login successful");
-
-    // Optional: store user data
     localStorage.setItem("user", JSON.stringify(data.user));
-
-    // Example redirect (adjust as needed)
-    // navigate("/dashboard");
 
   } catch (error) {
     console.error("LOGIN ERROR:", error);
     alert("Server error. Please try again.");
+  } finally {
+    setLoginLoading(false);
   }
 };
 
 
-  const handleRegister = async () => {
+
+const handleRegister = async () => {
+  if (registerLoading) return;
+
+  setRegisterLoading(true);
   console.log("REGISTER DATA:", registerData);
-  
+
   try {
     const response = await fetch("http://127.0.0.1:5000/api/register", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        fullname: registerData.name,      
+        fullname: registerData.name,
         email: registerData.email,
         password: registerData.password,
-        role: "instructor",              
-
+        role: "instructor",
         campus: registerData.campus,
         department: registerData.department,
         position: registerData.position,
@@ -88,10 +87,8 @@ const Auth = () => {
       return;
     }
 
-    console.log("REGISTER SUCCESS:", data);
     alert("Registration successful!");
 
-    // Optional: reset form
     setRegisterData({
       name: "",
       email: "",
@@ -101,14 +98,16 @@ const Auth = () => {
       password: "",
     });
 
-    // Optional: redirect to login
-    // navigate("/login");
+    setMode("login");
 
   } catch (error) {
     console.error("REGISTER ERROR:", error);
     alert("Server error. Please try again.");
+  } finally {
+    setRegisterLoading(false);
   }
 };
+
 
 
   return (
@@ -150,6 +149,8 @@ const Auth = () => {
               title="Login"
               handlePress={handleLogin}
               containerStyles="mt-4"
+              isLoading={loginLoading}
+              loadingText="Logging in..."
             />
 
             <p className="text-sm text-center mt-4">
@@ -257,6 +258,8 @@ const Auth = () => {
               title="Register"
               handlePress={handleRegister}
               containerStyles="mt-4"
+              isLoading={registerLoading}
+              loadingText="Registering..."
             />
 
             <p className="text-sm text-center mt-4">
