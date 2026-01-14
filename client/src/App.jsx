@@ -7,7 +7,7 @@ function App() {
 
   return (
     <div className=''>
-        <Auth />
+        <Home />
     </div>
   )}
 export default App
