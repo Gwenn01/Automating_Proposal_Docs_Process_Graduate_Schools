@@ -52,11 +52,9 @@ const FileUpload = () => {
   /* ================= BUILD FORMDATA ================= */
   const buildFormData = (file) => {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("user_id", user.user_id);
     formData.append("title", title);
-    formData.append("uploaded_by", user?.id || "");
-    formData.append("uploaded_by_name", user?.fullname || "");
-    formData.append("uploaded_at", new Date().toISOString());
+    formData.append("file", file);
     return formData;
   };
 
@@ -146,7 +144,7 @@ const FileUpload = () => {
     };
 
     const formData = buildFormData(file);
-    xhr.open("POST", "http://127.0.0.1:5000/api/upload");
+    xhr.open("POST", "http://127.0.0.1:5000/api/upload-proposal");
     xhr.send(formData);
   };
 
