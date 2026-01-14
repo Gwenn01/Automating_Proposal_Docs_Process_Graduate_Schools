@@ -82,34 +82,30 @@ def delete_document(proposal_id):
     cursor = conn.cursor(dictionary=True)
 
     try:
-        # Get file path first
+        # Check if document exists and not deleted
         cursor.execute("""
-            SELECT file_path
+            SELECT proposal_id
             FROM proposals_docs
-            WHERE proposal_id = %s
+            WHERE proposal_id = %s AND is_deleted = 0
         """, (proposal_id,))
 
         proposal = cursor.fetchone()
 
         if not proposal:
-            return jsonify({"message": "Document not found"}), 404
+            return jsonify({"message": "Document not found or already deleted"}), 404
 
-        file_path = proposal["file_path"]
-
-        # Delete database record
+        # Soft delete document
         cursor.execute("""
-            DELETE FROM proposals_docs
+            UPDATE proposals_docs
+            SET is_deleted = 1,
+                deleted_at = NOW()
             WHERE proposal_id = %s
         """, (proposal_id,))
 
         conn.commit()
 
-        # Delete file from storage (optional but recommended)
-        if file_path and os.path.exists(file_path):
-            os.remove(file_path)
-
         return jsonify({
-            "message": "Document deleted successfully"
+            "message": "Document deleted successfully (soft delete)"
         }), 200
 
     except Exception as e:

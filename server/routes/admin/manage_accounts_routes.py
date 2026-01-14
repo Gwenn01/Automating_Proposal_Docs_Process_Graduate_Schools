@@ -80,17 +80,19 @@ def delete_account(user_id):
 
     try:
         cursor.execute("""
-            DELETE FROM users
-            WHERE user_id = %s
+            UPDATE users
+            SET is_deleted = 1,
+                deleted_at = NOW()
+            WHERE user_id = %s AND is_deleted = 0
         """, (user_id,))
 
         if cursor.rowcount == 0:
-            return jsonify({"message": "User not found"}), 404
+            return jsonify({"message": "User not found or already deleted"}), 404
 
         conn.commit()
 
         return jsonify({
-            "message": "Account deleted successfully"
+            "message": "Account deleted successfully (soft delete)"
         }), 200
 
     except Exception as e:
@@ -100,6 +102,7 @@ def delete_account(user_id):
     finally:
         cursor.close()
         conn.close()
+
 
 
 @manage_accounts_bp.route("/reset-password/<int:user_id>", methods=["PUT"])
