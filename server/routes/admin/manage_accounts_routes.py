@@ -2,9 +2,9 @@ from flask import Blueprint, request, jsonify
 from database.connection import get_db_connection
 from werkzeug.security import generate_password_hash
 
-manage_accounts_bp = Blueprint("manage_accounts/view", __name__)
+manage_accounts_bp = Blueprint("manage_accounts", __name__)
 
-@manage_accounts_bp.route("/manage-accounts", methods=["GET"])
+@manage_accounts_bp.route("/manage-accounts/view", methods=["GET"])
 def get_all_users():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
