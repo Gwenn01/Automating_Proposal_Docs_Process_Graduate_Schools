@@ -1,54 +1,95 @@
 import React, { useRef, useState, useEffect } from "react";
-import { UploadCloud, FileText } from "lucide-react";
+import { UploadCloud, FileText, Loader2 } from "lucide-react";
 
 const FileUpload = () => {
   const fileInputRef = useRef(null);
+
   const [uploads, setUploads] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [title, setTitle] = useState("");
   const [user, setUser] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-useEffect(() => {
-  const storedUser = localStorage.getItem("user");
+  /* ================= FETCH USER ================= */
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      console.log("LOGGED IN USER:", parsedUser);
+    }
+  }, []);
 
-  if (storedUser) {
-    const parsedUser = JSON.parse(storedUser);
-    setUser(parsedUser);
-    console.log("LOGGED IN USER:", parsedUser);
-  } else {
-    console.log("No user found in localStorage");
-  }
-}, []);
-
-
-  // Click to upload
+  /* ================= FILE SELECTION ================= */
   const handleClick = () => {
     fileInputRef.current.click();
   };
 
-  // Handle selected files
   const handleFiles = (files) => {
-    const fileArray = Array.from(files);
+    const file = files[0];
+    if (!file) return;
 
-    fileArray.forEach((file) => uploadFile(file));
+    setSelectedFile(file);
+
+    // Render immediately (READY state)
+    setUploads([
+      {
+        id: "pending",
+        name: file.name,
+        progress: 0,
+        speed: "",
+        status: "Ready to upload",
+        isUploading: false,
+      },
+    ]);
   };
 
-  // Drag & drop
   const handleDrop = (e) => {
     e.preventDefault();
     handleFiles(e.dataTransfer.files);
   };
 
+  /* ================= BUILD FORMDATA ================= */
+  const buildFormData = (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", title);
+    formData.append("uploaded_by", user?.id || "");
+    formData.append("uploaded_by_name", user?.fullname || "");
+    formData.append("uploaded_at", new Date().toISOString());
+    return formData;
+  };
+
+  /* ================= SUBMIT ================= */
+  const handleSubmit = () => {
+    if (!title.trim()) {
+      alert("Please enter a title");
+      return;
+    }
+
+    if (!selectedFile) {
+      alert("Please select a file");
+      return;
+    }
+
+    setIsSubmitting(true);
+    uploadFile(selectedFile);
+  };
+
+  /* ================= UPLOAD LOGIC ================= */
   const uploadFile = (file) => {
-    const id = Date.now() + Math.random();
+    const id = Date.now();
 
-    const newFile = {
-      id,
-      name: file.name,
-      progress: 0,
-      speed: "",
-      status: "Uploading...",
-    };
-
-    setUploads((prev) => [...prev, newFile]);
+    setUploads([
+      {
+        id,
+        name: file.name,
+        progress: 0,
+        speed: "",
+        status: "Uploading...",
+        isUploading: true,
+      },
+    ]);
 
     const xhr = new XMLHttpRequest();
     const startTime = Date.now();
@@ -62,49 +103,61 @@ useEffect(() => {
 
       setUploads((prev) =>
         prev.map((f) =>
-          f.id === id
-            ? { ...f, progress: percent, speed }
-            : f
+          f.id === id ? { ...f, progress: percent, speed } : f
         )
       );
     };
 
     xhr.onload = () => {
-      setUploads((prev) =>
-        prev.map((f) =>
-          f.id === id
-            ? { ...f, progress: 100, speed: "", status: "Completed" }
-            : f
-        )
-      );
+      if (xhr.status >= 200 && xhr.status < 300) {
+        setUploads((prev) =>
+          prev.map((f) =>
+            f.id === id
+              ? {
+                  ...f,
+                  progress: 100,
+                  speed: "",
+                  status: "Completed",
+                  isUploading: false,
+                }
+              : f
+          )
+        );
+
+        // Reset after success
+        setSelectedFile(null);
+        setTitle("");
+      } else {
+        xhr.onerror();
+      }
+
+      setIsSubmitting(false);
     };
 
     xhr.onerror = () => {
       setUploads((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, status: "Failed" }
+            ? { ...f, status: "Failed", isUploading: false }
             : f
         )
       );
+      setIsSubmitting(false);
     };
 
-    const formData = new FormData();
-    formData.append("file", file);
-
-    // 🔧 CHANGE THIS TO YOUR BACKEND ENDPOINT
+    const formData = buildFormData(file);
     xhr.open("POST", "http://127.0.0.1:5000/api/upload");
     xhr.send(formData);
   };
 
+  /* ================= UI ================= */
   return (
     <div className="flex-1 bg-white p-10">
       {/* Header */}
       <div className="flex justify-end items-center gap-3 mb-10">
         <span className="font-semibold text-gray-700">
-            {user?.fullname || user?.name || "User"}
+          {user?.fullname || "User"}
         </span>
-
         <div className="w-10 h-10 rounded-full bg-blue-100 overflow-hidden border">
           <img src="https://via.placeholder.com/40" alt="profile" />
         </div>
@@ -112,61 +165,80 @@ useEffect(() => {
 
       <h2 className="text-2xl font-bold mb-8">File Upload</h2>
 
+      {/* Title */}
+      <div className="mb-6">
+        <label className="block text-sm font-semibold mb-2">
+          Document Title
+        </label>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Enter document title"
+          className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400"
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Dropzone */}
         <div
           onClick={handleClick}
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
-          className="cursor-pointer border-2 border-dashed border-gray-400 rounded-xl p-20 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition"
+          className="cursor-pointer border-2 border-dashed border-gray-400 rounded-xl p-20 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100"
         >
           <input
             type="file"
             ref={fileInputRef}
             hidden
-            multiple
             onChange={(e) => handleFiles(e.target.files)}
           />
-
-          <div className="w-16 h-16 bg-white border border-green-500 rounded-xl flex items-center justify-center mb-4">
-            <UploadCloud className="text-green-600 w-8 h-8" />
-          </div>
-
+          <UploadCloud className="text-green-600 w-8 h-8 mb-4" />
           <p className="text-gray-600 font-medium">
-            Click or Drag Files to Upload
+            Click or Drag File to Select
           </p>
         </div>
 
         {/* Upload List */}
         <div>
           <h3 className="font-bold mb-4">Uploading</h3>
-          <div className="space-y-6">
-            {uploads.map((file) => (
-              <div key={file.id} className="flex gap-4">
-                <FileText className="w-8 h-8 text-gray-400" />
-                <div className="flex-1">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">{file.name}</span>
-                    <span className="text-[10px] text-gray-400">
-                      {file.speed}
-                    </span>
-                  </div>
 
-                  <div className="w-full bg-gray-100 rounded-full h-1.5">
-                    <div
-                      className="bg-green-500 h-1.5 rounded-full transition-all"
-                      style={{ width: `${file.progress}%` }}
-                    />
-                  </div>
+          {uploads.map((file) => (
+            <div key={file.id} className="flex gap-4 items-center">
+              {file.isUploading ? (
+                <Loader2 className="w-6 h-6 text-green-500 animate-spin" />
+              ) : (
+                <FileText className="w-6 h-6 text-gray-400" />
+              )}
 
-                  <span className="text-[10px] text-gray-500 mt-1 block">
-                    {file.status}
-                  </span>
+              <div className="flex-1">
+                <span className="text-sm font-medium">{file.name}</span>
+
+                <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
+                  <div
+                    className="bg-green-500 h-1.5 rounded-full transition-all"
+                    style={{ width: `${file.progress}%` }}
+                  />
                 </div>
+
+                <span className="text-[10px] text-gray-500 block mt-1">
+                  {file.status}
+                </span>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
+      </div>
+
+      {/* Submit */}
+      <div className="mt-8">
+        <button
+          onClick={handleSubmit}
+          disabled={!selectedFile || isSubmitting}
+          className="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold disabled:opacity-50"
+        >
+          {isSubmitting ? "Uploading..." : "Submit"}
+        </button>
       </div>
     </div>
   );
