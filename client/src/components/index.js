@@ -3,6 +3,8 @@ import Sidebar from "./Sidebar";
 import FormInput from "./FormInput";
 import FileUpload from "./FileUpload";
 import ViewDocs from "./ViewDocs";
+import DocumentReviewModal from "./DocumentReviewModal";
+import ReviewerModal from "./ReviewerModal";
 
 export {
     CustomButton,
@@ -10,5 +12,7 @@ export {
     FormInput,
     FileUpload,
     ViewDocs,
+    DocumentReviewModal,
+    ReviewerModal,
     
 }

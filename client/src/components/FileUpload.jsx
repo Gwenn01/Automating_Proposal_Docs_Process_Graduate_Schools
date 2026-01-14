@@ -10,6 +10,8 @@ const FileUpload = () => {
   const [user, setUser] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
+ 
   /* ================= FETCH USER ================= */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -151,39 +153,31 @@ const FileUpload = () => {
   /* ================= UI ================= */
   return (
     <div className="flex-1 bg-white p-10">
-      {/* Header */}
-      <div className="flex justify-end items-center gap-3 mb-10">
-        <span className="font-semibold text-gray-700">
-          {user?.fullname || "User"}
-        </span>
-        <div className="w-10 h-10 rounded-full bg-blue-100 overflow-hidden border">
-          <img src="https://via.placeholder.com/40" alt="profile" />
-        </div>
-      </div>
+
 
       <h2 className="text-2xl font-bold mb-8">File Upload</h2>
 
       {/* Title */}
       <div className="mb-6">
         <label className="block text-sm font-semibold mb-2">
-          Document Title
+          Proposal Title
         </label>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter document title"
-          className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400"
+          placeholder="Enter proposal title"
+          className="w-full text-md border-b-[3px] border-primaryGreen px-4 py-2 focus:ring-2 focus:ring-green-400"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 p-5 place-items-center">
         {/* Dropzone */}
         <div
           onClick={handleClick}
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
-          className="cursor-pointer border-2 border-dashed border-gray-400 rounded-xl p-20 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100"
+          className="cursor-pointer border-[3px] border-dashed w-[80%] border-gray-400  py-36 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100"
         >
           <input
             type="file"
@@ -198,8 +192,8 @@ const FileUpload = () => {
         </div>
 
         {/* Upload List */}
-        <div>
-          <h3 className="font-bold mb-4">Uploading</h3>
+        <div className="h-full w-full">
+          <h3 className="font-semibold mb-4">{uploads.length > 0  ? "Uploading" : "No File Attachment."}</h3>
 
           {uploads.map((file) => (
             <div key={file.id} className="flex gap-4 items-center">
@@ -229,11 +223,11 @@ const FileUpload = () => {
       </div>
 
       {/* Submit */}
-      <div className="mt-8">
+      <div className="mt-8 flex justify-end items-center">
         <button
           onClick={handleSubmit}
           disabled={!selectedFile || isSubmitting}
-          className="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold disabled:opacity-50"
+          className="bg-green-600 text-white px-7 py-3 rounded-3xl font-semibold disabled:opacity-50"
         >
           {isSubmitting ? "Uploading..." : "Submit"}
         </button>
