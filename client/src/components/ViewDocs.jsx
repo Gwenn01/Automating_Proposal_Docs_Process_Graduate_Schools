@@ -105,15 +105,15 @@ const ViewDocs = () => {
                   <td className="px-6">
                     <button
                       onClick={() => handleOpenViewer(doc)}
-                      className="text-gray-500 hover:text-green-600 underline underline-offset-2 transition-colors"
+                      className="text-gray-500 text-sm hover:text-green-600 underline underline-offset-2 transition-colors"
                     >
                       {filename}
                     </button>
                   </td>
 
-                  <td className="px-6 text-center">
+                  <td className="px-6 py-1 text-center">
                     <span
-                      className={`${status.color} text-white px-6 py-1.5 rounded-full text-[11px] font-bold`}
+                      className={`${status.color} text-white px-6 py-2 rounded-full text-sm font-bold`}
                     >
                       {status.label}
                     </span>

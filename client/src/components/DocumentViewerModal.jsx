@@ -6,14 +6,13 @@ const API_BASE = "http://127.0.0.1:5000";
 const DocumentViewerModal = ({ isOpen, onClose, documentUrl }) => {
   if (!isOpen || !documentUrl) return null;
 
-  // Fix slashes + remove extra folders
-  const normalizedPath = documentUrl
-    .replace(/\\/g, "/")
-    .replace("uploads/proposals/", "uploads/");
+  // Normalize Windows backslashes
+  const normalizedPath = documentUrl.replace(/\\/g, "/");
 
+  // Final URL → matches Flask route
   const fullUrl = `${API_BASE}/${normalizedPath}`;
-  const extension = fullUrl.split(".").pop().toLowerCase();
 
+  const extension = fullUrl.split(".").pop().toLowerCase();
   const isPDF = extension === "pdf";
   const isWord = ["doc", "docx"].includes(extension);
 

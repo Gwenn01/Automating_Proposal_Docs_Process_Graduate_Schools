@@ -1,5 +1,6 @@
 import React from "react";
 import { X, Bell } from "lucide-react";
+import CustomButton from "./CuttomButton";
 
 const DocumentReviewModal = ({ isOpen, onClose, documentUrl }) => {
   if (!isOpen) return null;
@@ -20,20 +21,21 @@ const DocumentReviewModal = ({ isOpen, onClose, documentUrl }) => {
           <X className="w-6 h-6" />
         </button>
 
-        <div className="flex flex-1 overflow-hidden p-6 gap-6">
+        <div className="flex flex-1 overflow-hidden p-10 gap-6">
           
           {/* Left: Document View */}
           <div className="flex-1 bg-gray-100 rounded border border-gray-200 overflow-y-auto relative p-4">
-            <div className="absolute top-4 left-4 flex flex-col items-center">
+            <h2>Document</h2>
+            {/* <div className="absolute top-4 left-4 flex flex-col items-center">
                <Bell className="w-6 h-6 text-red-600 fill-red-600" />
                <span className="text-[10px] font-bold bg-white px-1 rounded border border-red-600 -mt-1">2</span>
-            </div>
+            </div> */}
             {/* Replace this img with an iframe if loading a real PDF */}
-            <img 
+            {/* <img 
               src="https://via.placeholder.com/600x800?text=Document+Preview" 
               className="w-full shadow-md" 
               alt="document" 
-            />
+            /> */}
           </div>
 
           {/* Right: Review Sidebar */}
@@ -50,9 +52,14 @@ const DocumentReviewModal = ({ isOpen, onClose, documentUrl }) => {
               </div>
             ))}
 
-            <button className="mt-2 text-[10px] text-gray-400 text-right uppercase font-bold self-end hover:text-green-600 transition-colors">
-              Submit
-            </button>
+            <div className="w-full flex justify-end">
+              <CustomButton
+                title="Submit Review"
+                handlePress
+                containerStyles="w-1/2 text-sm"
+                loadingText="Submitting Review..."
+              />
+            </div>
           </div>
         </div>
       </div>
