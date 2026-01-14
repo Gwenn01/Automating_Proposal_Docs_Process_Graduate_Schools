@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { prmsuLogo } from "../assets";
 import { CustomButton, FormInput } from "../components";
+import { useNavigate } from "react-router-dom";
+
 
 const Auth = () => {
   const [mode, setMode] = useState("login");
@@ -23,11 +25,13 @@ const Auth = () => {
     password: "",
   });
 
+  const navigate = useNavigate();
+
+
 const handleLogin = async () => {
   if (loginLoading) return;
 
   setLoginLoading(true);
-  console.log("LOGIN DATA:", loginData);
 
   try {
     const response = await fetch("http://127.0.0.1:5000/api/login", {
@@ -46,8 +50,12 @@ const handleLogin = async () => {
       return;
     }
 
-    alert("Login successful");
+    // ✅ SUCCESS
     localStorage.setItem("user", JSON.stringify(data.user));
+    alert("Login successful");
+
+    // ✅ REDIRECT TO HOME
+    navigate("/home");
 
   } catch (error) {
     console.error("LOGIN ERROR:", error);
@@ -56,6 +64,7 @@ const handleLogin = async () => {
     setLoginLoading(false);
   }
 };
+
 
 
 

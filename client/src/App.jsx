@@ -1,13 +1,16 @@
-
-import './App.css'
-import Auth from './pages/Auth'
-import Home from './pages/Home'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Auth from "./pages/Auth";
+import Home from "./pages/Home";
 
 function App() {
-
   return (
-    <div className=''>
-        <Home />
-    </div>
-  )}
-export default App
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Auth />} />
+        <Route path="/home" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;

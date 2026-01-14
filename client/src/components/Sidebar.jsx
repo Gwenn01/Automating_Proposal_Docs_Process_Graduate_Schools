@@ -17,8 +17,8 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar }) => {
     >
       {/* Brand Header */}
       <div className="p-6 flex items-center gap-3">
-        <div className="bg-white p-1 rounded-full w-12 h-12 flex items-center justify-center">
-           <img src={prmsuLogo} alt="logo" className="w-10 h-10 object-contain" />
+        <div className="bg-white p-1 rounded-full w-16 h-16 flex items-center justify-center">
+           <img src={prmsuLogo} alt="logo" className="w-14 h-14 object-contain rounded-full" />
         </div>
         <div>
           <h1 className="text-white font-bold text-sm leading-tight">G.A.D Extension Office</h1>
