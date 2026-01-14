@@ -18,7 +18,8 @@ from routes.test_db_routes import test_db_bp
 from routes.auth.registration_routes import registration_bp
 from routes.auth.login_routes import login_bp
 # admin --------------------------------------------------------------------
-
+from routes.admin.manage_accounts_routes import manage_accounts_bp
+from routes.admin.manage_docs_routes import manage_docs_bp
 # reviewer -----------------------------------------------------------------
 from routes.reviewer.get_docs_reviewer_routes import get_docs_reviewer_bp
 # instructor-------------------------------------------------
@@ -33,7 +34,8 @@ app.register_blueprint(test_db_bp, url_prefix="/api")
 app.register_blueprint(registration_bp, url_prefix="/api")
 app.register_blueprint(login_bp, url_prefix="/api")
 # admin ---------------------------------------------------------------------
-
+app.register_blueprint(manage_accounts_bp, url_prefix="/api")
+app.register_blueprint(manage_docs_bp, url_prefix="/api")
 # reviewer-------------------------------------------------------------------
 app.register_blueprint(get_docs_reviewer_bp, url_prefix="/api")
 # instructor-----------------------------------------------------------------
