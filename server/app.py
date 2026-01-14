@@ -20,7 +20,7 @@ from routes.auth.login_routes import login_bp
 # admin --------------------------------------------------------------------
 
 # reviewer -----------------------------------------------------------------
-
+from routes.reviewer.get_docs_reviewer_routes import get_docs_reviewer_bp
 # instructor-------------------------------------------------
 from routes.instructor.upload_file_routes import upload_bp
 from routes.instructor.get_proposal_routes import proposals_bp
@@ -35,7 +35,7 @@ app.register_blueprint(login_bp, url_prefix="/api")
 # admin ---------------------------------------------------------------------
 
 # reviewer-------------------------------------------------------------------
-
+app.register_blueprint(get_docs_reviewer_bp, url_prefix="/api")
 # instructor-----------------------------------------------------------------
 app.register_blueprint(upload_bp, url_prefix="/api")
 app.register_blueprint(proposals_bp, url_prefix="/api")
