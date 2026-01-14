@@ -1,9 +1,23 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { UploadCloud, FileText } from "lucide-react";
 
 const FileUpload = () => {
   const fileInputRef = useRef(null);
   const [uploads, setUploads] = useState([]);
+  const [user, setUser] = useState(null);
+
+useEffect(() => {
+  const storedUser = localStorage.getItem("user");
+
+  if (storedUser) {
+    const parsedUser = JSON.parse(storedUser);
+    setUser(parsedUser);
+    console.log("LOGGED IN USER:", parsedUser);
+  } else {
+    console.log("No user found in localStorage");
+  }
+}, []);
+
 
   // Click to upload
   const handleClick = () => {
@@ -87,7 +101,10 @@ const FileUpload = () => {
     <div className="flex-1 bg-white p-10">
       {/* Header */}
       <div className="flex justify-end items-center gap-3 mb-10">
-        <span className="font-semibold text-gray-700">Arnel Gwen Nuqui</span>
+        <span className="font-semibold text-gray-700">
+            {user?.fullname || user?.name || "User"}
+        </span>
+
         <div className="w-10 h-10 rounded-full bg-blue-100 overflow-hidden border">
           <img src="https://via.placeholder.com/40" alt="profile" />
         </div>
