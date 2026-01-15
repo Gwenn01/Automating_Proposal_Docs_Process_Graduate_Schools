@@ -5,7 +5,7 @@ import ReviewerModal from "../../components/ReviewerModal";
 import DocumentReviewModal from "../../components/DocumentReviewModal";
 import DocumentViewerModal from "../../components/DocumentViewerModal";
 
-const ViewDocs = () => {
+const ViewProposal = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -168,4 +168,4 @@ const ViewDocs = () => {
   );
 };
 
-export default ViewDocs;
+export default ViewProposal;

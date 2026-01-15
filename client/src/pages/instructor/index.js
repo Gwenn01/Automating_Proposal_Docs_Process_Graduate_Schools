@@ -1,7 +1,13 @@
-import FormInput from './FormInput';
-import ViewDocs from './ViewDocs';
+
+
+import CreateProposal from './CreateProposal';
+import ViewProposal from './ViewProposal';
+import EditProposal from './EditProposal';
+
 
 export {
-    FormInput,
-    ViewDocs
+    
+    CreateProposal,
+    ViewProposal,
+    EditProposal
 }

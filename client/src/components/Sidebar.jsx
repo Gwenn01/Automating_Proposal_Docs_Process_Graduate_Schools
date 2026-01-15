@@ -18,8 +18,9 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
 
   const menuByRole = {
     instructor: [
-      { label: "Upload Docs", icon: Upload },
-      { label: "View Docs", icon: Eye },
+      { label: "Create Proposal", icon: Upload },
+      { label: "View Proposal", icon: Eye },
+      { label: "Edit Proposal", icon: Eye },
     ],
 
     reviewer: [
