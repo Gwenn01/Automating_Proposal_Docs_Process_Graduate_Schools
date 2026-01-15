@@ -23,7 +23,7 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
     ],
 
     reviewer: [
-      { label: "Review Docs", icon: FileCheck },
+      { label: "Review Documents", icon: FileCheck },
     ],
 
     admin: [

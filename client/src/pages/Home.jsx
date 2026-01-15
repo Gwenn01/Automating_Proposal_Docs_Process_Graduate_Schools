@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import FileUpload from "../components/FileUpload";
-import ViewDocs from "../components/ViewDocs";
+import ViewDocs from "./instructor/ViewDocs";
+import { AssignToReview, ManageAccount, ManageDocuments, Overview, ViewReview } from "./admin";
+import ReviewDocuments from "./ReviewDocuments";
 
 const Home = () => {
   const [active, setActive] = useState("View Docs");
@@ -34,16 +36,21 @@ const Home = () => {
       />
 
       <main className="flex-1 flex flex-col overflow-y-auto">
+        {/*Instructor*/}
         {active === "Upload Docs" && <FileUpload />}
         {active === "View Docs" && <ViewDocs />}
 
-        {active === "Overview" && (
-          <div className="p-10 text-2xl font-bold">Admin Overview</div>
-        )}
+        {/*Admin*/}
+        {active === "Overview" && <Overview />}
+        {active === "Manage Account" && <ManageAccount />}
+        {active === "Manage Documents" && <ManageDocuments />}
+        {active === "Assign to Review" && <AssignToReview />}
+        {active === "View Review" && <ViewReview />}
 
-        {active === "Review Docs" && (
-          <div className="p-10 text-2xl font-bold">Reviewer Panel</div>
-        )}
+        {/*Reviewer*/}
+
+        {active === "Review Documents" && <ReviewDocuments />}
+        
       </main>
     </div>
   );

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { List, Loader2 } from "lucide-react";
 import axios from "axios";
-import ReviewerModal from "./ReviewerModal";
-import DocumentReviewModal from "./DocumentReviewModal";
-import DocumentViewerModal from "./DocumentViewerModal";
+import ReviewerModal from "../../components/ReviewerModal";
+import DocumentReviewModal from "../../components/DocumentReviewModal";
+import DocumentViewerModal from "../../components/DocumentViewerModal";
 
 const ViewDocs = () => {
   const [documents, setDocuments] = useState([]);
