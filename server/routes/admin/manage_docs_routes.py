@@ -3,7 +3,7 @@ from database.connection import get_db_connection
 import os
 
 manage_docs_bp = Blueprint("manage_docs", __name__)
-
+# get all docs
 @manage_docs_bp.route("/manage-docs/view", methods=["GET"])
 def get_all_documents():
     conn = get_db_connection()

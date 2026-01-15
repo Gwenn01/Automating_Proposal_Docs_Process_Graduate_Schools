@@ -3,7 +3,7 @@ from database.connection import get_db_connection
 from werkzeug.security import generate_password_hash
 
 manage_accounts_bp = Blueprint("manage_accounts", __name__)
-
+#get all account
 @manage_accounts_bp.route("/manage-accounts/view", methods=["GET"])
 def get_all_users():
     conn = get_db_connection()
@@ -33,7 +33,7 @@ def get_all_users():
         cursor.close()
         conn.close()
 
-
+# edit account
 @manage_accounts_bp.route("manage-account/edit/<int:user_id>", methods=["PUT"])
 def update_user(user_id):
     data = request.json
@@ -72,7 +72,7 @@ def update_user(user_id):
         cursor.close()
         conn.close()
 
-
+#delete account
 @manage_accounts_bp.route("/manage-account/delete/<int:user_id>", methods=["DELETE"])
 def delete_account(user_id):
     conn = get_db_connection()
@@ -104,7 +104,7 @@ def delete_account(user_id):
         conn.close()
 
 
-
+#reset password
 @manage_accounts_bp.route("/reset-password/<int:user_id>", methods=["PUT"])
 def reset_password(user_id):
     data = request.json
