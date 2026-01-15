@@ -36,9 +36,9 @@ def register():
         user_id = cursor.lastrowid
 
         # Insert instructor info if role is instructor
-        if role == 'instructor':
+        if role == 'implementor':
             cursor.execute("""
-                INSERT INTO instructors_info (user_id, campus, department, position)
+                INSERT INTO implementor_info (user_id, campus, department, position)
                 VALUES (%s, %s, %s, %s)
             """, (
                 user_id,

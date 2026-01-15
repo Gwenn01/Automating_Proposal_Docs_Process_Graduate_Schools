@@ -24,8 +24,8 @@ from routes.admin.assign_reviewer_routes import assign_bp
 # reviewer -----------------------------------------------------------------
 from routes.reviewer.get_docs_reviewer_routes import get_docs_reviewer_bp
 # instructor-------------------------------------------------
-from routes.instructor.upload_file_routes import upload_bp
-from routes.instructor.get_proposal_routes import proposals_bp
+from routes.implementor.upload_file_routes import upload_bp
+from routes.implementor.get_proposal_routes import proposals_bp
 #---------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------
 app.register_blueprint(health_bp, url_prefix="/api")
