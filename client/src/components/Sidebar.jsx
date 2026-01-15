@@ -26,7 +26,7 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
       { label: "Review Docs", icon: FileCheck },
     ],
 
-    administrator: [
+    admin: [
       { label: "Overview", icon: Home },
       { label: "Manage Account", icon: Users },
       { label: "Manage Documents", icon: Files },
