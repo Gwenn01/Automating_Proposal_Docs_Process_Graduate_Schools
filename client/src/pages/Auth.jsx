@@ -52,7 +52,7 @@ const handleLogin = async () => {
 
     // ✅ SUCCESS
     localStorage.setItem("user", JSON.stringify(data.user));
-    alert("Login successful");
+
 
     // ✅ REDIRECT TO HOME
     navigate("/home");
