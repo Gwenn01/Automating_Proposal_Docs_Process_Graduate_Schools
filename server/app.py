@@ -23,9 +23,10 @@ from routes.admin.manage_docs_routes import manage_docs_bp
 from routes.admin.assign_reviewer_routes import assign_bp
 # reviewer -----------------------------------------------------------------
 from routes.reviewer.get_docs_reviewer_routes import get_docs_reviewer_bp
-# instructor-------------------------------------------------
+# implementor-------------------------------------------------
 from routes.implementor.upload_file_routes import upload_bp
 from routes.implementor.get_proposal_routes import proposals_bp
+from routes.implementor.create_proposal_routes import create_proposal_bp
 #---------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------
 app.register_blueprint(health_bp, url_prefix="/api")
@@ -40,10 +41,10 @@ app.register_blueprint(manage_docs_bp, url_prefix="/api")
 app.register_blueprint(assign_bp, url_prefix="/api")
 # reviewer-------------------------------------------------------------------
 app.register_blueprint(get_docs_reviewer_bp, url_prefix="/api")
-# instructor-----------------------------------------------------------------
+# implementor-----------------------------------------------------------------
 app.register_blueprint(upload_bp, url_prefix="/api")
 app.register_blueprint(proposals_bp, url_prefix="/api")
-
+app.register_blueprint(create_proposal_bp, url_prefix="/api")
 # -------------------------------------------------
 # Entry Point
 # -------------------------------------------------
