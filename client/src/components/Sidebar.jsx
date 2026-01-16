@@ -12,12 +12,13 @@ import {
 } from "lucide-react";
 import { prmsuLogo } from "../assets";
 import { useNavigate } from "react-router-dom";
+import { logout } from "../utils/auth";
 
 const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
   const navigate = useNavigate();
 
   const menuByRole = {
-    instructor: [
+    implementor: [
       { label: "Create Proposal", icon: Upload },
       { label: "View Proposal", icon: Eye },
       { label: "Edit Proposal", icon: Eye },
@@ -39,13 +40,10 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
   const menuItems = menuByRole[role] || [];
 
   /* ================= LOGOUT ================= */
-  const handleLogout = () => {
-    localStorage.removeItem("user");     // clear user
-    localStorage.removeItem("token");    // if you store JWT
-    sessionStorage.clear();
-
-    navigate("/");                  // redirect
-  };
+const handleLogout = () => {
+  logout();
+  navigate("/", { replace: true });
+};
 
   return (
     <div

@@ -15,14 +15,26 @@ const Home = () => {
   };
 
   /* ================= FETCH USER ================= */
+  // useEffect(() => {
+  //   const storedUser = localStorage.getItem("user");
+  //   if (storedUser) {
+  //     const parsedUser = JSON.parse(storedUser);
+  //     setUser(parsedUser);
+  //     console.log("LOGGED IN USER:", parsedUser);
+  //   }
+  // }, []);
+
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      console.log("LOGGED IN USER:", parsedUser);
-    }
-  }, []);
+  const storedUser = localStorage.getItem("user");
+
+  if (!storedUser) {
+    navigate("/", { replace: true });
+    return;
+  }
+
+  setUser(JSON.parse(storedUser));
+}, []);
+
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden font-sans">
