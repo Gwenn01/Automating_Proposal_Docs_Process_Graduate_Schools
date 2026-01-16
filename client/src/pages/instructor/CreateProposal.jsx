@@ -321,9 +321,9 @@ const CreateProposal = () => {
             onChange={(e) => setTitle(e.target.value)}
           />
 
-          <section className="max-w-5xl mx-auto bg-white rounded-sm shadow-sm font-sans text-gray-900 leading-relaxed">
-            <h2 className="text-2xl font-bold mb-6">Cover Page:</h2>
+          <h2 className="text-2xl font-bold">Cover Page:</h2>
             
+          <section className="max-w-5xl mx-auto bg-gray-100 p-12 rounded-sm shadow-sm font-sans text-gray-900 leading-relaxed">
             <div className="space-y-6 text-sm">
               <div>
                 <InlineInput
