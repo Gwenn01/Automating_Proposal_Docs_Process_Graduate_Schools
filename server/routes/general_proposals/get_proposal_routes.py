@@ -83,7 +83,7 @@ def get_user_content_proposals(proposal_id):
         cover_pages = cursor.fetchall()
 
         return jsonify({
-            "cover_pages": cover_pages
+            "content_pages": cover_pages
         }), 200
 
     except Exception as e:
