@@ -56,7 +56,8 @@ def assign_reviewer():
         # Update proposal status
         cursor.execute("""
             UPDATE proposals_docs
-            SET status = 'under_review'
+            SET status = 'under_review',
+            reviewer_count = reviewer_count + 1
             WHERE proposal_id = %s
         """, (proposal_id,))
 
