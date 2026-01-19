@@ -5,8 +5,7 @@ create_proposal_bp = Blueprint("create_proposal_bp", __name__)
 
 @create_proposal_bp.route("/create-proposal", methods=["POST"])
 def create_proposal():
-    data = request.json
-    return save_proposal(data)
+    return save_proposal()
     
         
 @create_proposal_bp.route("/cover/<int:proposal_id>", methods=["PUT"])

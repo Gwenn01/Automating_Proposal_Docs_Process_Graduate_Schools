@@ -12,29 +12,20 @@ def insert_proposal(data):
         """, (
             data["user_id"],
             data["title"],
-            data.get("file_path")  # can be NULL
+            data.get("file_path")
         ))
 
         conn.commit()
-
-        proposal_id = cursor.lastrowid  #  IMPORTANT
-
-        return jsonify({
-            "message": "Proposal created successfully",
-            "proposal_id": proposal_id,      #  use this for next steps
-            "next_steps": {
-                "cover_page": f"/api/proposals/cover/{proposal_id}",
-                "content": f"/api/proposals/content/{proposal_id}"
-            }
-        }), 201
+        return cursor.lastrowid   # ✅ RETURN ONLY DATA
 
     except Exception as e:
         conn.rollback()
-        return jsonify({"error": str(e)}), 500
+        raise e                  # let controller handle response
 
     finally:
         cursor.close()
         conn.close()
+
         
         
 def insert_proposal_cover_page(proposal_id, data):
@@ -96,11 +87,11 @@ def insert_proposal_cover_page(proposal_id, data):
         """, {**data, "proposal_id": proposal_id})
 
         conn.commit()
-        return jsonify({"message": "Cover page updated"}), 200
+        return True   # ✅ just indicate success
 
     except Exception as e:
         conn.rollback()
-        return jsonify({"error": str(e)}), 500
+        raise e       # let controller handle response
 
     finally:
         cursor.close()
@@ -181,11 +172,11 @@ def insert_proposal_content(proposal_id, data):
         """, {**data, "proposal_id": proposal_id})
 
         conn.commit()
-        return jsonify({"message": "Proposal content updated"}), 200
+        return True
 
     except Exception as e:
         conn.rollback()
-        return jsonify({"error": str(e)}), 500
+        raise e   
 
     finally:
         cursor.close()

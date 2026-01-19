@@ -7,22 +7,29 @@ from model.general.get_proposal import (
     fetch_proposal_content
 )
 # creating or inserting proposal into database
-def save_proposal(data):
-    # validation
-    errors = validate_proposal_data(data)
-    if errors:
+def save_proposal():
+    data = request.get_json()
+
+    try:
+        errors = validate_proposal_data(data)
+        if errors:
+            return jsonify({
+                "message": "Validation failed",
+                "errors": errors
+            }), 400
+        proposal_id = insert_proposal(data)
         return jsonify({
-            "message": "Validation failed",
-            "errors": errors
-        }), 400
+            "message": "Proposal created successfully",
+            "proposal_id": proposal_id,
+            "next_steps": {
+                "cover_page": f"/api/proposals/cover/{proposal_id}",
+                "content": f"/api/proposals/content/{proposal_id}"
+            }
+        }), 201
 
-    #  service call
-    proposal_id = insert_proposal(data)
-
-    return jsonify({
-        "message": "Proposal saved successfully",
-        "proposal_id": proposal_id
-    }), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
     
 def update_proposal_cover_page(proposal_id, data):
     # validation
