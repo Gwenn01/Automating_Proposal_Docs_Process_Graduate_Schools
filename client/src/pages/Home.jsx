@@ -8,8 +8,8 @@ import {
   Overview,
   ViewReview,
 } from "./admin";
-import ReviewDocuments from "./ReviewDocuments";
 import { CreateProposal, EditProposal, ViewProposal } from "./instructor";
+import ReviewProposal from "./ReviewProposal";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ const Home = () => {
         break;
 
       case "reviewer":
-        setActive("Review Documents");
+        setActive("Review Proposal");
         break;
 
       case "admin":
@@ -81,7 +81,7 @@ const Home = () => {
         {active === "View Review" && <ViewReview />}
 
         {/* REVIEWER */}
-        {active === "Review Documents" && <ReviewDocuments />}
+        {active === "Review Proposal" && <ReviewProposal />}
       </main>
     </div>
   );

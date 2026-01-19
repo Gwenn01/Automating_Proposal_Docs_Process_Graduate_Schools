@@ -1,34 +1,33 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { InlineInput } from '../../components';
 
-  const InputField = ({ label, value, onChange, type = "text" }) => (
-    <div className="mb-6">
-      <label className="block text-xl font-semibold mb-2">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        className="w-full p-3 bg-gray-100 rounded-sm"
-      />
-    </div>
-  );
+const InputField = ({ label, value, onChange, type = "text" }) => (
+  <div className="mb-6">
+    <label className="block text-xl font-semibold mb-2">{label}</label>
+    <input
+      type={type}
+      value={value}
+      onChange={onChange}
+      className="w-full p-3 bg-gray-100 rounded-sm"
+    />
+  </div>
+);
 
-  const TextAreaField = ({ label, value, onChange, rows = 6 }) => (
-    <div>
-      <label className="block text-md font-semibold mb-2">{label}</label>
-      <textarea 
-        rows={rows}
-        value={value}
-        onChange={onChange}
-        className="w-full p-3 bg-gray-100 border-none rounded-sm focus:ring-2 focus:ring-green-600 outline-none"
-      />
-    </div>
-  );
-
+const TextAreaField = ({ label, value, onChange, rows = 6 }) => (
+  <div>
+    <label className="block text-md font-semibold mb-2">{label}</label>
+    <textarea 
+      rows={rows}
+      value={value}
+      onChange={onChange}
+      className="w-full p-3 bg-gray-100 border-none rounded-sm focus:ring-2 focus:ring-green-600 outline-none"
+    />
+  </div>
+);
 
 const CreateProposal = () => {
   const [proposalId, setProposalId] = useState(null);
-  const [userId] = useState(1); // Replace with actual user ID from auth context
+  const [userId] = useState(1);
   const [title, setTitle] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -98,13 +97,51 @@ const CreateProposal = () => {
       { activity: "Food Preparation", designation: "", terms: "" },
       { activity: "Resource Speakers", designation: "", terms: "" }
     ],
-    activity_schedule_json: [],
     prmsu_participants_count: "",
     partner_agency_participants_count: "",
     trainees_count: ""
   });
 
+  // Activity Schedule State
+  const [activitySchedule, setActivitySchedule] = useState({
+    activity_title: "",
+    activity_date: "",
+    schedule: [
+      { time: "7:30–8:00 AM", activity: "Registration", speaker: "" },
+      { time: "8:00–8:05 AM", activity: "Invocation–AV Presentation", speaker: "" },
+      { time: "8:20–8:45 AM", activity: "Opening Remarks", speaker: "Dr. Roy N. Villalobos, University President" },
+      { time: "8:45–9:00 AM", activity: "Welcome Remarks", speaker: "" },
+      { time: "9:00 AM–12:00 NOON", activity: "", speaker: "" },
+      { time: "12:00-1:00 PM", activity: "LUNCH BREAK", speaker: "" },
+      { time: "1:00-3:00 PM", activity: "", speaker: "" },
+      { time: "3:00-4:30 PM", activity: "Open Forum/Evaluation", speaker: "" },
+      { time: "4:30-4:45 PM", activity: "Awarding of Certificates", speaker: "" },
+      { time: "4:45-4:55 PM", activity: "Closing Remarks", speaker: "" },
+      { time: "4:55-5:00 PM", activity: "Photo Opportunity", speaker: "" }
+    ]
+  });
+
   const [activeTab, setActiveTab] = useState('program');
+  
+  // Remove any console.log that was causing repeated logging
+
+  // Update schedule row
+  const updateScheduleRow = (index, field, value) => {
+    const updated = [...activitySchedule.schedule];
+    updated[index][field] = value;
+    setActivitySchedule({ ...activitySchedule, schedule: updated });
+  };
+
+  // Add schedule row
+  const addScheduleRow = () => {
+    setActivitySchedule({
+      ...activitySchedule,
+      schedule: [
+        ...activitySchedule.schedule,
+        { time: "", activity: "", speaker: "" }
+      ]
+    });
+  };
 
   const handleChange = (category, index, field, value) => {
     const updated = [...rows[category]];
@@ -131,41 +168,43 @@ const CreateProposal = () => {
 
   const renderRows = (category) =>
     rows[category].map((row, i) => (
-      <tr key={i} className="h-10">
-        <td className="pl-4">
+      <tr key={i} className="h-10 border-[1px] border-black">
+        <td className="p-3 border-[1px] border-black">
           <input
-            className="w-full bg-transparent border-b outline-none"
+            placeholder='Input Data Here'
+            className="w-full bg-transparent border-b-[2px] outline-none text-center border-secondary"
             value={row.item}
             onChange={(e) => handleChange(category, i, "item", e.target.value)}
           />
         </td>
-        <td>
+        <td className='p-3 border-[1px] border-black'>
           <input
+            placeholder='Input Data Here'
             type="number"
-            className="w-24 bg-transparent border-b outline-none"
+            className="w-full bg-transparent border-b-[2px] outline-none text-center border-secondary"
             value={row.cost}
             onChange={(e) => handleChange(category, i, "cost", e.target.value)}
           />
         </td>
-        <td>
+        <td className='p-3 border-[1px] border-black'>
           <input
+            placeholder='Input Data Here'
             type="number"
-            className="w-24 bg-transparent border-b outline-none"
+            className="w-full bg-transparent border-b-[2px] outline-none text-center border-secondary"
             value={row.qty}
             onChange={(e) => handleChange(category, i, "qty", e.target.value)}
           />
         </td>
-        <td>
+        <td className='p-3 border-[1px] border-black'>
           <input
             readOnly
-            className="w-24 bg-gray-100 border-b outline-none"
+            className="w-full border outline-none text-center"
             value={row.amount}
           />
         </td>
       </tr>
     ));
 
-  // Helper function to convert empty strings to null
   const cleanData = (obj) => {
     const cleaned = {};
     for (const key in obj) {
@@ -179,7 +218,6 @@ const CreateProposal = () => {
   };
 
   const handleSubmit = async () => {
-    // Validation: Check if title is filled
     if (!title || title.trim() === '') {
       alert('Please enter a proposal title before submitting.');
       return;
@@ -190,7 +228,6 @@ const CreateProposal = () => {
     const API_BASE_URL = 'http://127.0.0.1:5000/api';
     
     try {
-      // Step 1: Create the proposal first
       let currentProposalId = proposalId;
       
       if (!currentProposalId) {
@@ -217,7 +254,6 @@ const CreateProposal = () => {
         setProposalId(currentProposalId);
       }
 
-      // Step 2: Update cover page (convert empty strings to null)
       const cleanedCover = cleanData(cover);
       const coverResponse = await fetch(`${API_BASE_URL}/cover/${currentProposalId}`, {
         method: 'PUT',
@@ -230,10 +266,10 @@ const CreateProposal = () => {
       if (!coverResponse.ok) {
         const errorData = await coverResponse.json();
         console.error('Cover page error:', errorData);
-        throw new Error(errorData.error || 'Failed to update cover page');
+        console.error('Validation errors details:', errorData.errors);
+        throw new Error(errorData.message || 'Failed to update cover page');
       }
 
-      // Step 3: Prepare budget breakdown JSON
       const budgetBreakdown = {
         meals: rows.meals,
         transport: rows.transport,
@@ -246,17 +282,32 @@ const CreateProposal = () => {
         }
       };
 
-      // Step 4: Update content with budget breakdown (convert empty strings to null)
       const cleanedContent = cleanData(content);
       const contentData = {
         ...cleanedContent,
         expected_output_6ps: JSON.stringify(content.expected_output_6ps),
         org_and_staffing_json: JSON.stringify(content.org_and_staffing_json),
-        activity_schedule_json: JSON.stringify(content.activity_schedule_json),
+        activity_schedule_json: JSON.stringify(activitySchedule),
         budget_breakdown_json: JSON.stringify(budgetBreakdown),
         social_impact: content.expected_output_6ps.social_impact || null,
         economic_impact: content.expected_output_6ps.economic_impact || null
       };
+
+      // CONSOLE LOG ALL DATA
+      console.log('=== PROPOSAL SUBMISSION DATA ===');
+      console.log('Title:', title);
+      console.log('User ID:', userId);
+      console.log('Proposal ID:', currentProposalId);
+      console.log('\n--- Cover Page Data ---');
+      console.log(cleanedCover);
+      console.log('\n--- Content Data ---');
+      console.log(content);
+      console.log('\n--- Activity Schedule ---');
+      console.log(activitySchedule);
+      console.log('\n--- Budget Breakdown ---');
+      console.log(budgetBreakdown);
+      console.log('\n--- Final Content Payload ---');
+      console.log(contentData);
 
       const contentResponse = await fetch(`${API_BASE_URL}/content/${currentProposalId}`, {
         method: 'PUT',
@@ -274,9 +325,6 @@ const CreateProposal = () => {
 
       alert('Proposal submitted successfully!');
       
-      // Optionally redirect or reset form
-      // window.location.href = '/proposals';
-      
     } catch (error) {
       console.error('Error submitting proposal:', error);
       alert(`Error: ${error.message}`);
@@ -284,7 +332,6 @@ const CreateProposal = () => {
       setIsSubmitting(false);
     }
   };
-
 
   return (
     <div className="bg-white p-8 font-sans">
@@ -326,12 +373,13 @@ const CreateProposal = () => {
           <section className="max-w-5xl mx-auto bg-gray-100 p-12 rounded-sm shadow-sm font-sans text-gray-900 leading-relaxed">
             <div className="space-y-6 text-sm">
               <div>
-                <InlineInput
-                  placeholder="DATE"
+                <p>Select a Date of Submission</p>
+                <input 
+                  placeholder='Select Date of Submission'
+                  className='border p-2'
+                  type="date" 
                   value={cover.submission_date}
-                  onChange={(e) =>
-                    setCover({ ...cover, submission_date: e.target.value })
-                  }
+                  onChange={(e) => setCover({ ...cover, submission_date: e.target.value })}
                 />
               </div>
 
@@ -348,33 +396,23 @@ const CreateProposal = () => {
                 for the proposed extension program entitled 
                 <InlineInput placeholder="(Title referring to approved Board Reso)" width="w-72"
                   value={cover.board_resolution_title}
-                  onChange={(e) =>
-                    setCover({ ...cover, board_resolution_title: e.target.value })
-                  }
+                  onChange={(e) => setCover({ ...cover, board_resolution_title: e.target.value })}
                 />, 
                 with the approved budget of <InlineInput placeholder="____(Total amount in words)" 
                   value={cover.approved_budget_words}
-                  onChange={(e) =>
-                    setCover({ ...cover, approved_budget_words: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, approved_budget_words: e.target.value })}          
                 /> ; 
                 (<InlineInput placeholder="(Total amount in numbers)" width="w-40" 
                   value={cover.approved_budget_amount}
-                  onChange={(e) =>
-                    setCover({ ...cover, approved_budget_amount: e.target.value })
-                  }
+                  onChange={(e) => setCover({ ...cover, approved_budget_amount: e.target.value })}
                 />) with the duration 
                 of <InlineInput placeholder="____in words (in numbers)" width="w-40" 
                   value={cover.duration_words}
-                  onChange={(e) =>
-                    setCover({ ...cover, duration_words: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, duration_words: e.target.value })}          
                 /> years, 
                 <InlineInput placeholder="(date from-to). (please refer to the approved Board Reso)" width="w-80" 
                   value={cover.date_from_to}
-                  onChange={(e) =>
-                    setCover({ ...cover, date_from_to: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, date_from_to: e.target.value })}          
                 />.
               </p>
 
@@ -382,34 +420,24 @@ const CreateProposal = () => {
                 This program includes an activity entitled (
                 <InlineInput placeholder="activity title under the program" width="w-64" 
                   value={cover.activity_title}
-                  onChange={(e) =>
-                    setCover({ ...cover, activity_title: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, activity_title: e.target.value })}          
                 />) on 
                 <InlineInput placeholder="___date" width="w-24" 
                   value={cover.activity_date}
-                  onChange={(e) =>
-                    setCover({ ...cover, activity_date: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, activity_date: e.target.value })}          
                 /> at 
                 <InlineInput placeholder="___ venue" width="w-32" 
                   value={cover.activity_venue}
-                  onChange={(e) =>
-                    setCover({ ...cover, activity_venue: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, activity_venue: e.target.value })}          
                 />. This activity is valuable 
                 <InlineInput placeholder="____for what" width="w-24" 
                   value={cover.activity_value_statement}
-                  onChange={(e) =>
-                    setCover({ ...cover, activity_value_statement: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, activity_value_statement: e.target.value })}          
                 />. The requested expenses 
                 for this activity from the university is Php 
                 <InlineInput placeholder="____(Total amount in numbers)" width="w-48" 
                   value={cover.requested_activity_budget}
-                  onChange={(e) =>
-                    setCover({ ...cover, requested_activity_budget: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, requested_activity_budget: e.target.value })}          
                 />, 
                 which will be used to defray expenses for food, transportation, supplies and materials, 
                 and other expenses related to these activities.
@@ -418,45 +446,31 @@ const CreateProposal = () => {
               <p>
                 Further, there is <InlineInput placeholder="____number of participants in words" 
                   value={cover.prmsu_participants_words}
-                  onChange={(e) =>
-                    setCover({ ...cover, prmsu_participants_words: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, prmsu_participants_words: e.target.value })}          
                 /> 
                 (<InlineInput placeholder="number of participants in numbers" 
                   value={cover.prmsu_participants_num}
-                  onChange={(e) =>
-                    setCover({ ...cover, prmsu_participants_num: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, prmsu_participants_num: e.target.value })}          
                 /> ) the total number of participants from PRMSU, 
                 another <InlineInput placeholder="____ total number from partner agency in words" 
                   value={cover.partner_agency_participants_words}
-                  onChange={(e) =>
-                    setCover({ ...cover, partner_agency_participants_words: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, partner_agency_participants_words: e.target.value })}          
                 /> 
                 (<InlineInput placeholder="total number from partner agency in numbers" 
                   value={cover.partner_agency_participants_num}
-                  onChange={(e) =>
-                    setCover({ ...cover, partner_agency_participants_num: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, partner_agency_participants_num: e.target.value })}          
                 /> ) from the collaborating agency, 
                 <InlineInput placeholder="_____(agency name)" width="w-40" 
                   value={cover.partner_agency_name}
-                  onChange={(e) =>
-                    setCover({ ...cover, partner_agency_name: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, partner_agency_name: e.target.value })}          
                 />, and 
                 <InlineInput placeholder="____ total number of trainees in words" 
                   value={cover.trainees_words}
-                  onChange={(e) =>
-                    setCover({ ...cover, trainees_words: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, trainees_words: e.target.value })}          
                 /> 
                 ( <InlineInput placeholder="total number of trainees in numbers" 
                   value={cover.trainees_num}
-                  onChange={(e) =>
-                    setCover({ ...cover, trainees_num: e.target.value })
-                  }          
+                  onChange={(e) => setCover({ ...cover, trainees_num: e.target.value })}          
                 /> ) trainees from the abovementioned community.
               </p>
 
@@ -772,89 +786,83 @@ const CreateProposal = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-bold">IX. Plan of Activities:</h2>
+              <h2 className="text-xl font-bold mt-8">IX. Plan of Activities:</h2>
 
-              <div className="max-w-4xl mx-auto p-8 rounded-sm">
-                <div className="text-center mb-8">
-                  <p className="font-bold text-lg mb-1">Activity Title</p>
-                  <span className="bg-red-100 text-red-600 px-4 py-1 text-xs font-bold rounded">Date</span>
+              <div className="max-w-5xl mx-auto p-8 rounded-sm">
+                <div className="text-center p-3 border border-black">
+                  <input 
+                    placeholder='ENTER ACTIVITY TITLE HERE'
+                    className="p-2 w-full text-center font-semibold text-xl outline-none text-red-600 placeholder-red-400 border-b border-red-600" 
+                    value={activitySchedule.activity_title}
+                    onChange={(e) => setActivitySchedule({...activitySchedule, activity_title: e.target.value})}
+                  />
+                  <div className='p-2'>
+                    <span className="px-2 py-1 text-sm font-semibold rounded">Date:</span>
+                    <input 
+                      placeholder='Select Date'
+                      className='border p-2'
+                      type="date" 
+                      value={activitySchedule.activity_date}
+                      onChange={(e) => setActivitySchedule({...activitySchedule, activity_date: e.target.value})}
+                    />
+                  </div>
+                  <p className="text-lg font-medium">PROGRAMME</p>
                 </div>
 
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="text-left">
-                      <th className="pb-4 w-1/3">
-                        <span className="bg-red-100 text-red-600 px-2 py-1 text-xs font-bold rounded">Time</span>
+                <table className="w-full border-collapse border border-black">
+                  <thead className='border border-black'>
+                    <tr className="text-center">
+                      <th className="py-2 border-r border-black">
+                        <span className="text-red-600 px-2 py-1 text-md font-bold rounded">Time</span>
                       </th>
-                      <th className="pb-4">
-                        <span className="bg-red-100 text-red-600 px-2 py-1 text-xs font-bold rounded">Part of the Program</span>
+                      <th className="py-2">
+                        <span className="text-red-600 px-2 py-1 text-md font-bold rounded">Part of the Program / Speaker</span>
                       </th>
                     </tr>
                   </thead>
                   <tbody className="text-sm">
-                    <tr className="border-b border-transparent">
-                      <td className="py-3 align-top">7:30–8:00 AM</td>
-                      <td className="py-3 font-bold">Registration</td>
-                    </tr>
-                    <tr className="border-b border-transparent">
-                      <td className="py-3 align-top">8:00–8:05 AM</td>
-                      <td className="py-3 font-bold">Invocation–AV Presentation</td>
-                    </tr>
-                    <tr className="border-b border-transparent">
-                      <td className="py-3 align-top">8:20–8:45 AM</td>
-                      <td className="py-3">
-                        <p className="font-bold">Opening Remarks</p>
-                        <p className="text-gray-500 text-xs">Dr. Roy N. Villalobos, University President</p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-3 align-top">8:45–9:00 AM</td>
-                      <td className="py-3">
-                        <div className="rounded-sm inline-block w-full">
-                          <p className="font-bold">Welcome Remarks (Head of Partner Agency)</p>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-3 align-top">9:00 AM–12:00 NOON</td>
-                      <td className="py-3">
-                        <div className="p-2 rounded-sm inline-block w-full">
-                          <p className="font-bold text-red-600">Training/Lecture Name</p>
-                          <p className="text-red-600 text-xs">Resource Speaker</p>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr className="border-b border-transparent">
-                      <td className="py-3 align-top">12:00-1:00 PM</td>
-                      <td className="py-3 font-bold">LUNCH BREAK</td>
-                    </tr>
-                    <tr className="border-b border-transparent">
-                      <td className="py-3 align-top">1:00-3:00PM</td>
-                      <td className="py-3 font-bold text-red-600">Training/Lecture Name Resource Speaker</td>
-                    </tr>
-                    <tr className="border-b border-transparent">
-                      <td className="py-3 align-top">3:00-4:30 PM</td>
-                      <td className="py-3 font-bold text-red-600">Open Forum/Evaluation</td>
-                    </tr>
-                    <tr className="border-b border-transparent">
-                      <td className="py-3 align-top">4:30-4:45 PM</td>
-                      <td className="py-3 font-bold text-red-600">Awarding of Certificates</td>
-                    </tr>
-                    <tr className="border-b border-transparent">
-                      <td className="py-3 align-top">4:45:4:55 PM</td>
-                      <td className="py-3 font-bold text-red-600">Closing Remarks Name of facilitator</td>
-                    </tr>
-                    <tr className="border-b border-transparent">
-                      <td className="py-3 align-top">4:55-5:00 PM</td>
-                      <td className="py-3 font-bold text-red-600">Photo Opportunity</td>
-                    </tr>
+                    {activitySchedule.schedule.map((row, index) => (
+                      <tr key={index} className="border-b border-black text-center">
+                        <td className="py-3 align-top border-r border-black">
+                          <input 
+                            placeholder='Time'
+                            className="w-full text-center bg-transparent outline-none"
+                            value={row.time}
+                            onChange={(e) => updateScheduleRow(index, 'time', e.target.value)}
+                          />
+                        </td>
+                        <td className="py-3">
+                          <div className="space-y-1">
+                            <input 
+                              placeholder='Activity / Part of Program'
+                              className="w-full text-center font-semibold text-md bg-transparent outline-none" 
+                              value={row.activity}
+                              onChange={(e) => updateScheduleRow(index, 'activity', e.target.value)}
+                            />
+                            <input 
+                              placeholder='Speaker / Facilitator (optional)'
+                              className="w-full text-center font-normal text-sm text-gray-600 bg-transparent outline-none" 
+                              value={row.speaker}
+                              onChange={(e) => updateScheduleRow(index, 'speaker', e.target.value)}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
+                
+                <button
+                  onClick={addScheduleRow}
+                  className="mt-4 text-blue-600 text-sm hover:text-blue-800"
+                >
+                  + Add Schedule Row
+                </button>
               </div>
             </section>
 
             <section>
-              <h2 className="text-xl font-bold mb-6">X. Budgetary Requirement:</h2>
+              <h2 className="text-xl font-bold mb-6 mt-8">X. Budgetary Requirement:</h2>
 
               <div className="bg-gray-50 p-6 rounded-sm overflow-x-auto">
                 <table className="w-full text-left text-sm">
@@ -870,11 +878,11 @@ const CreateProposal = () => {
                   <tbody>
                     <tr><td colSpan="4" className="pt-4 font-bold">A. Meals and Snacks</td></tr>
                     {renderRows("meals")}
-                    <tr className="font-bold italic">
+                    <tr className="font-bold italic border-[1px] border-black">
                       <td className="pl-4">Total</td>
                       <td></td>
                       <td></td>
-                      <td>{totalAmount("meals")}</td>
+                      <td className='pl-3'>{totalAmount("meals")}</td>
                     </tr>
                     <tr>
                       <td colSpan="4">
@@ -889,11 +897,11 @@ const CreateProposal = () => {
 
                     <tr><td colSpan="4" className="pt-6 font-bold">B. Transportation</td></tr>
                     {renderRows("transport")}
-                    <tr className="font-bold italic">
+                    <tr className="font-bold italic border-[1px] border-black">
                       <td className="pl-4">Total</td>
                       <td></td>
                       <td></td>
-                      <td>{totalAmount("transport")}</td>
+                      <td className='pl-3'>{totalAmount("transport")}</td>
                     </tr>
                     <tr>
                       <td colSpan="4">
@@ -908,11 +916,11 @@ const CreateProposal = () => {
 
                     <tr><td colSpan="4" className="pt-6 font-bold">C. Supplies and Materials</td></tr>
                     {renderRows("supplies")}
-                    <tr className="font-bold italic">
+                    <tr className="font-bold italic border-[1px] border-black">
                       <td className="pl-4">Total</td>
                       <td></td>
                       <td></td>
-                      <td>{totalAmount("supplies")}</td>
+                      <td className='pl-3'>{totalAmount("supplies")}</td>
                     </tr>
                     <tr>
                       <td colSpan="4">
@@ -946,4 +954,4 @@ const CreateProposal = () => {
   );
 };
 
-export default CreateProposal;
+export default CreateProposal

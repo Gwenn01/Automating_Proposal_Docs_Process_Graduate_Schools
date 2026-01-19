@@ -9,6 +9,7 @@ const Auth = () => {
 
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
+  const [loginError, setLoginError] = useState("");
 
 
   const [loginData, setLoginData] = useState({
@@ -32,6 +33,7 @@ const handleLogin = async () => {
   if (loginLoading) return;
 
   setLoginLoading(true);
+  setLoginError(""); // Clear previous errors
 
   try {
     const response = await fetch("http://127.0.0.1:5000/api/login", {
@@ -46,20 +48,19 @@ const handleLogin = async () => {
     const data = await response.json();
 
     if (!response.ok) {
-      alert(data.message || "Login failed");
+      setLoginError(data.message || "Invalid email or password");
       return;
     }
 
     // ✅ SUCCESS
     localStorage.setItem("user", JSON.stringify(data.user));
 
-
     // ✅ REDIRECT TO HOME
     navigate("/home");
 
   } catch (error) {
     console.error("LOGIN ERROR:", error);
-    alert("Server error. Please try again.");
+    setLoginError("Server error. Please try again.");
   } finally {
     setLoginLoading(false);
   }
@@ -95,8 +96,6 @@ const handleRegister = async () => {
       alert(data.message || "Registration failed");
       return;
     }
-
-    alert("Registration successful!");
 
     setRegisterData({
       name: "",
@@ -140,19 +139,26 @@ const handleRegister = async () => {
             <FormInput
               placeholder=""
               value={loginData.identifier}
-              onChange={(e) =>
-                setLoginData({ ...loginData, identifier: e.target.value })
-              }
+              onChange={(e) => {
+                setLoginData({ ...loginData, identifier: e.target.value });
+                setLoginError(""); // Clear error when user types
+              }}
             />
             <p className="font-semibold text-md mb-1">Password:</p>
             <FormInput
               type="password"
               placeholder=""
               value={loginData.password}
-              onChange={(e) =>
-                setLoginData({ ...loginData, password: e.target.value })
-              }
+              onChange={(e) => {
+                setLoginData({ ...loginData, password: e.target.value });
+                setLoginError(""); // Clear error when user types
+              }}
             />
+
+            {/* Error Message */}
+            {loginError && (
+              <p className="text-red-600 text-sm mt-2 text-end">{loginError}</p>
+            )}
 
             <CustomButton
               title="Login"
@@ -163,10 +169,13 @@ const handleRegister = async () => {
             />
 
             <p className="text-sm text-center mt-4">
-              Don’t have account? {" "}
+              Don't have account? {" "}
               <span
                 className="text-secondary cursor-pointer font-semibold"
-                onClick={() => setMode("register")}
+                onClick={() => {
+                  setMode("register");
+                  setLoginError(""); // Clear error when switching modes
+                }}
               >
                 Register here
               </span>
