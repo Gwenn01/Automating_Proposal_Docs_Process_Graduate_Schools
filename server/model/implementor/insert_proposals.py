@@ -1,17 +1,7 @@
-from flask import Blueprint, jsonify, request
 from database.connection import get_db_connection
+from flask import jsonify, request
 
-create_proposal_bp = Blueprint("create-proposals", __name__)
-
-from flask import Blueprint, request, jsonify
-from database.connection import get_db_connection
-
-create_proposal_bp = Blueprint("create_proposal_bp", __name__)
-
-@create_proposal_bp.route("/create-proposal", methods=["POST"])
-def create_proposal():
-    data = request.json
-
+def insert_proposal(data):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -45,12 +35,9 @@ def create_proposal():
     finally:
         cursor.close()
         conn.close()
-
         
-@create_proposal_bp.route("/cover/<int:proposal_id>", methods=["PUT"])
-def update_cover_page(proposal_id):
-    data = request.json
-
+        
+def insert_proposal_cover_page(proposal_id, data):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -118,12 +105,9 @@ def update_cover_page(proposal_id):
     finally:
         cursor.close()
         conn.close()
-        
-        
-@create_proposal_bp.route("/content/<int:proposal_id>", methods=["PUT"])
-def update_proposal_content(proposal_id):
-    data = request.json
 
+
+def insert_proposal_content(proposal_id, data):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -206,4 +190,3 @@ def update_proposal_content(proposal_id):
     finally:
         cursor.close()
         conn.close()
-
