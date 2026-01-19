@@ -102,7 +102,6 @@ const CreateProposal = () => {
     trainees_count: ""
   });
 
-  // Activity Schedule State
   const [activitySchedule, setActivitySchedule] = useState({
     activity_title: "",
     activity_date: "",
@@ -122,17 +121,13 @@ const CreateProposal = () => {
   });
 
   const [activeTab, setActiveTab] = useState('program');
-  
-  // Remove any console.log that was causing repeated logging
 
-  // Update schedule row
   const updateScheduleRow = (index, field, value) => {
     const updated = [...activitySchedule.schedule];
     updated[index][field] = value;
     setActivitySchedule({ ...activitySchedule, schedule: updated });
   };
 
-  // Add schedule row
   const addScheduleRow = () => {
     setActivitySchedule({
       ...activitySchedule,
@@ -205,6 +200,12 @@ const CreateProposal = () => {
       </tr>
     ));
 
+  const toNumber = (value) => {
+    if (value === "" || value === null || value === undefined) return null;
+    const num = Number(value);
+    return isNaN(num) ? null : num;
+  };
+
   const cleanData = (obj) => {
     const cleaned = {};
     for (const key in obj) {
@@ -220,6 +221,17 @@ const CreateProposal = () => {
   const handleSubmit = async () => {
     if (!title || title.trim() === '') {
       alert('Please enter a proposal title before submitting.');
+      return;
+    }
+
+    // Validate required cover page fields
+    if (!cover.activity_date || cover.activity_date.trim() === '') {
+      alert('Please fill in the Activity Date in the Cover Page section.');
+      return;
+    }
+
+    if (!cover.activity_title || cover.activity_title.trim() === '') {
+      alert('Please fill in the Activity Title in the Cover Page section.');
       return;
     }
 
@@ -254,7 +266,16 @@ const CreateProposal = () => {
         setProposalId(currentProposalId);
       }
 
-      const cleanedCover = cleanData(cover);
+      const cleanedCover = {
+        ...cleanData(cover),
+        approved_budget_amount: toNumber(cover.approved_budget_amount),
+        duration_years: toNumber(cover.duration_years),
+        requested_activity_budget: toNumber(cover.requested_activity_budget),
+        prmsu_participants_num: toNumber(cover.prmsu_participants_num),
+        partner_agency_participants_num: toNumber(cover.partner_agency_participants_num),
+        trainees_num: toNumber(cover.trainees_num)
+      };
+
       const coverResponse = await fetch(`${API_BASE_URL}/cover/${currentProposalId}`, {
         method: 'PUT',
         headers: {
@@ -270,21 +291,46 @@ const CreateProposal = () => {
         throw new Error(errorData.message || 'Failed to update cover page');
       }
 
+      const mealsTotal = totalAmount('meals');
+      const transportTotal = totalAmount('transport');
+      const suppliesTotal = totalAmount('supplies');
+      const grandTotal = mealsTotal + transportTotal + suppliesTotal;
+
       const budgetBreakdown = {
-        meals: rows.meals,
-        transport: rows.transport,
-        supplies: rows.supplies,
+        meals: rows.meals.map(row => ({
+          item: row.item,
+          cost: toNumber(row.cost),
+          qty: toNumber(row.qty),
+          amount: toNumber(row.amount)
+        })),
+        transport: rows.transport.map(row => ({
+          item: row.item,
+          cost: toNumber(row.cost),
+          qty: toNumber(row.qty),
+          amount: toNumber(row.amount)
+        })),
+        supplies: rows.supplies.map(row => ({
+          item: row.item,
+          cost: toNumber(row.cost),
+          qty: toNumber(row.qty),
+          amount: toNumber(row.amount)
+        })),
         totals: {
-          meals: totalAmount('meals'),
-          transport: totalAmount('transport'),
-          supplies: totalAmount('supplies'),
-          grand_total: totalAmount('meals') + totalAmount('transport') + totalAmount('supplies')
+          meals: mealsTotal,
+          transport: transportTotal,
+          supplies: suppliesTotal,
+          grand_total: grandTotal
         }
       };
 
       const cleanedContent = cleanData(content);
       const contentData = {
         ...cleanedContent,
+        number_of_beneficiaries: toNumber(content.number_of_beneficiaries),
+        total_budget_requested: toNumber(content.total_budget_requested),
+        prmsu_participants_count: toNumber(content.prmsu_participants_count),
+        partner_agency_participants_count: toNumber(content.partner_agency_participants_count),
+        trainees_count: toNumber(content.trainees_count),
         expected_output_6ps: JSON.stringify(content.expected_output_6ps),
         org_and_staffing_json: JSON.stringify(content.org_and_staffing_json),
         activity_schedule_json: JSON.stringify(activitySchedule),
@@ -293,7 +339,6 @@ const CreateProposal = () => {
         economic_impact: content.expected_output_6ps.economic_impact || null
       };
 
-      // CONSOLE LOG ALL DATA
       console.log('=== PROPOSAL SUBMISSION DATA ===');
       console.log('Title:', title);
       console.log('User ID:', userId);
@@ -301,13 +346,16 @@ const CreateProposal = () => {
       console.log('\n--- Cover Page Data ---');
       console.log(cleanedCover);
       console.log('\n--- Content Data ---');
-      console.log(content);
+      console.log(contentData);
       console.log('\n--- Activity Schedule ---');
       console.log(activitySchedule);
       console.log('\n--- Budget Breakdown ---');
       console.log(budgetBreakdown);
-      console.log('\n--- Final Content Payload ---');
-      console.log(contentData);
+      console.log('\n--- Budget Totals (as numbers) ---');
+      console.log('Meals Total:', mealsTotal, typeof mealsTotal);
+      console.log('Transport Total:', transportTotal, typeof transportTotal);
+      console.log('Supplies Total:', suppliesTotal, typeof suppliesTotal);
+      console.log('Grand Total:', grandTotal, typeof grandTotal);
 
       const contentResponse = await fetch(`${API_BASE_URL}/content/${currentProposalId}`, {
         method: 'PUT',
@@ -402,7 +450,7 @@ const CreateProposal = () => {
                   value={cover.approved_budget_words}
                   onChange={(e) => setCover({ ...cover, approved_budget_words: e.target.value })}          
                 /> ; 
-                (<InlineInput placeholder="(Total amount in numbers)" width="w-40" 
+                (<InlineInput placeholder="(Total amount in numbers)" width="w-40" type="number"
                   value={cover.approved_budget_amount}
                   onChange={(e) => setCover({ ...cover, approved_budget_amount: e.target.value })}
                 />) with the duration 
@@ -435,7 +483,7 @@ const CreateProposal = () => {
                   onChange={(e) => setCover({ ...cover, activity_value_statement: e.target.value })}          
                 />. The requested expenses 
                 for this activity from the university is Php 
-                <InlineInput placeholder="____(Total amount in numbers)" width="w-48" 
+                <InlineInput placeholder="____(Total amount in numbers)" width="w-48" type="number"
                   value={cover.requested_activity_budget}
                   onChange={(e) => setCover({ ...cover, requested_activity_budget: e.target.value })}          
                 />, 
@@ -448,7 +496,7 @@ const CreateProposal = () => {
                   value={cover.prmsu_participants_words}
                   onChange={(e) => setCover({ ...cover, prmsu_participants_words: e.target.value })}          
                 /> 
-                (<InlineInput placeholder="number of participants in numbers" 
+                (<InlineInput placeholder="number of participants in numbers" type="number"
                   value={cover.prmsu_participants_num}
                   onChange={(e) => setCover({ ...cover, prmsu_participants_num: e.target.value })}          
                 /> ) the total number of participants from PRMSU, 
@@ -456,7 +504,7 @@ const CreateProposal = () => {
                   value={cover.partner_agency_participants_words}
                   onChange={(e) => setCover({ ...cover, partner_agency_participants_words: e.target.value })}          
                 /> 
-                (<InlineInput placeholder="total number from partner agency in numbers" 
+                (<InlineInput placeholder="total number from partner agency in numbers" type="number"
                   value={cover.partner_agency_participants_num}
                   onChange={(e) => setCover({ ...cover, partner_agency_participants_num: e.target.value })}          
                 /> ) from the collaborating agency, 
@@ -468,7 +516,7 @@ const CreateProposal = () => {
                   value={cover.trainees_words}
                   onChange={(e) => setCover({ ...cover, trainees_words: e.target.value })}          
                 /> 
-                ( <InlineInput placeholder="total number of trainees in numbers" 
+                ( <InlineInput placeholder="total number of trainees in numbers" type="number"
                   value={cover.trainees_num}
                   onChange={(e) => setCover({ ...cover, trainees_num: e.target.value })}          
                 /> ) trainees from the abovementioned community.
@@ -572,6 +620,7 @@ const CreateProposal = () => {
               <div className="flex items-center gap-2">
                 <span className="w-48 text-sm font-semibold">Number of Beneficiaries:</span>
                 <input 
+                  type="number"
                   className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
                   value={content.number_of_beneficiaries}
                   onChange={(e) => setContent({...content, number_of_beneficiaries: e.target.value})}
@@ -588,6 +637,7 @@ const CreateProposal = () => {
               <div className="flex items-center gap-2">
                 <span className="w-48 text-sm font-semibold">Budgetary Requirements (PhP):</span>
                 <input 
+                  type="number"
                   className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
                   value={content.total_budget_requested}
                   onChange={(e) => setContent({...content, total_budget_requested: e.target.value})}
@@ -954,4 +1004,4 @@ const CreateProposal = () => {
   );
 };
 
-export default CreateProposal
+export default CreateProposal;
