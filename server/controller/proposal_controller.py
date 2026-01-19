@@ -1,7 +1,12 @@
 from flask import request, jsonify
 from model.implementor.insert_proposals import insert_proposal, insert_proposal_cover_page, insert_proposal_content
 from middleware.proposal_validator import validate_proposal_data, validate_proposal_cover_page_data, validate_proposal_content_data
-
+from model.general.get_proposal import (
+    fetch_user_proposals,
+    fetch_proposal_cover_page,
+    fetch_proposal_content
+)
+# creating or inserting proposal into database
 def save_proposal(data):
     # validation
     errors = validate_proposal_data(data)
@@ -50,3 +55,27 @@ def update_proposal_content(proposal_id, data):
     return jsonify({
         "message": "Proposal content updated successfully"
     }), 200
+
+# fetching proposals into database
+def get_user_proposals(user_id):
+    try:
+        proposals = fetch_user_proposals(user_id)
+        return jsonify({"proposals": proposals}), 200
+    except Exception:
+        return jsonify({"message": "Failed to fetch proposals"}), 500
+
+
+def get_user_coverpage_proposal(proposal_id):
+    try:
+        cover_page = fetch_proposal_cover_page(proposal_id)
+        return jsonify({"cover_pages": cover_page}), 200
+    except Exception:
+        return jsonify({"message": "Failed to fetch cover page"}), 500
+
+
+def get_user_content_proposal(proposal_id):
+    try:
+        content_page = fetch_proposal_content(proposal_id)
+        return jsonify({"content_pages": content_page}), 200
+    except Exception:
+        return jsonify({"message": "Failed to fetch content page"}), 500
