@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from controller.test_run import run_tests_controller
-from server.middleware.test_run import run_test_middleware
+from middleware.test_run import run_test_middleware
 
 # -------------------------------------------------
 # Flask Initialization
@@ -13,9 +13,9 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # -------------------------------------------------
 # Register Blueprints
 # -------------------------------------------------
-from server.routes.health_routes import health_bp
+from routes.health_routes import health_bp
 # Database connection test -------------------------------------------------
-from server.database.test_db_routes import test_db_bp
+from database.test_db_routes import test_db_bp
 # authorization ------------------------------------------------------------
 from routes.auth.registration_routes import registration_bp
 from routes.auth.login_routes import login_bp
@@ -27,7 +27,7 @@ from routes.admin.assign_reviewer_routes import assign_bp
 # general proposal-------------------------------------------------
 from routes.general.upload_file_routes import upload_bp
 from routes.general.get_proposal_routes import proposals_bp
-from server.routes.implementor.create_proposal_routes import create_proposal_bp
+from routes.implementor.create_proposal_routes import create_proposal_bp
 # implementor
 
 #---------------------------------------------------------------------------------
