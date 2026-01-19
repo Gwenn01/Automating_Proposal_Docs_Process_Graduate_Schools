@@ -3,9 +3,7 @@ from werkzeug.security import generate_password_hash
 from middleware.registration_validator import validate_registration_data
 from model.registration_model import create_user, create_implementor_info
 
-def register_user():
-    data = request.get_json()
-
+def register_user(data):
     #  Validate
     errors = validate_registration_data(data)
     if errors:
