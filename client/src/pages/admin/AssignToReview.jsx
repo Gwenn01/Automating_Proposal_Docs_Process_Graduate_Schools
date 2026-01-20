@@ -18,37 +18,42 @@ const AssignToReview = () => {
             name: "Arnel Gwen Nuqui", 
             title: "AI-Driven Predictive Maintenance for Agricultural Drone Systems",
             type: "Technical Proposal",
-            version: "v1.2"
+            reviewer: "Kian Fontillas",
         },
         { 
             id: 2, 
             name: "Peter James", 
             title: "Development of a Decentralized Voting Platform using Blockchain Technology",
             type: "Research Paper",
+            reviewer: null
         },
         { 
             id: 3, 
             name: "Maria Santos", 
             title: "Real-time Air Quality Monitoring Hub with Cloud Integration",
             type: "Technical Proposal",
+            reviewer: "Peter James"
         },
         { 
             id: 4, 
             name: "Kian Fontillas", 
             title: "Design of a Smart Monitoring System for Academic Environments",
             type: "Thesis Proposal",
+            reviewer: "Arnel Gwen Nuqui"
         },
         { 
             id: 5, 
             name: "Julian Rivera", 
             title: "Optimization of Solar Energy Harvesting using IoT-Based Sensors",
             type: "Technical Proposal",
+            reviewer: "John Doe"
         },
         { 
             id: 6, 
             name: "Sophia Lopez", 
             title: "Cyber-Security Protocols for Small-Scale Enterprise Network Infrastructures",
             type: "Case Study",
+            reviewer: null
         },
     ];
 
@@ -192,26 +197,32 @@ const AssignToReview = () => {
                                         </div>
                                     </td>
 
-                                    {/* Actions Column - Clean Green Theme */}
-                                    <td className="py-6 px-6 bg-white group-hover:bg-gradient-to-l group-hover:from-green-50/50 group-hover:to-transparent last:rounded-r-[32px] border-y border-r border-slate-50 group-hover:border-green-100 transition-all duration-500 text-center relative overflow-hidden">
-                                        
+                                    {/* Actions Column - Improved with Assignment Logic */}
+                                    <td className="py-6 px-6 bg-white group-hover:bg-gradient-to-l group-hover:from-green-50/50 group-hover:to-transparent last:rounded-r-[32px] border-y border-r border-slate-50 transition-all duration-500 text-center relative overflow-hidden">
                                         <div className="relative z-10 flex justify-center items-center">
-                                            <button 
-                                                onClick={() => handleAssignClick(doc)}
-                                                className="group/btn relative overflow-hidden flex items-center justify-center gap-2.5 bg-green-50 text-green-600 w-[140px] py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-all duration-300 border border-green-100/50 hover:bg-green-600 hover:text-white hover:shadow-[0_8px_20px_-6px_rgba(22,163,74,0.4)] hover:-translate-y-0.5 active:scale-95"
-                                            >
-                                                {/* Soft Shimmer Effect - Adjusted for Light Theme */}
-                                                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/60 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-in-out" />
-
-                                                {/* Icon - Using green-600 which turns white on hover button */}
-                                                <UserCheck size={14} strokeWidth={3} className="transition-transform duration-300 group-hover/btn:scale-110" />
-
-                                                <span className="relative">Assign Now</span>
-                                            </button>
+                                            {doc.reviewer ? (
+                                                /* Kapag may naka-assign na (Disabled State) */
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <div className="flex items-center gap-2 bg-slate-100 text-slate-500 px-4 py-2.5 rounded-xl border border-slate-200 min-w-[140px] justify-center shadow-inner">
+                                                        <UserCheck size={14} className="text-slate-400" />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest">Assigned</span>
+                                                    </div>
+                                                    <span className="text-[9px] font-bold text-slate-400 truncate max-w-[120px]">
+                                                        To: {doc.reviewer}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                /* Kapag wala pang naka-assign (Active State) */
+                                                <button 
+                                                    onClick={() => handleAssignClick(doc)}
+                                                    className="group/btn relative overflow-hidden flex items-center justify-center gap-2.5 bg-green-50 text-green-600 w-[140px] py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-all duration-300 border border-green-100/50 hover:bg-green-600 hover:text-white hover:shadow-[0_8px_20px_-6px_rgba(22,163,74,0.4)] hover:-translate-y-0.5 active:scale-95"
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/60 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-in-out" />
+                                                    <UserCheck size={14} strokeWidth={3} className="transition-transform duration-300 group-hover/btn:scale-110" />
+                                                    <span className="relative">Assign Now</span>
+                                                </button>
+                                            )}
                                         </div>
-
-                                        {/* Edge highlight on hover - Green version */}
-                                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-green-500/0 group-hover:bg-green-500/60 rounded-l-full transition-all duration-500" />
                                     </td>
                                 </tr>
                             ))}

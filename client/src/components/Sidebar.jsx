@@ -30,9 +30,9 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
 
     admin: [
       { label: "Overview", icon: Home },
+      { label: "Assign to Review", icon: UserCheck },
       { label: "Manage Account", icon: Users },
       { label: "Manage Documents", icon: Files },
-      { label: "Assign to Review", icon: UserCheck },
       { label: "View Review", icon: ClipboardList },
     ],
   };
