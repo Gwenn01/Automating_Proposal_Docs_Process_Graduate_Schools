@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, UserCheck, FileText } from 'lucide-react';
+import { Search, UserCheck, FileText, RefreshCcw } from 'lucide-react';
 import AssignModal from '../../components/Admin/AssignModal'; 
 
 const AssignToReview = () => {
@@ -12,7 +12,7 @@ const AssignToReview = () => {
         setIsAssignModalOpen(true);
     };
 
-    const documents = [
+    const [allDocs, setAllDocs] = useState([
         { 
             id: 1, 
             name: "Arnel Gwen Nuqui", 
@@ -55,12 +55,20 @@ const AssignToReview = () => {
             type: "Case Study",
             reviewer: null
         },
-    ];
+    ]);
 
-    const filteredDocs = documents.filter(doc => 
-        doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        doc.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const handleUpdateReviewer = (docId, newReviewerName) => {
+      const updatedDocs = allDocs.map(doc => 
+          doc.id === docId ? { ...doc, reviewer: newReviewerName } : doc
+      );
+      setAllDocs(updatedDocs);
+      setIsAssignModalOpen(false); 
+  };
+
+    const filteredDocs = allDocs.filter(doc => 
+      doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      doc.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
     return (
         /* Pinantay ang padding (p-8 lg:p-10) at background color (#fbfcfb) */
@@ -197,32 +205,46 @@ const AssignToReview = () => {
                                         </div>
                                     </td>
 
-                                    {/* Actions Column - Improved with Assignment Logic */}
-                                    <td className="py-6 px-6 bg-white group-hover:bg-gradient-to-l group-hover:from-green-50/50 group-hover:to-transparent last:rounded-r-[32px] border-y border-r border-slate-50 transition-all duration-500 text-center relative overflow-hidden">
-                                        <div className="relative z-10 flex justify-center items-center">
-                                            {doc.reviewer ? (
-                                                /* Kapag may naka-assign na (Disabled State) */
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <div className="flex items-center gap-2 bg-slate-100 text-slate-500 px-4 py-2.5 rounded-xl border border-slate-200 min-w-[140px] justify-center shadow-inner">
-                                                        <UserCheck size={14} className="text-slate-400" />
-                                                        <span className="text-[10px] font-black uppercase tracking-widest">Assigned</span>
-                                                    </div>
-                                                    <span className="text-[9px] font-bold text-slate-400 truncate max-w-[120px]">
-                                                        To: {doc.reviewer}
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                /* Kapag wala pang naka-assign (Active State) */
-                                                <button 
-                                                    onClick={() => handleAssignClick(doc)}
-                                                    className="group/btn relative overflow-hidden flex items-center justify-center gap-2.5 bg-green-50 text-green-600 w-[140px] py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-all duration-300 border border-green-100/50 hover:bg-green-600 hover:text-white hover:shadow-[0_8px_20px_-6px_rgba(22,163,74,0.4)] hover:-translate-y-0.5 active:scale-95"
-                                                >
-                                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/60 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-in-out" />
-                                                    <UserCheck size={14} strokeWidth={3} className="transition-transform duration-300 group-hover/btn:scale-110" />
-                                                    <span className="relative">Assign Now</span>
-                                                </button>
-                                            )}
-                                        </div>
+                                    {/* Actions Column - Dynamic Assign/Reassign Logic */}
+                                    <td className="py-6 px-6 bg-white group-hover:bg-gradient-to-l group-hover:from-slate-50/50 group-hover:to-transparent last:rounded-r-[32px] border-y border-r border-slate-50 transition-all duration-500 text-center relative overflow-hidden">
+                                      <div className="relative z-10 flex justify-center items-center">
+                                        {doc.reviewer ? (
+                                          /* --- REASSIGN STATE (Blue Premium) --- */
+                                          <div className="flex flex-col items-center gap-2">
+                                            <button 
+                                              onClick={() => handleAssignClick(doc)}
+                                              className="group/reassign relative overflow-hidden flex items-center justify-center gap-2.5 bg-blue-50 text-blue-600 w-[145px] py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-all duration-300 border border-blue-100/50 hover:bg-blue-600 hover:text-white hover:shadow-[0_8px_25px_-6px_rgba(37,99,235,0.4)] hover:-translate-y-0.5 active:scale-95"
+                                            >
+                                              {/* Shimmer Effect */}
+                                              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent -translate-x-full group-hover/reassign:translate-x-full transition-transform duration-1000 ease-in-out" />
+                                              
+                                              {/* Rotating Icon */}
+                                              <RefreshCcw size={14} strokeWidth={3} className="transition-transform duration-700 group-hover/reassign:rotate-180" />
+                                              <span className="relative">Reassign</span>
+                                            </button>
+                                            
+                                            {/* Current Reviewer Badge */}
+                                            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100">
+                                              <span className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
+                                              <span className="text-[9px] font-bold text-slate-400 truncate max-w-[120px]">
+                                                To: {doc.reviewer}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          /* --- ASSIGN NOW STATE (Green Premium) --- */
+                                          <button 
+                                            onClick={() => handleAssignClick(doc)}
+                                            className="group/assign relative overflow-hidden flex items-center justify-center gap-2.5 bg-emerald-50 text-emerald-600 w-[145px] py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-all duration-300 border border-emerald-100/50 hover:bg-emerald-600 hover:text-white hover:shadow-[0_8px_25px_-6px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 active:scale-95"
+                                          >
+                                            {/* Shimmer Effect */}
+                                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent -translate-x-full group-hover/assign:translate-x-full transition-transform duration-1000 ease-in-out" />
+                                            
+                                            <UserCheck size={14} strokeWidth={3} className="transition-transform duration-300 group-hover/assign:scale-110" />
+                                            <span className="relative">Assign Now</span>
+                                          </button>
+                                        )}
+                                      </div>
                                     </td>
                                 </tr>
                             ))}
@@ -243,9 +265,11 @@ const AssignToReview = () => {
 
             {/* Modals */}
             <AssignModal 
+                key={selectedDoc?.id || 'new'}
                 isOpen={isAssignModalOpen} 
                 onClose={() => setIsAssignModalOpen(false)} 
                 data={selectedDoc} 
+                onUpdate={handleUpdateReviewer}
             />
         </div>
     );
