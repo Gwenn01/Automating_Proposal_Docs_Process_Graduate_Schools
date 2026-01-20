@@ -9,10 +9,23 @@ from controller.mapper.proposal_mapper import (
     view_cover_page_structured_mapper,
     view_content_mapper
 )
+from controller.mapper.admin_overview_mapper import (
+    status_cycle_mapper, 
+    static_cards_mapper,
+    pie_data_mapper,
+    bar_data_mapper,
+)
+from model.admin.get_total_documents import get_monthly_document_status_counts
+from controller.admin_controller import get_overview_data_controller
 
 def run_tests_controller():
     # data = fetch_user_proposals(7)
     # print(implementor_view_proposal(data))
     #print(view_cover_page_structured_mapper(fetch_proposal_cover_page(24)))
     #print(view_content_mapper(fetch_proposal_content(11)))
+    # print(pie_data_mapper())
+    
+    # rows = get_monthly_document_status_counts()
+    # print(bar_data_mapper(rows))
+    print(get_overview_data_controller())
     print("Running test controller..")

@@ -12,7 +12,12 @@ def get_total_users():
 def get_users_role(role):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM users WHERE role = ?", (role))
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM users WHERE role = %s",
+        (role,)  
+    )
+
     total_users = cursor.fetchone()[0]
     cursor.close()
     conn.close()

@@ -247,7 +247,7 @@ const ManageDocuments = () => {
                                 {/* View Button - Premium Green Hover */}
                                 <button className="group/view relative p-3.5 bg-slate-50 text-slate-400 rounded-2xl transition-all duration-500 hover:-translate-y-1.5 active:scale-95 overflow-hidden border border-slate-100 hover:border-emerald-200">
                                   {/* Dynamic Background Layer */}
-                                  <div className="absolute inset-0 bg-emerald-500 opacity-0 group-hover/view:opacity-100 transition-all duration-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
+                                  <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover/view:opacity-100 transition-all duration-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
                                   
                                   {/* Icon Layer */}
                                   <Eye size={18} strokeWidth={2.5} className="relative z-10 transition-colors duration-500 group-hover/view:text-white" />
@@ -258,7 +258,7 @@ const ManageDocuments = () => {
                                   onClick={() => handleEditClick(doc)} 
                                   className="group/edit relative p-3.5 bg-slate-50 text-slate-400 rounded-2xl transition-all duration-500 hover:-translate-y-1.5 active:scale-95 overflow-hidden border border-slate-100 hover:border-blue-200"
                                 >
-                                  <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover/edit:opacity-100 transition-all duration-500 shadow-[0_0_20px_rgba(59,130,246,0.4)]" />
+                                  <div className="absolute inset-0 bg-emerald-500 opacity-0 group-hover/edit:opacity-100 transition-all duration-500 shadow-[0_0_20px_rgba(59,130,246,0.4)]" />
                                   
                                   <Edit3 size={18} strokeWidth={2.5} className="relative z-10 transition-colors duration-500 group-hover/edit:text-white" />
                                 </button>

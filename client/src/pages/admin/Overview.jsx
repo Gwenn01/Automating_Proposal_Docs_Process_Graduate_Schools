@@ -278,7 +278,7 @@ const Overview = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
                 data={barData} 
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }} 
+                margin={{ top: 10, right: 10, left: 0, bottom: 20 }} 
                 barGap={10}
               >
                 <defs>
@@ -307,6 +307,7 @@ const Overview = () => {
                   axisLine={false} 
                   tickLine={false} 
                   tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 600 }} 
+                  width={30}
                 />
 
                 {/* Custom Tooltip Design */}
@@ -344,10 +345,10 @@ const Overview = () => {
                 />
 
                 {/* Mas Rounded at Makapal na Bars */}
-                <Bar dataKey="Completed" fill="url(#colorCompleted)" radius={[6, 6, 0, 0]} barSize={10} />
-                <Bar dataKey="UnderReview" fill="url(#colorReview)" radius={[6, 6, 0, 0]} barSize={10} />
-                <Bar dataKey="Revisions" fill="#f59e0b" radius={[6, 6, 0, 0]} barSize={10} />
-                <Bar dataKey="Rejected" fill="#ef4444" radius={[6, 6, 0, 0]} barSize={10} />
+                <Bar dataKey="Completed" name="Completed" fill="#16a34a" radius={[6, 6, 0, 0]} barSize={10} />
+                <Bar dataKey="UnderReview" name="Under Review" fill="#2563eb" radius={[6, 6, 0, 0]} barSize={10} />
+                <Bar dataKey="Revisions" name="Revisions" fill="#f59e0b" radius={[6, 6, 0, 0]} barSize={10} />
+                <Bar dataKey="Rejected" name="Rejected" fill="#ef4444" radius={[6, 6, 0, 0]} barSize={10} />
               </BarChart>
             </ResponsiveContainer>
           </div>
