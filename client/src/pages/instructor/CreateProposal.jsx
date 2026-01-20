@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import { InlineInput } from '../../components';
 
 const InputField = ({ label, value, onChange, type = "text" }) => (
@@ -26,10 +27,13 @@ const TextAreaField = ({ label, value, onChange, rows = 6 }) => (
 );
 
 const CreateProposal = () => {
+  const navigate = useNavigate();
   const [proposalId, setProposalId] = useState(null);
-  const [userId] = useState(1);
+  //const [userId] = useState(1);
   const [title, setTitle] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [user, setUser] = useState(null);
   
   const [rows, setRows] = useState({
     meals: [],
@@ -208,6 +212,21 @@ const CreateProposal = () => {
     });
   };
 
+  useEffect(() => {
+  const storedUser = localStorage.getItem("user");
+  if (!storedUser) {
+    navigate("/", { replace: true });
+    return;
+  }
+
+  
+  const parsedUser = JSON.parse(storedUser);
+  setUser(parsedUser);
+}, [navigate]);
+
+
+
+
   const updateScheduleRow = (index, field, value) => {
     const updated = [...activitySchedule.schedule];
     updated[index][field] = value;
@@ -334,7 +353,7 @@ const CreateProposal = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            user_id: userId,
+            user_id: user.user_id,
             title: title.trim(),
             file_path: null
           })
