@@ -14,11 +14,6 @@ def get_overview_data_controller():
     data['pie_data'] = pie_data_mapper()
     rows = get_monthly_document_status_counts()
     data["bar_data"] = bar_data_mapper(rows)
-    
-    print(type(data['status_cycle']), data['status_cycle'])
-    print(type(data['static_cards']), data['static_cards'])
-    print(type(data['pie_data']), data['pie_data'])
-    print(type(data['bar_data']), data['bar_data'])
 
     
     try:
