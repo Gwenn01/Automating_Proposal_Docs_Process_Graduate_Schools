@@ -44,7 +44,6 @@ const ManageDocuments = () => {
   );
 
   return (
-    /* Pinantay ang padding at background style sa Manage Accounts */
     <div className="p-8 lg:p-10 space-y-10 bg-[#fbfcfb] h-auto animate-in fade-in duration-500">
       
       {/* Header Section - Pixel Matched Typography */}
