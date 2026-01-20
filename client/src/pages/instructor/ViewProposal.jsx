@@ -67,6 +67,34 @@ const ViewProposal = () => {
       .catch(() => setLoading(false));
   }, [user]);
 
+  const fetchCoverPage = async (proposalId) => {
+  try {
+    const res = await axios.get(
+      `http://127.0.0.1:5000/api/my-coverpage-proposals/${proposalId}`
+    );
+
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching cover page:", error);
+    return null;
+  }
+};
+
+
+const fetchProposalContent = async (proposalId) => {
+  try {
+    const res = await axios.get(
+      `http://127.0.0.1:5000/api/my-content-proposals/${proposalId}`
+    );
+
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching proposal content:", error);
+    return null;
+  }
+};
+
+
   // ================= STATUS LABEL STYLE =================
   const getStatusStyle = (status) => {
     // Matching the specific colors from the image
@@ -144,10 +172,22 @@ const ViewProposal = () => {
                   {/* View Column (Blue/Purple Button) */}
                   <td className="px-4 py-2 text-center align-middle">
                     <button
-                      onClick={() => {
-                        setSelectedDoc(doc);
+                      onClick={async () => {
+                        setLoading(true);
+
+                        const cover = await fetchCoverPage(doc.proposal_id);
+                        const content = await fetchProposalContent(doc.proposal_id);
+
+                        setSelectedDoc({
+                          ...doc,
+                          cover_page: cover,
+                          full_content: content,
+                        });
+
                         setShowViewerModal(true);
+                        setLoading(false);
                       }}
+
                       className="inline-flex items-center gap-2 bg-[#EEF2FF] text-[#4F46E5] px-5 py-2 rounded-full text-xs font-bold hover:bg-[#E0E7FF] transition-colors"
                     >
                       <Eye className="w-4 h-4" />
@@ -172,9 +212,7 @@ const ViewProposal = () => {
                   {/* Reviews Count Column */}
                   <td className="px-4 py-2 text-center align-middle">
                     <span className="text-[#22C55E] font-bold text-xs">
-                       {/* Hardcoding "out of 4" visually as per request if generic, 
-                           or strictly dynamic if preferred. Using dynamic below: */}
-                       {doc.reviews.length > 0 ? `${doc.reviews.length} Submitted` : "0 Submitted"}
+                      {doc?.reviews || "No reviews yet"}
                     </span>
                   </td>
                 </tr>
@@ -206,19 +244,15 @@ const ViewProposal = () => {
       />
 
       {/* Review Document Modal */}
-      <DocumentReviewModal
-        isOpen={showDocModal}
-        documentUrl={selectedDoc?.file_path}
-        review={selectedReviewer}
-        onClose={() => setShowDocModal(false)}
-      />
+<DocumentViewerModal
+  isOpen={showViewerModal}
+  proposalData={selectedDoc}
+  onClose={() => setShowViewerModal(false)}
+/>
 
-      {/* File Viewer Modal */}
-      <DocumentViewerModal
-        isOpen={showViewerModal}
-        documentUrl={selectedDoc?.file_path}
-        onClose={() => setShowViewerModal(false)}
-      />
+
+
+
     </div>
   );
 };
