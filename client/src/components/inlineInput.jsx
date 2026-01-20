@@ -1,6 +1,7 @@
 import { useRef, useEffect } from "react";
 
 const InlineInput = ({
+  type,
   value = "",
   onChange,
   placeholder,
@@ -34,7 +35,7 @@ const InlineInput = ({
       {/* Input */}
       <input
         ref={inputRef}
-        type="text"
+        type={type}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
