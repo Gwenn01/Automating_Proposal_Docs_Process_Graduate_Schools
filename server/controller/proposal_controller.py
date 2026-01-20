@@ -6,6 +6,8 @@ from model.general.get_proposal import (
     fetch_proposal_cover_page,
     fetch_proposal_content
 )
+from controller.mapper.proposal_mapper import implementor_view_proposal_mapper
+
 # creating or inserting proposal into database
 def save_proposal():
     data = request.get_json()
@@ -66,7 +68,7 @@ def update_proposal_content(proposal_id, data):
 # fetching proposals into database
 def get_user_proposals(user_id):
     try:
-        proposals = fetch_user_proposals(user_id)
+        proposals = implementor_view_proposal_mapper(fetch_user_proposals(user_id))
         return jsonify({"proposals": proposals}), 200
     except Exception:
         return jsonify({"message": "Failed to fetch proposals"}), 500
