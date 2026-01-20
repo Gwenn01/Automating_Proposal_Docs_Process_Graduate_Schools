@@ -14,6 +14,7 @@ def implementor_view_proposal_mapper(fetch_user_proposals):
             reviews_text = f'{f["reviewed_count"]} out {f["reviewer_count"]}'
 
         data.append({
+            "proposal_id": f["proposal_id"],
             "title": f["title"],
             "submitted_at": f["submission_date"],
             "status": f["status"],
