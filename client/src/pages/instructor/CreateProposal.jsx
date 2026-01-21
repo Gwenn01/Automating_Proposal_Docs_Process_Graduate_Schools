@@ -2,17 +2,53 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { InlineInput } from '../../components';
 
-const InputField = ({ label, value, onChange, type = "text" }) => (
+const InputField = ({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder = "",
+}) => (
   <div className="mb-6">
-    <label className="block text-xl font-semibold mb-2">{label}</label>
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      className="w-full p-3 bg-gray-100 rounded-sm"
-    />
+    {/* Label */}
+    <label className="block mb-2 text-sm font-medium text-gray-700 transition-colors">
+      {label}
+    </label>
+
+    {/* Input Wrapper */}
+    <div className="relative">
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="
+          w-full px-4 py-3 text-sm
+          bg-white
+          border border-gray-300
+          rounded-lg
+          shadow-sm
+          outline-none
+          transition-all duration-200 ease-out
+
+          focus:border-green-600
+          focus:ring-2 focus:ring-green-500/20
+          focus:shadow-md
+
+          hover:border-gray-400
+        "
+      />
+
+      {/* Focus Glow */}
+      <span className="
+        pointer-events-none absolute inset-0 rounded-lg
+        transition-all duration-200
+        group-focus-within:shadow-[0_0_0_4px_rgba(34,197,94,0.15)]
+      " />
+    </div>
   </div>
 );
+
 
 const TextAreaField = ({ label, value, onChange, rows = 6 }) => (
   <div>
@@ -99,7 +135,10 @@ const CreateProposal = () => {
       { activity: "Proposal Preparation", designation: "", terms: "" },
       { activity: "Program/Certificates", designation: "", terms: "" },
       { activity: "Food Preparation", designation: "", terms: "" },
-      { activity: "Resource Speakers", designation: "", terms: "" }
+      { activity: "Resource Speakers", designation: "", terms: "" },
+      { activity: "Masters of Ceremony", designation: "", terms: "" },
+      { activity: "Secretariat for Attendance", designation: "", terms: "" },
+      { activity: "Documentation/Technical", designation: "", terms: "" },
     ],
     prmsu_participants_count: "",
     partner_agency_participants_count: "",
@@ -532,24 +571,12 @@ const CreateProposal = () => {
   };
 
   return (
-    <div className="bg-white p-8 font-sans">
+    <div className="bg-white p-8 font-sans animate-overlay-enter">
       <div className="max-w-5xl mx-auto">
         
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-black">Create Proposal</h1>
-          {proposalId && (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                Editing Proposal ID: <strong>#{proposalId}</strong>
-              </span>
-              <button
-                onClick={resetForm}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-semibold transition"
-              >
-                Create New Proposal
-              </button>
-            </div>
-          )}
+          
         </div>
 
         <div className="flex flex-wrap gap-4 mb-10">

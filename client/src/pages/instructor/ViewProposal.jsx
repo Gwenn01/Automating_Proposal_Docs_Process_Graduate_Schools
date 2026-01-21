@@ -266,14 +266,11 @@ if (loading) {
       />
 
       {/* Review Document Modal */}
-<DocumentViewerModal
-  isOpen={showViewerModal}
-  proposalData={selectedDoc}
-  onClose={() => setShowViewerModal(false)}
-/>
-
-
-
+      <DocumentViewerModal
+        isOpen={showViewerModal}
+        proposalData={selectedDoc}
+        onClose={() => setShowViewerModal(false)}
+      />
 
     </div>
   );

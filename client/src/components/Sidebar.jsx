@@ -52,9 +52,9 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
         md:translate-x-0 flex flex-col`}
       >
         {/* Brand */}
-<div className="relative p-6 flex items-center gap-4 overflow-hidden">
+<div className="relative p-6 flex items-center gap-4 overflow-hidden border-b-[1px] border-gray-300">
   {/* Wavy Gradient Background */}
-  <div className="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-green-900 opacity-90 border-b-[1px] border-white" />
+  <div className="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-green-900 opacity-90 " />
 
   {/* Wave Overlay */}
   <svg
