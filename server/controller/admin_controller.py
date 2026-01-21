@@ -11,10 +11,12 @@ from model.admin.get_total_documents import get_monthly_document_status_counts
 # admin assign reviewer
 from model.admin.get_total_documents import get_all_documents_with_user
 from model.admin.get_reviewer_user import get_reviewer_user
+from model.admin.put_assign_review import assign_reviewer
 from controller.mapper.admin_assign_reviewer_mapper import (
     get_proposal_with_user_mapper,
     get_reviewer_mapper
 )
+from middleware.assign_review_validator import assign_reviewer_validation
 
 
 
@@ -69,6 +71,11 @@ def get_all_reviewers_controller():
 def assign_reviewer_controller():
     try:
         data = request.get_json()
+        if not  assign_reviewer_validation(data):
+            return jsonify({"message": "Invalid Data"}), 400
+        period_id = data["period_id"]
+        for r in data["reviewer"]:
+           assign_reviewer(period_id, r["reviewer_id"]) 
         return jsonify({"message": "Reviewer Assigned Successfully"}), 200
     except Exception as e:
         return {"error": str(e)}
