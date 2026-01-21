@@ -9,6 +9,37 @@ def get_all_documents():
     conn.close()
     return total_documents
 
+from database.connection import get_db_connection
+
+def get_all_documents_with_user():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT DISTINCT
+            p.proposal_id,
+            p.title,
+            p.file_path,
+            p.status,
+            p.submission_date,
+
+            u.user_id,
+            u.fullname,
+            u.email,
+            u.role
+        FROM proposals_docs p
+        LEFT JOIN users u ON p.user_id = u.user_id
+        ORDER BY p.submission_date DESC
+    """
+
+    cursor.execute(query)
+    documents = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return documents
+
 def get_documents_count():
     conn = get_db_connection()
     cursor = conn.cursor()

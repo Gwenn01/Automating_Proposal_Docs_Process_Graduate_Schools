@@ -21,6 +21,7 @@ from routes.auth.registration_routes import registration_bp
 from routes.auth.login_routes import login_bp
 # admin --------------------------------------------------------------------
 from routes.admin.get_overview import admin_overview_bp
+from routes.admin.assign_reviewer import assign_reviewer_bp
 # reviewer -----------------------------------------------------------------
 # general proposal-------------------------------------------------
 from routes.general.get_proposal_routes import proposals_bp
@@ -37,6 +38,7 @@ app.register_blueprint(registration_bp, url_prefix="/api")
 app.register_blueprint(login_bp, url_prefix="/api")
 # admin --------------------------------------------------------------------------------
 app.register_blueprint(admin_overview_bp, url_prefix="/api")
+app.register_blueprint(assign_reviewer_bp, url_prefix="/api")
 # general proposal-----------------------------------------------------------------
 app.register_blueprint(proposals_bp, url_prefix="/api")
 app.register_blueprint(create_proposal_bp, url_prefix="/api")
