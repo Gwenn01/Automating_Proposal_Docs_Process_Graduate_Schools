@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from controller.admin_controller import (
     get_all_documents_with_user_controller,
     get_all_reviewers_controller,
@@ -19,9 +19,10 @@ def get_all_reviewer():
 def assign_reviewer():
     #sample data
     # {
-    #     "proposal_id": [
-    #         {"reviewer_id": 1},
-    #         {"reviewer_id": 2}
-    #     ]
+    #     "proposal_id": 1,
+    #     "reviewers": [
+    #             { "reviewer_id": 1 },
+    #             { "reviewer_id": 2 }
+    #         ]
     # }
     return assign_reviewer_controller()

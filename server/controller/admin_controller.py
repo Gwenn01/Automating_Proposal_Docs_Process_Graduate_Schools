@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, request
 # admin overview
 from controller.mapper.admin_overview_mapper import (
     status_cycle_mapper, 
@@ -65,10 +65,10 @@ def get_all_reviewers_controller():
     except Exception as e:
         return {"error": str(e)}
 
+
 def assign_reviewer_controller():
-    
     try:
-        
+        data = request.get_json()
         return jsonify({"message": "Reviewer Assigned Successfully"}), 200
     except Exception as e:
         return {"error": str(e)}
