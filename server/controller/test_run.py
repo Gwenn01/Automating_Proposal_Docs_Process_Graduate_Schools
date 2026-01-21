@@ -36,5 +36,8 @@ def run_tests_controller():
     #     docs_data.append(get_proposal_with_user_mapper(d))
     #     print(get_proposal_with_user_mapper(d))
     # print(docs_data)
-    #print(get_reviewer_user())
+    #print(get_reviewer_user()[0]["fullname"])
+    # data = get_reviewer_user()
+    # for d in data:
+    #     print(d["fullname"])
     print("Running test controller..")
