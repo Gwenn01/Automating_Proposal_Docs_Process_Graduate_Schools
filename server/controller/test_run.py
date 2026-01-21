@@ -17,6 +17,9 @@ from controller.mapper.admin_overview_mapper import (
 )
 from model.admin.get_total_documents import get_monthly_document_status_counts
 from controller.admin_controller import get_overview_data_controller
+from model.admin.get_total_documents import get_all_documents_with_user
+from model.admin.get_reviewer_user import get_reviewer_user
+from controller.mapper.admin_assign_reviewer_mapper import get_proposal_with_user_mapper
 
 def run_tests_controller():
     # data = fetch_user_proposals(7)
@@ -27,5 +30,14 @@ def run_tests_controller():
     
     # rows = get_monthly_document_status_counts()
     # print(bar_data_mapper(rows))
-    print(get_overview_data_controller())
+    # docs_data = []
+    # data = get_all_documents_with_user()
+    # for d in data:
+    #     docs_data.append(get_proposal_with_user_mapper(d))
+    #     print(get_proposal_with_user_mapper(d))
+    # print(docs_data)
+    #print(get_reviewer_user()[0]["fullname"])
+    # data = get_reviewer_user()
+    # for d in data:
+    #     print(d["fullname"])
     print("Running test controller..")
