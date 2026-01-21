@@ -117,14 +117,36 @@ const fetchProposalContent = async (proposalId) => {
   };
 
   // ================= LOADING =================
-  if (loading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center h-screen bg-white">
-        <Loader2 className="w-12 h-12 text-green-600 animate-spin" />
-        <p className="mt-4 text-gray-500 font-medium">Loading documents...</p>
+if (loading) {
+  return (
+    <>
+      {/* Custom Animations */}
+
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in">
+        <div
+          key={selectedDoc?.proposal_id}
+          className="relative bg-white backdrop-blur-xl px-14 py-10 rounded-2xl shadow-2xl flex flex-col items-center animate-pop-out"
+        >
+          {/* Gradient Ring Loader */}
+          <div className="relative animate-float mb-5">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
+            <div className="absolute inset-2 bg-white rounded-full" />
+          </div>
+
+          {/* Text */}
+          <p className="text-lg font-semibold shimmer-text loading-dots mb-2">
+            Loading proposal
+          </p>
+
+          <p className="text-sm text-gray-500">
+            Please wait while we prepare the document
+          </p>
+        </div>
       </div>
-    );
-  }
+    </>
+  );
+}
+
 
   return (
     <div className="flex-1 bg-white p-10 min-h-screen">
