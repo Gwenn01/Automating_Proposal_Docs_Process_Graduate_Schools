@@ -59,7 +59,7 @@ const DocumentViewerModal = ({ isOpen, onClose, proposalData }) => {
 
             <button
               onClick={onClose}
-              className="p-2 bg-gray-100 rounded-full text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="p-2 bg-white rounded-full text-black hover:text-red-600 hover:bg-red-50 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -94,7 +94,7 @@ const DocumentViewerModal = ({ isOpen, onClose, proposalData }) => {
               </p>
 
               <p>
-                This program includes an activity entitled {cover.activity_details?.title || "N/A"} on {cover.activity_details?.date || "N/A"} at {cover.activity_details?.venue || "N/A"}. This activity is valuable {cover.activity_details?.value_statement || "N/A"}. The requested expenses 
+                This program includes an activity entitled {cover.activity_details?.title || "N/A"} on {content.plan_of_activities?.activity_date ? new Date(content.plan_of_activities.activity_date).toLocaleDateString("en-US",{ year: "numeric", month: "long", day: "numeric" }): "N/A"} at {cover.activity_details?.venue || "N/A"}. This activity is valuable {cover.activity_details?.value_statement || "N/A"}. The requested expenses 
                 for this activity from the university is {cover.activity_details?.requested_budget || "N/A"}, 
                 which will be used to defray expenses for food, transportation, supplies and materials, 
                 and other expenses related to these activities.
@@ -136,7 +136,7 @@ const DocumentViewerModal = ({ isOpen, onClose, proposalData }) => {
                 <p className="pt-10 italic text-center">Approved by:</p>
                 <p className="pt-5 font-bold text-[16px] text-center">ROY N. VILLALOBOS, DPA</p>
                 <p className="pt-1 text-center">University President</p>
-              </div>
+              </div>  
 
             </div>
           </section>         
@@ -403,89 +403,205 @@ const DocumentViewerModal = ({ isOpen, onClose, proposalData }) => {
                   <div className="">
                       <h3 className="font-bold text-gray-900 pt-10 text-xl mb-5">VIII. ORGANIZATION AND STAFFING <span className="text-base italic font-semibold">(Persons involved and responsibility) </span></h3>
 
+                      <table className="w-full border border-black text-sm">
+                        <tbody>
+                          {/* TABLE HEADER */}
+                          <tr className="border-b border-black">
+                            <td className="w-1/3 border-r border-black px-4 py-3 text-center font-bold">
+                              Activity/s
+                            </td>
+                            <td className="w-1/3 border-r border-black px-4 py-3 text-center font-bold">
+                              Designation / Name
+                            </td>
+                            <td className="w-1/3 px-4 py-3 text-center font-bold">
+                              Terms of Reference
+                            </td>
+                          </tr>
 
-<table className="w-full border border-black text-sm">
-  <tbody>
-    {/* TABLE HEADER */}
-    <tr className="border-b border-black">
-      <td className="w-1/3 border-r border-black px-4 py-3 text-center font-bold">
-        Activity/s
-      </td>
-      <td className="w-1/3 border-r border-black px-4 py-3 text-center font-bold">
-        Designation / Name
-      </td>
-      <td className="w-1/3 px-4 py-3 text-center font-bold">
-        Terms of Reference
-      </td>
-    </tr>
+                          {/* TABLE BODY */}
+                          {content?.organization_and_staffing?.length > 0 ? (
+                            content.organization_and_staffing.map((item, index) => (
+                              <tr key={index} className="border-b border-black">
+                                <td className="border-r border-black px-4 py-3 text-gray-900">
+                                  {item.activity || "N/A"}
+                                </td>
 
-    {/* TABLE BODY */}
-    {content?.organization_and_staffing?.length > 0 ? (
-      content.organization_and_staffing.map((item, index) => (
-        <tr key={index} className="border-b border-black">
-          <td className="border-r border-black px-4 py-3 text-gray-900">
-            {item.activity || "N/A"}
-          </td>
+                                <td className="border-r border-black px-4 py-3 whitespace-pre-line">
+                                  {item.designation || "N/A"}
+                                </td>
 
-          <td className="border-r border-black px-4 py-3 whitespace-pre-line">
-            {item.designation || "N/A"}
-          </td>
-
-          <td className="px-4 py-3 text-gray-900 whitespace-pre-line">
-            {item.terms || "N/A"}
-          </td>
-        </tr>
-      ))
-    ) : (
-      <tr>
-        <td colSpan={3} className="text-center px-4 py-3 text-gray-500">
-          No data available
-        </td>
-      </tr>
-    )}
-  </tbody>
-</table>
-
-                  </div>
-
-                  {/* PLAN OF ACTIVITIES TABLE */}
-                  <div>
-                    <h3 className="font-bold text-gray-900 mb-3">Plan of Activities</h3>
-                    <div className="overflow-hidden border rounded-lg">
-                        <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-100 text-gray-600 font-bold uppercase text-xs">
+                                <td className="px-4 py-3 text-gray-900 whitespace-pre-line">
+                                  {item.terms || "N/A"}
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
                             <tr>
-                            <th className="px-4 py-3">Time</th>
-                            <th className="px-4 py-3">Activity</th>
-                            <th className="px-4 py-3">Speaker</th>
+                              <td colSpan={3} className="text-center px-4 py-3 text-gray-500">
+                                No data available
+                              </td>
                             </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {content.plan_of_activities?.schedule?.map((s, index) => (
-                            <tr key={index} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 font-medium text-gray-900">{s.time}</td>
-                                <td className="px-4 py-3">{s.activity || "-"}</td>
-                                <td className="px-4 py-3 text-gray-500">{s.speaker || "-"}</td>
-                            </tr>
-                            ))}
+                          )}
                         </tbody>
-                        </table>
-                    </div>
+                      </table>
                   </div>
 
-                  {/* ORGANIZATION AND STAFFING */}
-                  <div>
-                    <h3 className="font-bold text-gray-900 mb-3">Organization and Staffing</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {content.organization_and_staffing?.map((o, i) => (
-                        <div key={i} className="border p-4 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow">
-                            <p className="text-xs text-gray-500 font-bold uppercase mb-1">{o.designation}</p>
-                            <p className="font-bold text-gray-800">{o.activity}</p>
-                            <p className="text-xs text-gray-400 mt-2">{o.terms}</p>
-                        </div>
-                        ))}
-                    </div>
+                  <div className="">
+                      <h3 className="font-bold text-gray-900 pt-10 text-xl ">IX. PLAN OF ACTIVITIES</h3>
+                      <p className="text-xl font-bold mt-3 text-center">{content.plan_of_activities?.activity_title || "N/A"}</p>
+                      <p className="text-lg mt-3 text-center">
+                        {content.plan_of_activities?.activity_date
+                          ? new Date(content.plan_of_activities.activity_date).toLocaleDateString(
+                              "en-US",
+                              { year: "numeric", month: "long", day: "numeric" }
+                            )
+                          : "N/A"}
+                      </p>
+
+                      <p className="text-lg mt-2 mb-5 text-center font-semibold">PROGRAMME</p>
+
+                      <table className="w-full border border-black text-sm">
+                        <tbody>
+                          {/* TABLE HEADER */}
+                          <tr className="border-b border-black">
+                            <td className="w-1/5 border-r border-black px-4 py-3 text-center font-bold">
+                              Time
+                            </td>
+                            <td className="w-1/3 border-r border-black px-4 py-3 text-center font-bold">
+                              Part of the program
+                            </td>
+                          </tr>
+
+                          {/* TABLE BODY */}
+                          {content?.plan_of_activities?.schedule.length > 0 ? (
+                            content.plan_of_activities?.schedule.map((item, index) => (
+                              <tr key={index} className="border-b border-black">
+                                <td className="border-r border-black px-4 py-3 text-gray-900">
+                                  {item.time || "N/A"}
+                                </td>
+
+                                <td className="border-r border-black px-4 py-3 whitespace-pre-line">
+                                  <p>{item.activity || "Not Assigned"}</p>
+                                  <p>{item.speaker || "Not Assigned"}</p>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={3} className="text-center px-4 py-3 text-gray-500">
+                                No data available
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
                   </div>
+
+                  <div className="">
+                      <h3 className="font-bold text-gray-900 pt-10 text-xl ">XI. BUDGETARY REQUIREMENT </h3>
+                        <table className="w-full border border-black text-sm mt-6">
+                          <tbody>
+
+                            {/* TABLE HEADER */}
+                            <tr className="border-b border-black bg-gray-100">
+                              <td className="border-r border-black px-4 py-3 font-bold text-center">
+                                CATEGORY
+                              </td>
+                              <td className="border-r border-black px-4 py-3 font-bold text-center">
+                                ITEM
+                              </td>
+                              <td className="border-r border-black px-4 py-3 font-bold text-center">
+                                <p>Cost (PHP)</p>
+                              </td>
+                              <td className="border-r border-black px-4 py-3 font-bold text-center">
+                                PAX/QTY.
+                              </td>
+                              <td className="px-4 py-3 font-bold text-center">
+                                AMOUNT
+                              </td>
+                            </tr>
+
+                            {/* MEALS */}
+                            {content?.budgetary_requirement?.meals?.map((row, index) => (
+                              <tr key={`meals-${index}`} className="border-b border-black">
+                                <td className="border-r border-black px-4 py-3">Meals</td>
+                                <td className="border-r border-black px-4 py-3">{row.item}</td>
+                                <td className="border-r border-black px-4 py-3 text-right">₱ {row.cost}</td>
+                                <td className="border-r border-black px-4 py-3 text-right">{row.qty}</td>
+                                <td className="px-4 py-3 text-right">₱ {row.amount}</td>
+                              </tr>
+                            ))} 
+
+                            {/* TRANSPORT */}
+                            {content?.budgetary_requirement?.transport?.map((row, index) => (
+                              <tr key={`transport-${index}`} className="border-b border-black">
+                                <td className="border-r border-black px-4 py-3">Transport</td>
+                                <td className="border-r border-black px-4 py-3">{row.item}</td>
+                                <td className="border-r border-black px-4 py-3 text-right">₱ {row.cost}</td>
+                                <td className="border-r border-black px-4 py-3 text-right">{row.qty}</td>
+                                <td className="px-4 py-3 text-right">₱ {row.amount}</td>
+                              </tr>
+                            ))}
+
+                            {/* SUPPLIES */}
+                            {content?.budgetary_requirement?.supplies?.map((row, index) => (
+                              <tr key={`supplies-${index}`} className="border-b border-black">
+                                <td className="border-r border-black px-4 py-3">Supplies</td>
+                                <td className="border-r border-black px-4 py-3">{row.item}</td>
+                                <td className="border-r border-black px-4 py-3 text-right">₱ {row.cost}</td>
+                                <td className="border-r border-black px-4 py-3 text-right">{row.qty}</td>
+                                <td className="px-4 py-3 text-right">₱ {row.amount}</td>
+                              </tr>
+                            ))}
+
+                            {/* TOTALS */}
+                            <tr className="font-bold bg-gray-100">
+                              <td colSpan={4} className="border-r border-black px-4 py-3 text-right">
+                                Grand Total
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <p>₱ {content?.budgetary_requirement?.totals?.grand_total || 0}</p>
+                              </td>
+                            </tr>
+
+                          </tbody>
+                        </table>
+
+                  </div>
+
+                  <div className="py-4">
+                  <p className="italic my-3">Prepared by:</p>
+                    <p className="py-1 mb-2">Proponent</p>
+                    <p className="italic">Noted by:</p>
+
+                    <div className="">
+                      <div className="grid grid-cols-2">
+                        <div className="">
+                          <p className="pt-4">Campus Extension Coordinator	</p>
+                          <p className="pt-4 italic">Endorsed by:</p>
+                          <p className="pt-4"></p>
+                          <p className="pt-1">Campus Director</p>
+                          <p className="pt-4 italic">Recommending Approval:</p>
+                          <p className="pt-7 font-bold text-[16px]">MARLON JAMES A. DEDICATORIA, Ph.D.</p>
+                          <p className="pt-1">Vice-President, Research and Development</p>
+                        </div>
+
+                        <div className="">
+                          <p className="pt-4">College Dean	</p>
+                          <p className="pt-4"></p>
+                          <p className="pt-4 font-bold text-[16px]">KATHERINE M.UY, MAEd</p>
+                          <p className="pt-1"> Director, Extension Services</p>
+                          <p className="pt-4 italic">Certified Funds Available</p>
+                          <p className="pt-7 font-bold text-[16px]">ROBERTO C. BRIONES JR., CPA</p>
+                          <p className="pt-1">University Accountant IV</p>
+                        </div>
+                      </div>
+                      <p className="pt-10 italic text-center">Approved by:</p>
+                      <p className="pt-5 font-bold text-[16px] text-center">ROY N. VILLALOBOS, DPA</p>
+                      <p className="pt-1 text-center">University President</p>
+                    </div>  
+                  </div>
+
 
               </div>
             </section>
