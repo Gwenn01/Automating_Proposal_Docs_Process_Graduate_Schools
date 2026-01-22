@@ -79,7 +79,7 @@ def decrement_review_count(proposal_id):
 
         query = """
             UPDATE proposals_docs
-            SET reviewer_count = reviewer_count - 1
+            SET reviewer_count = GREATEST(0, reviewer_count - 1)
             WHERE proposal_id = %s
         """
 
