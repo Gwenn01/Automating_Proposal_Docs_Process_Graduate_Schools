@@ -26,7 +26,16 @@ def get_all_documents_with_user():
             u.user_id,
             u.fullname,
             u.email,
-            u.role
+            u.role,
+            CASE 
+            WHEN EXISTS (
+                SELECT 1
+                FROM proposal_reviews pr
+                WHERE pr.proposal_id = p.proposal_id
+            )
+            THEN 1
+            ELSE 0
+        END AS is_assigned
         FROM proposals_docs p
         LEFT JOIN users u ON p.user_id = u.user_id
         ORDER BY p.submission_date DESC
