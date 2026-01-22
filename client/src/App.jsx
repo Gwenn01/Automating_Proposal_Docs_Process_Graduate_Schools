@@ -3,6 +3,7 @@ import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
@@ -14,9 +15,18 @@ function App() {
           path="/"
           element={
             <PublicRoute>
-              <Auth />
+              <LandingPage />
             </PublicRoute>
           }
+        />
+
+         <Route
+            path="/auth"
+            element={
+              <PublicRoute>
+                <Auth />
+              </PublicRoute>
+            }
         />
 
         {/* PROTECTED */}
