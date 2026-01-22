@@ -574,9 +574,13 @@ const CreateProposal = () => {
     <div className="bg-white p-8 font-sans animate-overlay-enter">
       <div className="max-w-5xl mx-auto">
         
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-black">Create Proposal</h1>
-          
+        <div className="mb-10 flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900">View Proposals</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Track status, reviews, and proposal progress
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-4 mb-10">

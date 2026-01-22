@@ -1,6 +1,6 @@
 import React from "react";
 import { X, Bell } from "lucide-react";
-import CustomButton from "./CuttomButton";
+import CustomButton from "../CuttomButton";
 
 const DocumentReviewModal = ({ isOpen, onClose, documentUrl }) => {
   if (!isOpen) return null;
