@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Search,
   Grid,
@@ -11,32 +11,50 @@ import {
 
 // --- Mock Data for Proposals ---
 // In a real app, this would be fetched from an API
-/*
 const proposals = [
   {
     id: 1,
+    status: "Pending Evaluation",
+    title: "Peterjames Angelo O. Mataga",
+    description:
+      "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text...",
+    date: "January 15, 2024",
+  },
+  {
+    id: 2,
     status: "Reviewer Completed",
-    name: "Proposal for New Campus Initiative",
-    title:
+    title: "Proposal for New Campus Initiative",
+    description:
       "A detailed proposal for a new initiative aimed at improving campus life and student engagement. Requires funding approval.",
     date: "January 16, 2024",
   },
+  {
+    id: 3,
+    status: "Reviewer Completed",
+    title: "Research Grant Application: AI in Education",
+    description:
+      "Application for a research grant to study the impact of artificial intelligence tools in secondary education classrooms.",
+    date: "January 16, 2024",
+  },
+  {
+    id: 4,
+    status: "Reviewer Completed",
+    title: "Community Outreach Program",
+    description:
+      "Proposal to establish a student-led community outreach program partnering with local non-profits.",
+    date: "January 18, 2024",
+  },
+  {
+    id: 5,
+    status: "Reviewer Completed",
+    title: "Annual Science Fair Budget",
+    description:
+      "Budget proposal and logistical plan for the upcoming annual university science fair.",
+    date: "January 18, 2024",
+  },
 ];
-*/
+
 const ReviewProposal = () => {
-  const [proposals, setProposals] = useState([]);
-  const [user, setUser] = useState(null);
-  // ================= FETCH USER =================
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
-
-  // ================= FETCH PROPOSALS + REVIEWS =================
-  useEffect(() => {
-    if (!user?.user_id) return;
-  });
-
   // Helper function to get status badge styles
   const getStatusStyle = (status) => {
     switch (status) {
@@ -135,12 +153,12 @@ const ReviewProposal = () => {
               {/* Card Content */}
               <h3
                 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1 leading-tight"
-                title={proposal.name}
+                title={proposal.title}
               >
-                {proposal.name}
+                {proposal.title}
               </h3>
               <p className="text-gray-500 text-sm leading-relaxed line-clamp-3 mb-6">
-                {proposal.title}
+                {proposal.description}
               </p>
             </div>
 

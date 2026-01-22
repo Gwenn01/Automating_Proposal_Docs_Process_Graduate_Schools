@@ -36,10 +36,14 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
 
   const menuItems = menuByRole[role] || [];
 
-  const handleLogout = () => {
-    logout();
+const handleLogout = () => {
+  logout();
+
+  setTimeout(() => {
     navigate("/", { replace: true });
-  };
+  }, 1000); 
+};
+
 
   return (
     <>
@@ -140,8 +144,8 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
       {/* ================= LOGOUT MODAL ================= */}
       {showLogoutModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-md">
-          <div className="bg-white rounded-2xl px-8 py-6 w-[350px]
-            shadow-2xl animate-[scaleIn_0.3s_ease-out]">
+          <div className="bg-white rounded-base px-8 py-6 w-[350px]
+            shadow-2xl animate-[scaleIn_0.4s_ease-out]">
 
             <h2 className="text-lg font-bold text-gray-800 mb-2">
               Confirm Logout
