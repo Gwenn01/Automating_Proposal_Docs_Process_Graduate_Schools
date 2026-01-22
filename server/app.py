@@ -25,6 +25,7 @@ from routes.admin.assign_reviewer import assign_reviewer_bp
 from routes.admin.manage_accounts import manage_accounts_bp
 from routes.admin.manage_docs import manage_docs_bp
 # reviewer -----------------------------------------------------------------
+from routes.reviewer.get_docs import get_docs_db
 # general proposal-------------------------------------------------
 from routes.general.get_proposal_routes import proposals_bp
 from routes.implementor.create_proposal_routes import create_proposal_bp
@@ -43,6 +44,8 @@ app.register_blueprint(admin_overview_bp, url_prefix="/api")
 app.register_blueprint(assign_reviewer_bp, url_prefix="/api")
 app.register_blueprint(manage_accounts_bp, url_prefix="/api")
 app.register_blueprint(manage_docs_bp, url_prefix="/api")
+# reviewer --------------------------------------------------------------------------------
+app.register_blueprint(get_docs_db, url_prefix="/api")
 # general proposal-----------------------------------------------------------------
 app.register_blueprint(proposals_bp, url_prefix="/api")
 app.register_blueprint(create_proposal_bp, url_prefix="/api")
