@@ -30,16 +30,6 @@ const ManageAccount = () => {
     setIsDeleteModalOpen(false);
   };
 
-  /*
-    const users = [
-        { id: 1, name: "Kian Fontillas", email: "fontillaskian@gmail.com", role: "i" },
-        { id: 2, name: "Kian Fontillas", email: "fontillaskian@gmail.com", role: "Reviewer" },
-        { id: 3, name: "Kian Fontillas", email: "fontillaskian@gmail.com", role: "Implementor" },
-        { id: 4, name: "Kian Fontillas", email: "fontillaskian@gmail.com", role: "Implementor" },
-        { id: 5, name: "Peter James", email: "peterjames@gmail.com", role: "Reviewer" },
-        { id: 6, name: "Kian Fontillas", email: "fontillaskian@gmail.com", role: "Implementor" },
-    ];
-    */
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -65,7 +55,32 @@ const ManageAccount = () => {
       user.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in">
+          <div
+            className="relative bg-white backdrop-blur-xl px-14 py-10 rounded-2xl shadow-2xl flex flex-col items-center animate-pop-out"
+          >
+            {/* Gradient Ring Loader */}
+            <div className="relative animate-float mb-5">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
+              <div className="absolute inset-2 bg-white rounded-full" />
+            </div>
+
+            {/* Text */}
+            <p className="text-lg font-semibold shimmer-text loading-dots mb-2">
+              Synchronizing Records
+            </p>
+
+            <p className="text-sm text-gray-500">
+              Preparing the latest user and reviewer data
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
   if (error) return <p>{error}</p>;
 
   return (

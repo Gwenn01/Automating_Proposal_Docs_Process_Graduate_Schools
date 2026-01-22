@@ -19,24 +19,6 @@ const ManageDocuments = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  /*const documents = [
-    { id: 1, name: "Dr. Ricardo Cruz", title: "Design of a Smart Monitoring System for Academic Environments", submissionDate: "December 12, 2025", status: "Completed" },
-    { id: 2, name: "Kian Fontillas", title: "Solar-Powered Irrigation System with IoT Integration", submissionDate: "December 10, 2025", status: "Under Review" },
-    { id: 3, name: "Peter Jamed", title: "Automated Waste Management for PRMSU Campus", submissionDate: "December 10, 2025", status: "Revision" },
-    { id: 4, name: "Maria Clara", title: "AI-Powered Plagiarism Detection for Academic Writing", submissionDate: "December 15, 2025", status: "Completed" },
-    { id: 5, name: "Mahn Doe", title: "Sustainable Energy Hub Monitoring System", submissionDate: "December 26, 2025", status: "Rejected" },
-    { id: 6, name: "John Doe", title: "Development of a Gesture-Based Interface for Remote Learning", submissionDate: "January 05, 2026", status: "Under Review" },
-    { id: 7, name: "Jane Foster", title: "Automated Cyber Security Analysis for Higher Education Institutions", submissionDate: "January 08, 2026", status: "Revision" },
-    { id: 8, name: "Mark Anthony", title: "Evaluation of Coastal Erosion in Zambales: A Geospatial Study", submissionDate: "January 12, 2026", status: "Completed" },
-    { id: 9, name: "Sarah Lopez", title: "Smart Traffic Management System using Machine Learning", submissionDate: "January 14, 2026", status: "Under Review" },
-    { id: 10, name: "Engr. Leo Santos", title: "Structural Integrity Analysis of Multi-Story School Buildings", submissionDate: "January 15, 2026", status: "Rejected" },
-    { id: 11, name: "Elena Gilbert", title: "Psychological Impact of Hybrid Learning on Student Performance", submissionDate: "January 18, 2026", status: "Under Review" },
-    { id: 12, name: "Damon Salvatore", title: "Blockchain-Based Student Records Management System", submissionDate: "January 19, 2026", status: "Completed" },
-    { id: 13, name: "Bonnie Bennett", title: "Natural Language Processing for Indigenous Languages Preservation", submissionDate: "January 20, 2026", status: "Revision" },
-    { id: 14, name: "Stefan Marcos", title: "Optimized Water Distribution Network for Rural Communities", submissionDate: "January 22, 2026", status: "Under Review" },
-    { id: 15, name: "Caroline Forbes", title: "Nutrition and Health Status of Elementary Students in Iba", submissionDate: "January 25, 2026", status: "Completed" },
- ];*/
-
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
@@ -53,7 +35,32 @@ const ManageDocuments = () => {
     fetchDocuments();
   }, []);
 
-  if (loading) return <p>Loading documents...</p>;
+   if (loading) {
+    return (
+      <>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in">
+          <div
+            className="relative bg-white backdrop-blur-xl px-14 py-10 rounded-2xl shadow-2xl flex flex-col items-center animate-pop-out"
+          >
+            {/* Gradient Ring Loader */}
+            <div className="relative animate-float mb-5">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
+              <div className="absolute inset-2 bg-white rounded-full" />
+            </div>
+
+            {/* Text */}
+            <p className="text-lg font-semibold shimmer-text loading-dots mb-2">
+              Indexing Registry
+            </p>
+
+            <p className="text-sm text-gray-500">
+              Preparing official records and submission statuses.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
   if (error) return <p>{error}</p>;
 
   const handleEditClick = (doc) => {

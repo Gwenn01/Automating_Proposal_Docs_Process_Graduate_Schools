@@ -84,13 +84,28 @@ const Overview = () => {
 
   if (loading) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-[#fbfcfb]">
-        <div className="relative">
-          {/* Simple Spinner */}
-          <div className="w-12 h-12 border-4 border-slate-200 border-t-green-600 rounded-full animate-spin"></div>
+      <>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in">
+          <div
+            className="relative bg-white backdrop-blur-xl px-14 py-10 rounded-2xl shadow-2xl flex flex-col items-center animate-pop-out"
+          >
+            {/* Gradient Ring Loader */}
+            <div className="relative animate-float mb-5">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
+              <div className="absolute inset-2 bg-white rounded-full" />
+            </div>
+
+            {/* Text */}
+            <p className="text-lg font-semibold shimmer-text loading-dots mb-2">
+              Generating Insights
+            </p>
+
+            <p className="text-sm text-gray-500">
+              Aggregating real-time metrics and proposal trends.
+            </p>
+          </div>
         </div>
-        <p className="mt-4 text-slate-500 font-bold tracking-widest text-xs uppercase">Fetching Database...</p>
-      </div>
+      </>
     );
   }
 
