@@ -21,10 +21,11 @@ from controller.mapper.admin_assign_reviewer_mapper import (
 )
 from middleware.assign_review_validator import assign_reviewer_validation
 
-#admin manage account
+# admin manage account
 from model.admin.get_total_user import get_all_users
 from controller.mapper.admin_manage_account_mapper import get_all_users_mapper
-
+# admin manage docs
+from controller.mapper.admin_manage_docs import get_docs_mapper
 
 
 # ADMIN OVERVIEW PAGES
@@ -117,7 +118,7 @@ def reassign_reviewer_controller():
     except Exception as e:
         return {"error": str(e)}
     
-# ADMIN ASSIGN TO REVIEW PAGE 
+# ADMIN MANAGE ACCOUNTS 
 def get_all_users_controller():
     try:
         data = []
@@ -127,3 +128,25 @@ def get_all_users_controller():
         return jsonify(data), 200
     except Exception as e:
         return {"error": str(e)} 
+    
+# ADMIN MANAGE DOCS
+def get_all_docs_controller():
+    try:
+        docs_data = []
+        seen = set()
+
+        for row in get_all_documents_with_user():
+            format_data = get_docs_mapper(row)
+
+            # unique key (user + title)
+            unique_key = (format_data["id"], format_data["title"])
+
+            if unique_key not in seen:
+                seen.add(unique_key)
+                docs_data.append(format_data)
+
+        return jsonify(docs_data), 200
+    except Exception as e:
+        return {"error": str(e)}   
+    
+    
