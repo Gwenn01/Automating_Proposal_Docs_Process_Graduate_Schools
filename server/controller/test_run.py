@@ -20,6 +20,7 @@ from controller.admin_controller import get_overview_data_controller
 from model.admin.get_total_documents import get_all_documents_with_user
 from model.admin.get_reviewer_user import get_reviewers_with_assignment
 from controller.mapper.admin_assign_reviewer_mapper import get_proposal_with_user_mapper
+from model.admin.get_total_user import get_all_users
 
 def run_tests_controller():
     # data = fetch_user_proposals(7)
@@ -41,4 +42,5 @@ def run_tests_controller():
     # for d in data:
     #     print(d["fullname"])
     #print(get_reviewers_with_assignment(1))
+    #print(get_all_users())
     print("Running test controller..")

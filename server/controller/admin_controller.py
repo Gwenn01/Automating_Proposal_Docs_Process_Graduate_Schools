@@ -21,6 +21,10 @@ from controller.mapper.admin_assign_reviewer_mapper import (
 )
 from middleware.assign_review_validator import assign_reviewer_validation
 
+#admin manage account
+from model.admin.get_total_user import get_all_users
+from controller.mapper.admin_manage_account_mapper import get_all_users_mapper
+
 
 
 # ADMIN OVERVIEW PAGES
@@ -31,8 +35,6 @@ def get_overview_data_controller():
     data['pie_data'] = pie_data_mapper()
     rows = get_monthly_document_status_counts()
     data["bar_data"] = bar_data_mapper(rows)
-
-    
     try:
         return jsonify(data), 200
     except Exception as e:
@@ -116,9 +118,12 @@ def reassign_reviewer_controller():
         return {"error": str(e)}
     
 # ADMIN ASSIGN TO REVIEW PAGE 
-def get_all_user_controller():
+def get_all_users_controller():
     try:
-        ...
-        return jsonify(), 200
+        data = []
+        users = get_all_users()
+        for u in users:
+            data.append(get_all_users_mapper(u))
+        return jsonify(data), 200
     except Exception as e:
         return {"error": str(e)} 
