@@ -40,4 +40,5 @@ def run_tests_controller():
     # data = get_reviewer_user()
     # for d in data:
     #     print(d["fullname"])
+    #print(get_reviewers_with_assignment(1))
     print("Running test controller..")

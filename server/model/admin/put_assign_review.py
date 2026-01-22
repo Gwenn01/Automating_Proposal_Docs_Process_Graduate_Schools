@@ -55,8 +55,7 @@ def reassign_reviewer(proposal_id, reviewer_id):
         cursor = conn.cursor()
 
         query = """
-            UPDATE proposal_reviews
-            SET is_reassign = TRUE
+            DELETE FROM proposal_reviews
             WHERE proposal_id = %s
             AND user_id = %s
         """

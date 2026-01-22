@@ -114,3 +114,11 @@ def reassign_reviewer_controller():
         return jsonify({"message": "Reviewer Re-Assigned Successfully"}), 200
     except Exception as e:
         return {"error": str(e)}
+    
+# ADMIN ASSIGN TO REVIEW PAGE 
+def get_all_user_controller():
+    try:
+        ...
+        return jsonify(), 200
+    except Exception as e:
+        return {"error": str(e)} 
