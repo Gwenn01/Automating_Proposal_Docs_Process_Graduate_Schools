@@ -18,7 +18,7 @@ from controller.mapper.admin_overview_mapper import (
 from model.admin.get_total_documents import get_monthly_document_status_counts
 from controller.admin_controller import get_overview_data_controller
 from model.admin.get_total_documents import get_all_documents_with_user
-from model.admin.get_reviewer_user import get_reviewer_user
+from model.admin.get_reviewer_user import get_reviewers_with_assignment
 from controller.mapper.admin_assign_reviewer_mapper import get_proposal_with_user_mapper
 
 def run_tests_controller():

@@ -6,7 +6,7 @@ def assign_reviewer(proposal_id, reviewer_id):
     cursor = conn.cursor()
 
     query = """
-        INSERT INTO proposal_review
+        INSERT INTO proposal_reviews
         (proposal_id, reviewer_id)
         VALUES (%s, %s)
     """

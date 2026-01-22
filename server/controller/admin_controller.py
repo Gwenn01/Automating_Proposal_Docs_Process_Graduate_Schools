@@ -10,7 +10,7 @@ from model.admin.get_total_documents import get_monthly_document_status_counts
 
 # admin assign reviewer
 from model.admin.get_total_documents import get_all_documents_with_user
-from model.admin.get_reviewer_user import get_reviewer_user
+from model.admin.get_reviewer_user import get_reviewers_with_assignment
 from model.admin.put_assign_review import assign_reviewer
 from controller.mapper.admin_assign_reviewer_mapper import (
     get_proposal_with_user_mapper,
@@ -58,8 +58,10 @@ def get_all_documents_with_user_controller():
 
 def get_all_reviewers_controller():
     try:
+        data = request.get_json()
+        proposal_id = data['proposal_id']
         reviewer_data = []
-        reviewer = get_reviewer_user()
+        reviewer = get_reviewers_with_assignment(proposal_id)
         for r in reviewer:
             format_reviewer = get_reviewer_mapper(r)
             reviewer_data.append(format_reviewer)

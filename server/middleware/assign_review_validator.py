@@ -9,6 +9,3 @@ def assign_reviewer_validation(data):
 
     if "reviewers" not in data:
         return False
-
-    if not isinstance(data["reviewers"], list):
-        return False
