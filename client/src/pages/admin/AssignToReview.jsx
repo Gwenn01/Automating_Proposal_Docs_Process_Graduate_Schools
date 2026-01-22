@@ -9,12 +9,13 @@ const AssignToReview = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [allDocs, setAllDocs] = useState([]);
+  const [modalMode, setModalMode] = useState("assign")
 
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:5000/api/get_all_documents",
+          "http://127.0.0.1:5000/api/get-docs-user",
         );
         setAllDocs(response.data);
       } catch (error) {
@@ -27,8 +28,36 @@ const AssignToReview = () => {
     fetchDocuments();
   }, []);
 
+  if (loading) {
+    return (
+      <>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in">
+          <div
+            className="relative bg-white backdrop-blur-xl px-14 py-10 rounded-2xl shadow-2xl flex flex-col items-center animate-pop-out"
+          >
+            {/* Gradient Ring Loader */}
+            <div className="relative animate-float mb-5">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
+              <div className="absolute inset-2 bg-white rounded-full" />
+            </div>
+
+            {/* Text */}
+            <p className="text-lg font-semibold shimmer-text loading-dots mb-2">
+              Synchronizing Registry
+            </p>
+
+            <p className="text-sm text-gray-500">
+              Preparing the latest proposals and reviewer data for you.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   const handleAssignClick = (doc) => {
     setSelectedDoc(doc);
+    setModalMode(doc.reviewer ? "reassign" : "assign");
     setIsAssignModalOpen(true);
   };
 
@@ -48,7 +77,7 @@ const AssignToReview = () => {
 
   return (
     /* Pinantay ang padding (p-8 lg:p-10) at background color (#fbfcfb) */
-    <div className="p-8 lg:p-10 space-y-10 bg-[#fbfcfb] h-auto animate-in fade-in duration-500">
+    <div className="p-8 lg:p-10 space-y-10 bg-[#fbfcfb] h-full animate-in fade-in duration-500">
       {/* Header Section - Sakto ang typography at spacing sa ManageAccount */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
         <div>
@@ -261,6 +290,7 @@ const AssignToReview = () => {
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
         data={selectedDoc}
+        mode={modalMode}
         onUpdate={handleUpdateReviewer}
       />
     </div>
