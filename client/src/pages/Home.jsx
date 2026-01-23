@@ -78,7 +78,6 @@ const Home = () => {
         {active === "Manage Account" && <ManageAccount />}
         {active === "Manage Documents" && <ManageDocuments />}
         {active === "Assign to Review" && <AssignToReview />}
-        {active === "View Review" && <ViewReview />}
 
         {/* REVIEWER */}
         {active === "Review Proposal" && <ReviewProposal />}

@@ -12,7 +12,8 @@ from model.admin.get_total_documents import get_monthly_document_status_counts
 from model.admin.get_total_documents import get_all_documents_with_user
 from model.admin.get_reviewer_user import get_reviewers_with_assignment
 from model.admin.put_assign_review import (
-    assign_reviewer, increment_review_count, reassign_reviewer, decrement_review_count
+    assign_reviewer, increment_review_count, reassign_reviewer, decrement_review_count,
+
 )
 from controller.mapper.admin_assign_reviewer_mapper import (
     get_proposal_with_user_mapper,
@@ -37,7 +38,7 @@ def get_overview_data_controller():
     rows = get_monthly_document_status_counts()
     data["bar_data"] = bar_data_mapper(rows)
     try:
-        return jsonify(data), 200
+        return jsonify(data), 200        
     except Exception as e:
         return {"error": str(e)}
   
@@ -83,13 +84,12 @@ def assign_reviewer_controller():
         if not  assign_reviewer_validation(data):
             return jsonify({"message": "Invalid Data"}), 400
         proposal_id = data["proposal_id"]
-        
         # assign reviewers
         for r in data["reviewers"]:
            #debugger in database 
            success_assign = assign_reviewer(proposal_id, r["reviewer_id"])
-           success_increment = increment_review_count(proposal_id)
-           if not success_assign or not success_increment:
+        #    success_increment = increment_review_count(proposal_id)
+           if not success_assign:
                return jsonify({"message": "Error in Inserting to database"
                                }), 400
                
@@ -105,12 +105,11 @@ def reassign_reviewer_controller():
         if not  assign_reviewer_validation(data):
             return jsonify({"message": "Invalid Data"}), 400
         proposal_id = data["proposal_id"]
-        
         for r in data["reviewers"]:
              #debugger in database 
            success_reassign = reassign_reviewer(proposal_id, r["reviewer_id"]) 
-           success_decrement = decrement_review_count(proposal_id)
-           if not success_reassign or not success_decrement:
+        #    success_decrement = decrement_review_count(proposal_id)
+           if not success_reassign:
                return jsonify({"message": "Error in Inserting to database"}
                               ), 400
                

@@ -29,47 +29,27 @@ const ViewProposal = () => {
   }, []);
 
   // ================= FETCH PROPOSALS + REVIEWS =================
-  useEffect(() => {
-    if (!user?.user_id) return;
+useEffect(() => {
+  if (!user?.user_id) return;
 
-    axios
-      .get(`http://127.0.0.1:5000/api/my-proposals/${user.user_id}`)
-      .then((res) => {
-        const grouped = {};
+  axios
+    .get(`http://127.0.0.1:5000/api/my-proposals/${user.user_id}`)
+    .then((res) => {
+      const documents = res.data.proposals.map((row) => ({
+        proposal_id: row.proposal_id,
+        title: row.title,
+        file_path: row.file_path,
+        status: row.status,
+        submitted_at: row.submitted_at || row.submission_date || null,
+        reviews: row.reviews, // ✅ STRING ONLY
+      }));
 
-        res.data.proposals.forEach((row) => {
-          if (!grouped[row.proposal_id]) {
-            grouped[row.proposal_id] = {
-              proposal_id: row.proposal_id,
-              title: row.title,
-              file_path: row.file_path,
-              status: row.status,
-              submitted_at: row.submitted_at || row.submission_date || null,
-              reviews: [],
-            };
-          }
+      setDocuments(documents);
+      setLoading(false);
+    })
+    .catch(() => setLoading(false));
+}, [user]);
 
-          if (row.review_id) {
-            grouped[row.proposal_id].reviews.push({
-              review_id: row.review_id,
-              comments: row.comments,
-              decision: row.decision,
-              review_date: row.review_date,
-              reviewer: {
-                id: row.reviewer_id,
-                name: row.reviewer_name,
-                email: row.reviewer_email,
-                role: row.reviewer_role,
-              },
-            });
-          }
-        });
-
-        setDocuments(Object.values(grouped));
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [user]);
 
   const fetchCoverPage = async (proposalId) => {
     try {
@@ -96,24 +76,37 @@ const ViewProposal = () => {
   };
 
   // ================= STATUS LABEL STYLE =================
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "submitted":
-        return { label: "Initial Review", className: "bg-[#FFC107] text-white" };
-      case "under_review":
-        return { label: "Under Review", className: "bg-[#FFC107] text-white" };
-      case "final_review":
-        return { label: "Final Review", className: "bg-[#FBBF24] text-white" };
-      case "approved":
-        return { label: "Completed", className: "bg-[#22C55E] text-white" };
-      case "rejected":
-        return { label: "Rejected", className: "bg-[#EF4444] text-white" };
-      case "for_revision":
-        return { label: "For Revision", className: "bg-[#F97316] text-white" };
-      default:
-        return { label: status, className: "bg-gray-400 text-white" };
-    }
-  };
+const getStatusStyle = (status) => {
+  switch (status) {
+    case "submitted":
+      return { label: "Initial Review", className: "bg-[#FFC107] text-white" };
+
+    case "for_review":
+      return { label: "For Review", className: "bg-[#38BDF8] text-white" }; // blue
+
+    case "under_review":
+      return { label: "Under Review", className: "bg-[#FFC107] text-white" };
+
+    case "final_review":
+      return { label: "Final Review", className: "bg-[#FBBF24] text-white" };
+
+    case "for_approval":
+      return { label: "For Approval", className: "bg-[#6366F1] text-white" }; // indigo
+
+    case "approved":
+      return { label: "Completed", className: "bg-[#22C55E] text-white" };
+
+    case "for_revision":
+      return { label: "For Revision", className: "bg-[#F97316] text-white" };
+
+    case "rejected":
+      return { label: "Rejected", className: "bg-[#EF4444] text-white" };
+
+    default:
+      return { label: status, className: "bg-gray-400 text-white" };
+  }
+};
+
 
   // ================= PAGINATION LOGIC =================
   const totalPages = Math.ceil(documents.length / rowsPerPage);
@@ -207,7 +200,7 @@ const ViewProposal = () => {
               return (
                 <tr 
                   key={doc.proposal_id} 
-                  className="hover:bg-gray-50/50 transition-colors duration-150 group"
+                  className="hover:bg-gray-50/50 transition-colors duration-150 group border"
                 >
                   {/* Title Column */}
                   <td className="px-6 py-5 align-middle">
@@ -293,11 +286,11 @@ const ViewProposal = () => {
                   </td>
 
                   {/* Reviews Count Column */}
-                  <td className="px-6 py-5 text-center align-middle">
+                  <td className="px-2 py-5 text-center align-middle">
                     <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                       <span className="text-green-700 font-semibold text-xs">
-                        {doc.reviews.length > 0 ? `${doc.reviews.length} review${doc.reviews.length > 1 ? 's' : ''}` : "No reviews"}
+                        {doc.reviews}
                       </span>
                     </div>
                   </td>

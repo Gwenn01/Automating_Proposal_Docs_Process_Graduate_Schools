@@ -29,47 +29,51 @@ const ViewProposal = () => {
   }, []);
 
   // ================= FETCH PROPOSALS + REVIEWS =================
-  useEffect(() => {
-    if (!user?.user_id) return;
+useEffect(() => {
+  if (!user?.user_id) return;
 
-    axios
-      .get(`http://127.0.0.1:5000/api/my-proposals/${user.user_id}`)
-      .then((res) => {
-        const grouped = {};
+  axios
+    .get(`http://127.0.0.1:5000/api/my-proposals/${user.user_id}`)
+    .then((res) => {
+      const grouped = {};
 
-        res.data.proposals.forEach((row) => {
-          if (!grouped[row.proposal_id]) {
-            grouped[row.proposal_id] = {
-              proposal_id: row.proposal_id,
-              title: row.title,
-              file_path: row.file_path,
-              status: row.status,
-              submitted_at: row.submitted_at || row.submission_date || null,
-              reviews: [],
-            };
-          }
+      res.data.proposals.forEach((row) => {
+        if (!grouped[row.proposal_id]) {
+          grouped[row.proposal_id] = {
+            proposal_id: row.proposal_id,
+            title: row.title,
+            file_path: row.file_path,
+            status: row.status,
+            submitted_at: row.submitted_at || row.submission_date || null,
+            reviews: [], // ✅ FIX
+          };
+        }
 
-          if (row.review_id) {
-            grouped[row.proposal_id].reviews.push({
-              review_id: row.review_id,
-              comments: row.comments,
-              decision: row.decision,
-              review_date: row.review_date,
-              reviewer: {
-                id: row.reviewer_id,
-                name: row.reviewer_name,
-                email: row.reviewer_email,
-                role: row.reviewer_role,
-              },
-            });
-          }
-        });
+        if (row.review_id) {
+          grouped[row.proposal_id].reviews.push({
+            review_id: row.review_id,
+            comments: row.comments,
+            decision: row.decision,
+            review_date: row.review_date,
+            reviewer: {
+              id: row.reviewer_id,
+              name: row.reviewer_name,
+              email: row.reviewer_email,
+              role: row.reviewer_role,
+            },
+          });
+        }
+      });
 
-        setDocuments(Object.values(grouped));
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [user]);
+      const documents = Object.values(grouped);
+      console.log("FINAL GROUPED DOCUMENTS:", documents);
+
+      setDocuments(documents);
+      setLoading(false);
+    })
+    .catch(() => setLoading(false));
+}, [user]);
+
 
   const fetchCoverPage = async (proposalId) => {
     try {
@@ -297,7 +301,7 @@ const ViewProposal = () => {
                     <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                       <span className="text-green-700 font-semibold text-xs">
-                        {doc.reviews.length > 0 ? `${doc.reviews.length} review${doc.reviews.length > 1 ? 's' : ''}` : "No reviews"}
+                        {doc.reviews}
                       </span>
                     </div>
                   </td>

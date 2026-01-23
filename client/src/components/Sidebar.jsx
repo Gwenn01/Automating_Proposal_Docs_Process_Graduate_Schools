@@ -22,7 +22,7 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
     implementor: [
       { label: "Create Proposal", icon: Upload },
       { label: "View Proposal", icon: Eye },
-      { label: "Edit Proposal", icon: Eye },
+      { label: "Profile Overview", icon: Eye },
     ],
     reviewer: [{ label: "Review Proposal", icon: FileCheck }],
     admin: [
@@ -30,7 +30,6 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
       { label: "Assign to Review", icon: UserCheck },
       { label: "Manage Account", icon: Users },
       { label: "Manage Documents", icon: Files },
-      { label: "View Review", icon: ClipboardList },
     ],
   };
 
@@ -40,7 +39,7 @@ const handleLogout = () => {
   logout();
 
   setTimeout(() => {
-    navigate("/", { replace: true });
+    navigate("/auth", { replace: true });
   }, 1000); 
 };
 

@@ -87,7 +87,7 @@ const ManageDocuments = () => {
 
   return (
     <div className="p-8 lg:p-10 space-y-10 bg-[#fbfcfb] h-auto animate-in fade-in duration-500">
-      {/* Header Section - Pixel Matched Typography */}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
         <div>
           <h1 className="text-3xl font-black text-slate-800 tracking-tight leading-tight">

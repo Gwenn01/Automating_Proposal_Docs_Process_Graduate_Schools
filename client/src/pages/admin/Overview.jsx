@@ -108,7 +108,6 @@ const Overview = () => {
     );
   }
 
-  // 2. Error State Guard
   if (error) {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#fbfcfb] p-6 text-center">
