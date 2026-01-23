@@ -21,7 +21,7 @@ from model.admin.get_total_documents import get_all_documents_with_user
 from model.admin.get_reviewer_user import get_reviewers_with_assignment
 from controller.mapper.admin_assign_reviewer_mapper import get_proposal_with_user_mapper
 from model.admin.get_total_user import get_all_users
-from model.reviewer.get_docs_for_reviewer import get_docs_for_reviewer
+from model.reviewer.get_docs_for_reviewer import get_docs_for_reviewers
 
 def run_tests_controller():
     # data = fetch_user_proposals(7)

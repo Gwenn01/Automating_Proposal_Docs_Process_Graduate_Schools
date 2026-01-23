@@ -1,6 +1,6 @@
 from database.connection import get_db_connection
 
-def get_docs_for_reviewer(reviewer_id):
+def get_docs_for_reviewers(reviewer_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute(
