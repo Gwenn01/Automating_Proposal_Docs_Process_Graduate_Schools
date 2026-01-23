@@ -9,8 +9,22 @@ def assign_reviewer(proposal_id, reviewer_id):
             INSERT INTO proposal_reviews (proposal_id, user_id)
             VALUES (%s, %s)
         """
-
         cursor.execute(query, (proposal_id, reviewer_id))
+        
+        query = """
+            UPDATE proposals_docs
+            SET reviewer_count = reviewer_count + 1
+            WHERE proposal_id = %s
+        """
+
+        cursor.execute(query, (proposal_id,))
+        
+        query = """
+            UPDATE proposals_docs
+            SET status = 'under_review'
+            WHERE proposal_id = %s
+        """
+        cursor.execute(query, (proposal_id,))
         conn.commit()   # IMPORTANT
 
         return True
@@ -25,28 +39,21 @@ def assign_reviewer(proposal_id, reviewer_id):
 
 def increment_review_count(proposal_id):
     ...
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+    # try:
+    #     conn = get_db_connection()
+    #     cursor = conn.cursor()
 
-        query = """
-            UPDATE proposals_docs
-            SET reviewer_count = reviewer_count + 1
-            WHERE proposal_id = %s
-        """
-
-        cursor.execute(query, (proposal_id,))
-        conn.commit() 
+      
+    #     conn.commit() 
         
-        return True
-    except Exception as e:
-        print("Increment review count error:", e)
-        return False
-    finally:
-        cursor.close()
-        conn.close()
-
-
+    #     return True
+    # except Exception as e:
+    #     print("Increment review count error:", e)
+    #     return False
+    # finally:
+    #     cursor.close()
+    #     conn.close()
+        
 
 def reassign_reviewer(proposal_id, reviewer_id):
     ...
@@ -59,10 +66,32 @@ def reassign_reviewer(proposal_id, reviewer_id):
             WHERE proposal_id = %s
             AND user_id = %s
         """
-
         cursor.execute(query, (proposal_id, reviewer_id))
-        conn.commit() 
         
+        query = """
+            UPDATE proposals_docs
+            SET reviewer_count = GREATEST(0, reviewer_count - 1)
+            WHERE proposal_id = %s
+        """
+
+        cursor.execute(query, (proposal_id,))
+          # check count
+        cursor.execute("""
+            SELECT reviewer_count
+            FROM proposals_docs
+            WHERE proposal_id = %s
+        """, (proposal_id,))
+        reviewer_count = cursor.fetchone()[0]
+
+        # update status only if no reviewers left
+        if reviewer_count == 0:
+            cursor.execute("""
+                UPDATE proposals_docs
+                SET status = 'for_review'
+                WHERE proposal_id = %s
+            """, (proposal_id,))
+
+        conn.commit()
         return True
     except Exception as e:
         print("Reassign reviewer error:", e)
@@ -73,23 +102,17 @@ def reassign_reviewer(proposal_id, reviewer_id):
 
 def decrement_review_count(proposal_id):
    ...
-   try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+#    try:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
 
-        query = """
-            UPDATE proposals_docs
-            SET reviewer_count = GREATEST(0, reviewer_count - 1)
-            WHERE proposal_id = %s
-        """
-
-        cursor.execute(query, (proposal_id,))
-        conn.commit() 
+       
+#         conn.commit() 
         
-        return True
-   except Exception as e:
-        print("Decrement review count error:", e)
-        return False
-   finally:
-        cursor.close()
-        conn.close()
+#         return True
+#    except Exception as e:                                     
+#         print("Decrement review count error:", e)
+#         return False
+#    finally:
+#         cursor.close()
+#         conn.close()
