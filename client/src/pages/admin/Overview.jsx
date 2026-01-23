@@ -31,33 +31,49 @@ const Overview = () => {
   const [staticCards, setStaticCards] = useState([]);
   const [pieData, setPieData] = useState([]);
   const [barData, setBarData] = useState([]);
+  const [progress, setProgress] = useState(0);
 
   const totalUserCount = pieData.reduce((acc, curr) => acc + curr.value, 0);
 
   // 2. Axios Fetch Function
  useEffect(() => {
+    let interval;
+    
+    // Start fake progress increments
+    interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(interval);
+          return 90; // Stop at 90% until data arrives
+        }
+        return prev + 10; // Increase by 10%
+      });
+    }, 200);
+
     const getDashboardData = async () => {
       try {
-        setLoading(true);
         const response = await axios.get('http://localhost:5000/api/admin-overview');
-        console.log("API Data:", response.data.status_cycle);
-        const data = response.data;
-
-        setStaticCards(data.static_cards);
-        setStatusCycle(data.status_cycle);
         
+        // Kapag may data na, jump to 100% then close loading
+        setProgress(100);
+        setTimeout(() => {
+          setStaticCards(response.data.static_cards);
+          setStatusCycle(response.data.status_cycle);
+          setPieData(response.data.pie_data.filter(item => item.name !== "Total"));
+          setBarData(response.data.bar_data);
+          setLoading(false);
+        }, 400); // Small delay para makita ang 100%
 
-        const filteredPie = data.pie_data.filter(item => item.name !== "Total");
-        setPieData(filteredPie);
-        
-        setBarData(data.bar_data);
-        setLoading(false);
-      } catch {
+      } catch  {
         setError("Failed to fetch data");
         setLoading(false);
+      } finally {
+        clearInterval(interval);
       }
     };
+
     getDashboardData();
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -81,32 +97,67 @@ const Overview = () => {
 
   const PIE_COLORS = ['#16a34a', '#4ade80'];
 
-  if (loading) {
-    return (
-      <>
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in">
-          <div
-            className="relative bg-white backdrop-blur-xl px-14 py-10 rounded-2xl shadow-2xl flex flex-col items-center animate-pop-out"
-          >
-            {/* Gradient Ring Loader */}
-            <div className="relative animate-float mb-5">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
-              <div className="absolute inset-2 bg-white rounded-full" />
+   if (loading) {
+      const radius = 45;
+      const circumference = 2 * Math.PI * radius;
+      const offset = circumference - (progress / 100) * circumference;
+
+      return (
+        <div className="h-screen w-full flex flex-col items-center justify-center bg-[#fbfcfb]">
+          <div className="relative flex items-center justify-center">
+            {/* Progress Ring */}
+            <svg className="w-32 h-32 transform -rotate-90 scale-110">
+              <circle
+                cx="64" cy="64" r={radius}
+                stroke="currentColor"
+                strokeWidth="6"
+                fill="transparent"
+                className="text-slate-100"
+              />
+              <circle
+                cx="64" cy="64" r={radius}
+                stroke="currentColor"
+                strokeWidth="6"
+                fill="transparent"
+                strokeDasharray={circumference}
+                style={{ 
+                  strokeDashoffset: offset,
+                  transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+                strokeLinecap="round"
+                className="text-emerald-600"
+              />
+            </svg>
+
+            {/* Center Percentage */}
+            <div className="absolute flex flex-col items-center">
+              <span className="text-3xl font-black text-slate-800 tracking-tighter">
+                {progress}<span className="text-sm font-bold text-emerald-600 ml-0.5">%</span>
+              </span>
             </div>
+          </div>
 
-            {/* Text */}
-            <p className="text-lg font-semibold shimmer-text loading-dots mb-2">
-              Generating Insights
-            </p>
-
-            <p className="text-sm text-gray-500">
-              Aggregating real-time metrics and proposal trends.
-            </p>
+          {/* Professional Status Label */}
+          <div className="mt-12 flex flex-col items-center">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-[1px] w-8 bg-slate-200" />
+              <div className="flex items-center gap-2 px-4 py-1.5 bg-white border border-slate-100 shadow-sm rounded-full">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.15em]">
+                  System Synchronizing
+                </span>
+              </div>
+              <div className="h-[1px] w-8 bg-slate-200" />
+            </div>
+            
+            <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em] max-w-[250px] text-center leading-relaxed">
+              Compiling real-time analytics <br/> 
+              <span className="text-slate-300 font-medium italic">& optimization metrics</span>
+            </h2>
           </div>
         </div>
-      </>
-    );
-  }
+      );
+    }
 
   if (error) {
     return (
