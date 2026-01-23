@@ -38,7 +38,7 @@ def get_overview_data_controller():
     rows = get_monthly_document_status_counts()
     data["bar_data"] = bar_data_mapper(rows)
     try:
-        return jsonify(data), 200
+        return jsonify(data), 200        
     except Exception as e:
         return {"error": str(e)}
   

@@ -6,15 +6,20 @@ from model.admin.get_total_user import get_total_users, get_users_role
 from collections import OrderedDict
 
 def status_cycle_mapper():
+    for_review = get_documents_count_by_status("for_review")
     under_review = get_documents_count_by_status("under_review")
+    revisions = get_documents_count_by_status("for_revision")
+    approval = get_documents_count_by_status("for_approval")
     completed = get_documents_count_by_status("approved")
     rejected = get_documents_count_by_status("rejected")
-    revisions = get_documents_count_by_status("for_revision")
     data = [
+        { f"label": "For Reviews", "value":  for_review },
         { f"label": "Under Reviews", "value": under_review },
+        { f"label": "Revisions", "value": revisions },
+        { f"label": "For Approval", "value": approval},
         { f"label": "Completed", "value": completed },
         { f"label": "Rejected",  "value": rejected },
-        { f"label": "Revisions", "value": revisions },
+       
     ];
     return data
 
@@ -40,8 +45,18 @@ def pie_data_mapper():
     ];
     return data
 
+
 def bar_data_mapper(rows):
     months = OrderedDict()
+
+    STATUS_MAP = {
+        "for_review": "ForReview",
+        "under_review": "UnderReview",
+        "revision": "Revisions",
+        "approval": "Approval",
+        "completed": "Completed",
+        "rejected": "Rejected",
+    }
 
     for r in rows:
         key = f"{r['year']}-{r['month_num']:02d}"
@@ -49,19 +64,16 @@ def bar_data_mapper(rows):
         if key not in months:
             months[key] = {
                 "name": r["month_name"],
+                "ForReview": 0,
+                "UnderReview": 0,
                 "Revisions": 0,
+                "Approval": 0,
                 "Completed": 0,
                 "Rejected": 0,
-                "UnderReview": 0
             }
 
-        if r["status"] == "revision":
-            months[key]["Revisions"] = r["total"]
-        elif r["status"] == "completed":
-            months[key]["Completed"] = r["total"]
-        elif r["status"] == "rejected":
-            months[key]["Rejected"] = r["total"]
-        elif r["status"] == "under_review":
-            months[key]["UnderReview"] = r["total"]
+        status_key = STATUS_MAP.get(r["status"])
+        if status_key:
+            months[key][status_key] = r["total"]
 
     return list(months.values())
