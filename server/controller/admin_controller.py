@@ -31,13 +31,13 @@ from controller.mapper.admin_manage_docs import get_docs_mapper
 
 # ADMIN OVERVIEW PAGES
 def get_overview_data_controller():
-    data = {}
-    data['status_cycle'] = status_cycle_mapper()
-    data['static_cards'] = static_cards_mapper()
-    data['pie_data'] = pie_data_mapper()
-    rows = get_monthly_document_status_counts()
-    data["bar_data"] = bar_data_mapper(rows)
     try:
+        data = {}
+        data['status_cycle'] = status_cycle_mapper()
+        data['static_cards'] = static_cards_mapper()
+        data['pie_data'] = pie_data_mapper()
+        rows = get_monthly_document_status_counts()
+        data["bar_data"] = bar_data_mapper(rows)
         return jsonify(data), 200        
     except Exception as e:
         return {"error": str(e)}

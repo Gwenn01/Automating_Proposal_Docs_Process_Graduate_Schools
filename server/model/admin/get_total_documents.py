@@ -2,14 +2,12 @@ from database.connection import get_db_connection
 
 def get_all_documents():
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM proposals_docs")
-    total_documents = cursor.fetchone()[0]
+    total_documents = cursor.fetchall()
     cursor.close()
     conn.close()
     return total_documents
-
-from database.connection import get_db_connection
 
 def get_all_documents_with_user():
     conn = get_db_connection()

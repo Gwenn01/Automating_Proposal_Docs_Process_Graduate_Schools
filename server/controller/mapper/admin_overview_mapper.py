@@ -3,15 +3,45 @@ from model.admin.get_total_documents import (
     get_documents_count_by_status
 )
 from model.admin.get_total_user import get_total_users, get_users_role
+from model.admin.get_total_documents import get_all_documents
+from model.admin.get_total_user import get_all_users
 from collections import OrderedDict
 
+# get the total user in one fetch
+def count_users():
+    data = {
+        "total_implementor": 0,
+        "total_reviewer": 0,
+        "total_user": 0
+    }
+    for user in get_all_users():
+        data["total_user"] += 1
+        if user["role"] == "implementor":
+            data["total_implementor"] += 1
+        elif user["role"] == "reviewer":
+            data["total_reviewer"] += 1
+    return data
+
 def status_cycle_mapper():
-    for_review = get_documents_count_by_status("for_review")
-    under_review = get_documents_count_by_status("under_review")
-    revisions = get_documents_count_by_status("for_revision")
-    approval = get_documents_count_by_status("for_approval")
-    completed = get_documents_count_by_status("approved")
-    rejected = get_documents_count_by_status("rejected")
+    for_review = 0
+    under_review =0
+    revisions = 0
+    approval = 0
+    completed = 0
+    rejected = 0
+    for doc in get_all_documents():
+        if doc["status"] == "for_review":
+            for_review += 1
+        elif doc["status"] == "under_review":
+            under_review += 1
+        elif doc["status"] == "for_revision":
+            revisions += 1
+        elif doc["status"] == "for_approval":
+            approval += 1
+        elif doc["status"] == "approved":
+            completed += 1
+        elif doc["status"] == "rejected":
+            rejected += 1
     data = [
         { f"label": "For Reviews", "value":  for_review },
         { f"label": "Under Reviews", "value": under_review },
@@ -24,8 +54,9 @@ def status_cycle_mapper():
     return data
 
 def static_cards_mapper():
-    total_implementors = get_users_role("implementor")
-    total_reviewers = get_users_role("reviewer")
+    data = count_users()
+    total_implementors = data["total_implementor"]
+    total_reviewers = data["total_reviewer"]
     total_documents = get_documents_count()
     data = [
         { f"label": "Total Implementors", "value": total_implementors},
@@ -35,9 +66,10 @@ def static_cards_mapper():
     return data
 
 def pie_data_mapper():
-    total_implementors = get_users_role("implementor")
-    total_reviewers = get_users_role("reviewer")
-    total = get_total_users()
+    data = count_users()
+    total_implementors = data["total_implementor"]
+    total_reviewers = data["total_reviewer"]
+    total = data["total_user"]
     data = [
         { f"name": 'Implementor', "value": total_implementors},
         { f"name": 'Reviewers', "value": total_reviewers },
