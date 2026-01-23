@@ -7,13 +7,12 @@ import {
 } from 'recharts';
 
 const STATUS_LOOKUP = {
-  // Eto ang kailangan para sa 4th card (dahil "Under Reviews" ang label sa API)
-  "Under Reviews": { id: 'UnderReview', icon: Clock, color: "text-blue-600", bg: "bg-blue-50", glow: "bg-blue-400" },
-  "Under Review": { id: 'UnderReview', icon: Clock, color: "text-blue-600", bg: "bg-blue-50", glow: "bg-blue-400" },
-  "UnderReview": { id: 'UnderReview', icon: Clock, color: "text-blue-600", bg: "bg-blue-50", glow: "bg-blue-400" },
-  "Completed": { id: 'Completed', icon: CheckCircle, color: "text-green-600", bg: "bg-green-50", glow: "bg-green-400" },
+  "For Review": { id: 'ForReview', icon: Clock, color: "text-blue-500", bg: "bg-blue-50", glow: "bg-blue-400" },
+  "UnderReview": { id: 'UnderReview', icon: Clock, color: "text-indigo-600", bg: "bg-indigo-50", glow: "bg-indigo-400" },
+  "For Revisions": { id: 'Revisions', icon: RefreshCcw, color: "text-amber-600", bg: "bg-amber-50", glow: "bg-amber-400" },
+  "For Approval": { id: 'ForApproval', icon: Clock, color: "text-purple-600", bg: "bg-purple-50", glow: "bg-purple-400" },
+  "Approved": { id: 'Approved', icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50", glow: "bg-emerald-400" },
   "Rejected": { id: 'Rejected', icon: XCircle, color: "text-red-600", bg: "bg-red-50", glow: "bg-red-400" },
-  "Revisions": { id: 'Revisions', icon: RefreshCcw, color: "text-amber-600", bg: "bg-amber-50", glow: "bg-amber-400" },
 };
 
 const STATIC_CARD_LOOKUP = {
@@ -47,7 +46,7 @@ const Overview = () => {
         setStaticCards(data.static_cards);
         setStatusCycle(data.status_cycle);
         
-        // I-filter ang "Total" para sa chart logic pero i-save ang value nito
+
         const filteredPie = data.pie_data.filter(item => item.name !== "Total");
         setPieData(filteredPie);
         
@@ -131,12 +130,14 @@ const Overview = () => {
   const activeStatusItem = statusCycle[currentStatusIndex] || (statusCycle.length > 0 ? statusCycle[0] : { label: 'Under Review', value: 0 });
 
   const getStatusConfig = (label) => {
-    const normalized = (label || "").toLowerCase().trim();
-    if (normalized.includes("review")) return STATUS_LOOKUP["Under Review"];
-    if (normalized.includes("completed")) return STATUS_LOOKUP["Completed"];
+    const normalized = (label || "").toLowerCase().trim().replace(/\s+/g, '');
+    if (normalized.includes("forreview")) return STATUS_LOOKUP["For Review"];
+    if (normalized.includes("underreview")) return STATUS_LOOKUP["UnderReview"];
+    if (normalized.includes("forrevisions") || normalized.includes("revision")) return STATUS_LOOKUP["For Revisions"];
+    if (normalized.includes("forapproval")) return STATUS_LOOKUP["For Approval"];
+    if (normalized.includes("approved")) return STATUS_LOOKUP["Approved"];
     if (normalized.includes("rejected")) return STATUS_LOOKUP["Rejected"];
-    if (normalized.includes("revisions")) return STATUS_LOOKUP["Revisions"];
-    return STATUS_LOOKUP["Under Review"];
+    return STATUS_LOOKUP["UnderReview"]; // Default
   };
 
   const activeStatusConfig = getStatusConfig(activeStatusItem.label);
@@ -276,18 +277,20 @@ const Overview = () => {
           <div className="flex-1 w-full min-h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }} barGap={10}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} dy={15} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} width={30} />
-                <Tooltip cursor={{ fill: '#f8fafc', radius: 8 }} />
-                <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '30px', fontSize: '11px', fontWeight: 'bold' }} />
-                
-                {/* Logic: Ang fillOpacity ay nagbabago base sa kung anong card ang active */}
-                <Bar dataKey="Completed" fill="#16a34a" radius={[6, 6, 0, 0]} barSize={10}/>
-                <Bar dataKey="UnderReview" name="Under Review" fill="#2563eb" radius={[6, 6, 0, 0]} barSize={10} />
-                <Bar dataKey="Revisions" fill="#f59e0b" radius={[6, 6, 0, 0]} barSize={10}/>
-                <Bar dataKey="Rejected" fill="#ef4444" radius={[6, 6, 0, 0]} barSize={10}/>
-              </BarChart>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} dy={15} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} width={30} />
+              <Tooltip cursor={{ fill: '#f8fafc', radius: 8 }} />
+              <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '30px', fontSize: '11px', fontWeight: 'bold' }} />
+              
+              {/* Bars for each Status */}
+              <Bar dataKey="ForReview" name="For Review" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={8}/>
+              <Bar dataKey="UnderReview" name="Under Review" fill="#4f46e5" radius={[6, 6, 0, 0]} barSize={8} />
+              <Bar dataKey="Revisions" name="For Revisions" fill="#f59e0b" radius={[6, 6, 0, 0]} barSize={8}/>
+              <Bar dataKey="ForApproval" name="For Approval" fill="#9333ea" radius={[6, 6, 0, 0]} barSize={8}/>
+              <Bar dataKey="Approved" name="Approved" fill="#059669" radius={[6, 6, 0, 0]} barSize={8}/>
+              <Bar dataKey="Rejected" name="Rejected" fill="#ef4444" radius={[6, 6, 0, 0]} barSize={8}/>
+            </BarChart>
             </ResponsiveContainer>
           </div>
         </div>

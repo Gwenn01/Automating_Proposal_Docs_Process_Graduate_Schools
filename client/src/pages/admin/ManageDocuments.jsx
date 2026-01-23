@@ -2,19 +2,15 @@ import React, { useState, useEffect } from "react";
 import {
   Search,
   Eye,
-  Edit3,
   Trash2,
   FileText,
   Calendar,
   ShieldCheck,
 } from "lucide-react";
-import EditModal from "../../components/Admin/EditModal";
 import axios from "axios";
 
 const ManageDocuments = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedDoc, setSelectedDoc] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -63,16 +59,31 @@ const ManageDocuments = () => {
   }
   if (error) return <p>{error}</p>;
 
-  const handleEditClick = (doc) => {
-    setSelectedDoc(doc);
-    setIsEditModalOpen(true);
-  };
-
   const filteredDocuments = documents.filter(
     (doc) =>
       doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doc.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "---";
+    const date = new Date(dateString);
+    
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const STATUS_MAP = {
+    for_review: { label: "For Review", color: "blue" },
+    under_review: { label: "Under Review", color: "indigo" },
+    for_revisions: { label: "For Revisions", color: "amber" },
+    for_approval: { label: "For Approval", color: "purple" },
+    approved: { label: "Approved", color: "emerald" },
+    rejected: { label: "Rejected", color: "rose" },
+  };
 
   return (
     <div className="p-8 lg:p-10 space-y-10 bg-[#fbfcfb] h-auto animate-in fade-in duration-500">
@@ -114,7 +125,6 @@ const ManageDocuments = () => {
           <table className="w-full border-separate border-spacing-y-[18px]">
             <thead>
               <tr className="text-slate-400 uppercase text-[11px] tracking-[0.2em] font-black">
-                <th className="pb-2 px-8 text-center font-bold">Ref. ID</th>
                 <th className="pb-2 px-6 text-left font-bold">
                   Document Details
                 </th>
@@ -128,30 +138,6 @@ const ManageDocuments = () => {
             <tbody>
               {filteredDocuments.map((doc) => (
                 <tr key={doc.id} className="group">
-                  {/* ID Column - Enhanced Serial Registry Style */}
-                  <td className="py-7 px-8 bg-white first:rounded-l-[24px] border-y border-l border-slate-100/50 shadow-[0_4px_15px_rgba(0,0,0,0.02)] group-hover:border-emerald-100 group-hover:bg-emerald-50/40 transition-all duration-500 relative overflow-hidden">
-                    {/* Subtle Vertical Accent Line on Hover */}
-                    <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-emerald-500 scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-center" />
-
-                    <div className="flex flex-col items-center justify-center gap-1">
-                      {/* The Badge */}
-                      <div className="relative group/id">
-                        <div className="absolute inset-0 bg-emerald-500/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <span className="relative z-10 flex items-center justify-center min-w-[54px] h-[28px] bg-slate-50 text-slate-500 group-hover:text-emerald-700 group-hover:bg-white text-[11px] font-black tracking-tighter rounded-full border border-slate-100 group-hover:border-emerald-200 transition-all duration-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] group-hover:shadow-md">
-                          <span className="opacity-40 text-[9px] mr-0.5 mt-0.5">
-                            #
-                          </span>
-                          {doc.id.toString().padStart(3, "0")}
-                        </span>
-                      </div>
-
-                      {/* Sub-label for "official" feel */}
-                      <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.15em] opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-2 group-hover:translate-y-0">
-                        Serial No.
-                      </span>
-                    </div>
-                  </td>
-
                   {/* Author & Title Details - Premium Editorial Style */}
                   <td className="py-7 px-6 bg-white border-y border-slate-100/50 shadow-[0_4px_15px_rgba(0,0,0,0.02)] group-hover:border-emerald-100 group-hover:bg-emerald-50/40 transition-all duration-500">
                     <div className="flex items-center gap-6">
@@ -207,67 +193,46 @@ const ManageDocuments = () => {
                     </div>
                   </td>
 
-                  {/* Status Badge - Glassmorphism & Adaptive Glow Style */}
+                  {/* Status Badge - Updated for 6 Statuses */}
                   <td className="py-7 px-6 bg-white border-y border-slate-100/50 shadow-[0_4px_15px_rgba(0,0,0,0.02)] group-hover:border-emerald-100 group-hover:bg-emerald-50/40 transition-all duration-500 text-center">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <div
-                        className={`
-                                  relative inline-flex items-center px-4 py-2 rounded-xl transition-all duration-500 min-w-[145px] justify-center overflow-hidden whitespace-nowrap
-                                  ${
-                                    doc.status === "Completed"
-                                      ? "bg-emerald-500/5 text-emerald-600 border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-emerald-500/30"
-                                      : doc.status === "Under Review"
-                                        ? "bg-blue-500/5 text-blue-600 border border-blue-500/20 group-hover:bg-blue-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-blue-500/30"
-                                        : doc.status === "Revision"
-                                          ? "bg-amber-500/5 text-amber-600 border border-amber-500/20 group-hover:bg-amber-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-amber-500/30"
-                                          : "bg-rose-500/5 text-rose-600 border border-rose-500/20 group-hover:bg-rose-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-rose-500/30"
-                                  }
-                                `}
-                      >
-                        {/* Dynamic Animated Glow Ring behind the text */}
-                        <div
-                          className={`absolute inset-0 opacity-0 group-hover:opacity-20 bg-white transition-opacity duration-500`}
-                        />
+                      {(() => {
+                        const config = STATUS_MAP[doc.status] || { label: doc.status, color: "slate" };
+                        const colorClass = {
+                          blue: "bg-blue-500/5 text-blue-600 border-blue-500/20 group-hover:bg-blue-500",
+                          indigo: "bg-indigo-500/5 text-indigo-600 border-indigo-500/20 group-hover:bg-indigo-500",
+                          amber: "bg-amber-500/5 text-amber-600 border-amber-500/20 group-hover:bg-amber-500",
+                          purple: "bg-purple-500/5 text-purple-600 border-purple-500/20 group-hover:bg-purple-500",
+                          emerald: "bg-emerald-500/5 text-emerald-600 border-emerald-500/20 group-hover:bg-emerald-500",
+                          rose: "bg-rose-500/5 text-rose-600 border-rose-500/20 group-hover:bg-rose-500",
+                          slate: "bg-slate-500/5 text-slate-600 border-slate-500/20 group-hover:bg-slate-500",
+                        }[config.color];
 
-                        {/* Pulse Dot Indicator */}
-                        <span className="relative flex h-2 w-2 mr-2.5 flex-shrink-0">
-                          <span
-                            className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                              doc.status === "Completed"
-                                ? "bg-emerald-400 group-hover:bg-white"
-                                : doc.status === "Under Review"
-                                  ? "bg-blue-400 group-hover:bg-white"
-                                  : doc.status === "Revision"
-                                    ? "bg-amber-400 group-hover:bg-white"
-                                    : "bg-rose-400 group-hover:bg-white"
-                            }`}
-                          ></span>
-                          <span
-                            className={`relative inline-flex rounded-full h-2 w-2 ${
-                              doc.status === "Completed"
-                                ? "bg-emerald-500 group-hover:bg-white"
-                                : doc.status === "Under Review"
-                                  ? "bg-blue-500 group-hover:bg-white"
-                                  : doc.status === "Revision"
-                                    ? "bg-amber-500 group-hover:bg-white"
-                                    : "bg-rose-500 group-hover:bg-white"
-                            }`}
-                          ></span>
-                        </span>
+                        const dotClass = {
+                          blue: "bg-blue-500",
+                          indigo: "bg-indigo-500",
+                          amber: "bg-amber-500",
+                          purple: "bg-purple-500",
+                          emerald: "bg-emerald-500",
+                          rose: "bg-rose-500",
+                          slate: "bg-slate-500",
+                        }[config.color];
 
-                        {/* Status Text - Optimized Tracking for "Under Review" */}
-                        <span
-                          className={`relative text-[10px] font-black uppercase ${
-                            doc.status === "Under Review"
-                              ? "tracking-wider"
-                              : "tracking-[0.15em]"
-                          }`}
-                        >
-                          {doc.status}
-                        </span>
-                      </div>
+                        return (
+                          <div className={`relative inline-flex items-center px-4 py-2 rounded-xl transition-all duration-500 min-w-[145px] justify-center overflow-hidden border group-hover:text-white ${colorClass}`}>
+                            {/* Pulse Dot */}
+                            <span className="relative flex h-2 w-2 mr-2.5 flex-shrink-0">
+                              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 group-hover:bg-white ${dotClass}`}></span>
+                              <span className={`relative inline-flex rounded-full h-2 w-2 group-hover:bg-white ${dotClass}`}></span>
+                            </span>
 
-                      {/* Secondary "Progress" label for extra detail */}
+                            <span className="relative text-[10px] font-black uppercase tracking-wider">
+                              {config.label}
+                            </span>
+                          </div>
+                        );
+                      })()}
+
                       <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500">
                         Workflow State
                       </span>
@@ -288,7 +253,7 @@ const ManageDocuments = () => {
 
                         <div className="flex items-center whitespace-nowrap gap-1.5">
                           <span className="text-[12px] font-black text-slate-700 group-hover:text-slate-900 transition-colors tracking-tight">
-                            {doc.submissionDate}
+                            {formatDate(doc.submissionDate)}
                           </span>
                           {/* Subtle separator dot only on hover */}
                           <span className="w-1 h-1 rounded-full bg-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -305,46 +270,64 @@ const ManageDocuments = () => {
                     </div>
                   </td>
 
-                  {/* Actions Column - Premium Floating Buttons with Glow Backgrounds */}
-                  <td className="py-7 px-6 bg-white last:rounded-r-[32px] border-y border-r border-slate-100/50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] group-hover:border-emerald-100 group-hover:bg-emerald-50/40 transition-all duration-500">
-                    <div className="flex items-center justify-center gap-4">
-                      {/* View Button - Premium Green Hover */}
-                      <button className="group/view relative p-3.5 bg-slate-50 text-slate-400 rounded-2xl transition-all duration-500 hover:-translate-y-1.5 active:scale-95 overflow-hidden border border-slate-100 hover:border-emerald-200">
-                        {/* Dynamic Background Layer */}
-                        <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover/view:opacity-100 transition-all duration-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
+                  {/* Actions Column - Multi-tier Modern Layout */}
+                  <td className="py-6 px-6 bg-white last:rounded-r-[32px] border-y border-r border-slate-100/50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] group-hover:border-emerald-100/50 group-hover:bg-emerald-50/30 transition-all duration-700">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      
+                      {/* Tier 1: Standard Actions (Always Horizontal) */}
+                      <div className="flex items-center justify-center gap-3">
+                        {/* View Document */}
+                        <div className="group/action relative">
+                          <button className="p-3 bg-slate-50 text-slate-400 rounded-xl transition-all duration-300 hover:bg-blue-600 hover:text-white hover:-translate-y-1 shadow-sm border border-slate-100 active:scale-95">
+                            <FileText size={18} strokeWidth={2.5} />
+                          </button>
+                          <span className="absolute -top-9 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg opacity-0 group-hover/action:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 uppercase tracking-widest shadow-xl">
+                            View Docs
+                          </span>
+                        </div>
 
-                        {/* Icon Layer */}
-                        <Eye
-                          size={18}
-                          strokeWidth={2.5}
-                          className="relative z-10 transition-colors duration-500 group-hover/view:text-white"
-                        />
-                      </button>
+                        {/* View Review */}
+                        <div className="group/action relative">
+                          <button className="p-3 bg-slate-50 text-slate-400 rounded-xl transition-all duration-300 hover:bg-indigo-600 hover:text-white hover:-translate-y-1 shadow-sm border border-slate-100 active:scale-95">
+                            <Eye size={18} strokeWidth={2.5} />
+                          </button>
+                          <span className="absolute -top-9 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg opacity-0 group-hover/action:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 uppercase tracking-widest shadow-xl">
+                            View Review
+                          </span>
+                        </div>
+                      </div>
 
-                      {/* Edit Button - Premium Blue Hover */}
-                      <button
-                        onClick={() => handleEditClick(doc)}
-                        className="group/edit relative p-3.5 bg-slate-50 text-slate-400 rounded-2xl transition-all duration-500 hover:-translate-y-1.5 active:scale-95 overflow-hidden border border-slate-100 hover:border-blue-200"
-                      >
-                        <div className="absolute inset-0 bg-emerald-500 opacity-0 group-hover/edit:opacity-100 transition-all duration-500 shadow-[0_0_20px_rgba(59,130,246,0.4)]" />
+                      {/* Tier 2: Decision Actions (Appears Below for 'for_approval') */}
+                      {doc.status === "for_approval" && (
+                        <div className="flex flex-col w-full gap-2 animate-in fade-in slide-in-from-top-2 duration-500">
+                          {/* Subtle Horizontal Divider */}
+                          <div className="flex items-center gap-2 px-2">
+                              <div className="h-[1px] flex-1 bg-slate-100" />
+                              <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em]">Decision</span>
+                              <div className="h-[1px] flex-1 bg-slate-100" />
+                          </div>
 
-                        <Edit3
-                          size={18}
-                          strokeWidth={2.5}
-                          className="relative z-10 transition-colors duration-500 group-hover/edit:text-white"
-                        />
-                      </button>
+                          <div className="flex items-center justify-center gap-2">
+                              {/* Approve Button */}
+                              <button 
+                                  onClick={() => console.log("Approved", doc.id)}
+                                  className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 hover:bg-emerald-500 hover:text-white transition-all duration-300 group/btn"
+                              >
+                                  <ShieldCheck size={14} strokeWidth={3} />
+                                  <span className="text-[10px] font-black uppercase tracking-tight">Approve</span>
+                              </button>
 
-                      {/* Delete Button - Premium Rose Hover */}
-                      <button className="group/delete relative p-3.5 bg-slate-50 text-slate-400 rounded-2xl transition-all duration-500 hover:-translate-y-1.5 active:scale-95 overflow-hidden border border-slate-100 hover:border-rose-200">
-                        <div className="absolute inset-0 bg-rose-500 opacity-0 group-hover/delete:opacity-100 transition-all duration-500 shadow-[0_0_20px_rgba(244,63,94,0.4)]" />
-
-                        <Trash2
-                          size={18}
-                          strokeWidth={2.5}
-                          className="relative z-10 transition-colors duration-500 group-hover/delete:text-white"
-                        />
-                      </button>
+                              {/* Reject Button */}
+                              <button 
+                                  onClick={() => console.log("Rejected", doc.id)}
+                                  className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-rose-50 text-rose-600 rounded-lg border border-rose-100 hover:bg-rose-500 hover:text-white transition-all duration-300 group/btn"
+                              >
+                                  <Trash2 size={14} strokeWidth={3} />
+                                  <span className="text-[10px] font-black uppercase tracking-tight">Reject</span>
+                              </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -368,12 +351,6 @@ const ManageDocuments = () => {
           </div>
         )}
       </div>
-
-      <EditModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        data={selectedDoc}
-      />
     </div>
   );
 };
