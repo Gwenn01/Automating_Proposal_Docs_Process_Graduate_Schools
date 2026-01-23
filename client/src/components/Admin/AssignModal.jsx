@@ -55,9 +55,9 @@ const AssignModal = ({ isOpen, onClose, data, onUpdate, mode }) => {
     const reviewer = reviewers.find(r => r.id === id);
     const isOriginal = reviewer?.is_assign === 1;
 
-    // Kapag "Add More" (assign mode), bawal i-unselect ang dati na doon.
-    // Kapag "Reassign", pwede i-unselect lahat para mapalitan.
-    if (mode === "assign" && isOriginal) return;
+    if (mode === "assign" && isOriginal) {
+      return;
+    }
 
     setSelectedReviewers((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
@@ -97,9 +97,11 @@ const AssignModal = ({ isOpen, onClose, data, onUpdate, mode }) => {
       const matchesSearch = reviewer.name.toLowerCase().includes(assignSearch.toLowerCase());
       return isReassignMode ? (matchesSearch && reviewer.is_assign === 1) : matchesSearch;
     });
+    
+    const originalAssignedIDs = reviewers.filter( r => r.is_assign === 1).map(r => r.id);
+    const hasNewSelection = selectedReviewers.some(id => !originalAssignedIDs.includes(id));
 
-    const isAllAssigned = reviewers.length > 0 && selectedReviewers.length === reviewers.length;
-    const isButtonDisabled = isSubmitting || (mode === "assign" && isAllAssigned);
+    const isButtonDisabled = isSubmitting || (mode === "assign" && !hasNewSelection) || (isReassignMode && selectedReviewers.length === 0);
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
@@ -202,16 +204,15 @@ const AssignModal = ({ isOpen, onClose, data, onUpdate, mode }) => {
               {isSubmitting ? (
                 <>
                   <Loader2 size={14} className="animate-spin" />
-                  Processing...
+                  <span className="ml-2">Processing...</span>
                 </>
               ) : (
                 <>
-                  {/* Dynamic Text Logic */}
-                  {mode === "assign" && isAllAssigned 
-                    ? "All Reviewers Assigned" 
-                    : isReassignMode 
-                      ? "Confirm Reassign" 
-                      : "Confirm Assign"}
+                  {isReassignMode ? (
+                    "Update Assignment"
+                  ) : (
+                    mode === "assign" && hasNewSelection ? "Add Selected Reviewers" : "Confirm Assignment"
+                  )}
                 </>
               )}
             </button>
