@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Users, UserCheck, FileText, Clock, TrendingUp, CheckCircle, XCircle, RefreshCcw } from 'lucide-react';
+import { Users, UserCheck, FileText, Clock, TrendingUp, CheckCircle, XCircle, RefreshCcw, Search, FileCheck } from 'lucide-react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
@@ -8,9 +8,9 @@ import {
 
 const STATUS_LOOKUP = {
   "For Review": { id: 'ForReview', icon: Clock, color: "text-blue-500", bg: "bg-blue-50", glow: "bg-blue-400" },
-  "UnderReview": { id: 'UnderReview', icon: Clock, color: "text-indigo-600", bg: "bg-indigo-50", glow: "bg-indigo-400" },
+  "UnderReview": { id: 'UnderReview', icon: Search, color: "text-indigo-600", bg: "bg-indigo-50", glow: "bg-indigo-400" },
   "For Revisions": { id: 'Revisions', icon: RefreshCcw, color: "text-amber-600", bg: "bg-amber-50", glow: "bg-amber-400" },
-  "For Approval": { id: 'ForApproval', icon: Clock, color: "text-purple-600", bg: "bg-purple-50", glow: "bg-purple-400" },
+  "For Approval": { id: 'ForApproval', icon: FileCheck, color: "text-purple-600", bg: "bg-purple-50", glow: "bg-purple-400" },
   "Approved": { id: 'Approved', icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50", glow: "bg-emerald-400" },
   "Rejected": { id: 'Rejected', icon: XCircle, color: "text-red-600", bg: "bg-red-50", glow: "bg-red-400" },
 };
@@ -19,6 +19,34 @@ const STATIC_CARD_LOOKUP = {
   "Total Implementors": { icon: Users, color: "text-green-600", bg: "bg-green-50" },
   "Total Reviewers": { icon: UserCheck, color: "text-green-600", bg: "bg-green-50" },
   "Total Documents": { icon: FileText, color: "text-green-600", bg: "bg-green-50" },
+};
+
+const CustomLegend = ({ payload }) => {
+  return (
+    <div className="flex flex-wrap items-center justify-start md:justify-end gap-x-6 gap-y-3 mb-8 px-2">
+      {payload.map((entry, index) => (
+        <div 
+          key={`item-${index}`} 
+          className="flex items-center gap-2.5 group cursor-default transition-all duration-300 hover:translate-y-[-1px]"
+        >
+          {/* Custom Circle Icon with Glow */}
+          <div 
+            className="w-2.5 h-2.5 rounded-full shadow-sm relative"
+            style={{ backgroundColor: entry.color }}
+          >
+            <div 
+              className="absolute inset-0 rounded-full blur-[2px] opacity-0 group-hover:opacity-60 transition-opacity"
+              style={{ backgroundColor: entry.color }}
+            />
+          </div>
+          
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.12em] whitespace-nowrap">
+            {entry.value}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 const Overview = () => {
@@ -61,6 +89,7 @@ const Overview = () => {
           setStatusCycle(response.data.status_cycle);
           setPieData(response.data.pie_data.filter(item => item.name !== "Total"));
           setBarData(response.data.bar_data);
+          setCurrentStatusIndex(0);
           setLoading(false);
         }, 400); // Small delay para makita ang 100%
 
@@ -177,17 +206,40 @@ const Overview = () => {
     );
   }
 
-  const activeStatusItem = statusCycle[currentStatusIndex] || (statusCycle.length > 0 ? statusCycle[0] : { label: 'Under Review', value: 0 });
+  const activeStatusItem = statusCycle[currentStatusIndex];
+  if (!activeStatusItem && !loading) return null;
 
   const getStatusConfig = (label) => {
-    const normalized = (label || "").toLowerCase().trim().replace(/\s+/g, '');
-    if (normalized.includes("forreview")) return STATUS_LOOKUP["For Review"];
-    if (normalized.includes("underreview")) return STATUS_LOOKUP["UnderReview"];
-    if (normalized.includes("forrevisions") || normalized.includes("revision")) return STATUS_LOOKUP["For Revisions"];
-    if (normalized.includes("forapproval")) return STATUS_LOOKUP["For Approval"];
-    if (normalized.includes("approved")) return STATUS_LOOKUP["Approved"];
-    if (normalized.includes("rejected")) return STATUS_LOOKUP["Rejected"];
-    return STATUS_LOOKUP["UnderReview"]; // Default
+    if (!label) return { ...STATUS_LOOKUP["UnderReview"], displayLabel: "Under Review" };
+
+    const normalized = label.toLowerCase().trim();
+
+    // Dito natin ifoforce kung ano ang dapat na "Display Label"
+    if (normalized.includes("for review")) 
+      return { ...STATUS_LOOKUP["For Review"], displayLabel: "For Review" };
+      
+    if (normalized.includes("under review") || normalized.includes("underreview")) 
+      return { ...STATUS_LOOKUP["UnderReview"], displayLabel: "Under Review" };
+
+    if (normalized.includes("revision")) 
+      return { ...STATUS_LOOKUP["For Revisions"], displayLabel: "For Revisions" };
+
+    if (normalized.includes("approval")) 
+      return { ...STATUS_LOOKUP["For Approval"], displayLabel: "For Approval" };
+
+    if (normalized.includes("approved") || normalized.includes("complete")) 
+      return { ...STATUS_LOOKUP["Approved"], displayLabel: "Approved" };
+
+    if (normalized.includes("reject")) 
+      return { ...STATUS_LOOKUP["Rejected"], displayLabel: "Rejected" };
+
+    return { 
+      icon: FileText, 
+      color: "text-slate-600", 
+      bg: "bg-slate-50", 
+      glow: "bg-slate-400",
+      displayLabel: label // Fallback sa original kung walang match
+    };
   };
 
   const activeStatusConfig = getStatusConfig(activeStatusItem.label);
@@ -240,17 +292,17 @@ const Overview = () => {
             </div>
 
             <div className="mt-10 overflow-hidden">
-              <div key={currentStatusIndex} className={`transition-all duration-700 transform ${isAnimating ? 'translate-y-8 opacity-0' : 'translate-y-0 opacity-100'}`}>
+              <div key={activeStatusItem?.label} className={`transition-all duration-700 transform ${isAnimating ? 'translate-y-8 opacity-0' : 'translate-y-0 opacity-100'}`}>
                 {/* Status Label (e.g., "Completed") */}
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
-                  {statusCycle[currentStatusIndex]?.label}
+                  {activeStatusConfig.displayLabel}
                 </p>
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-baseline gap-2">
                     {/* Value: Gagamit ng ?? 0 para ipakita ang numeric 0 */}
                     <h3 className="text-4xl font-black text-slate-800 tracking-tighter leading-none">
-                      {statusCycle[currentStatusIndex]?.value ?? 0}
+                      {activeStatusItem?.value}
                     </h3>
                     <span className="text-[10px] font-bold text-slate-300 uppercase">Total</span>
                   </div>
@@ -261,7 +313,7 @@ const Overview = () => {
           
           {/* Progress Bar sa Ilalim */}
           <div className="absolute bottom-0 left-0 w-full h-1 bg-slate-50">
-              <div key={currentStatusIndex} className="h-full bg-slate-200 origin-left" style={{ animation: 'progress 4.5s linear forwards' }} />
+              <div key={activeStatusItem?.label} className="h-full bg-slate-200 origin-left" style={{ animation: 'progress 4.5s linear forwards' }} />
           </div>
         </div>
       </div>
@@ -326,12 +378,12 @@ const Overview = () => {
           </div>
           <div className="flex-1 w-full min-h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }} barGap={10}>
+              <BarChart data={barData} margin={{ top: 20, right: 10, left: 0, bottom: 20 }} barGap={10}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} dy={15} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} width={30} />
               <Tooltip cursor={{ fill: '#f8fafc', radius: 8 }} />
-              <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '30px', fontSize: '11px', fontWeight: 'bold' }} />
+              <Legend verticalAlign="top" align="right" content={<CustomLegend />} />
               
               {/* Bars for each Status */}
               <Bar dataKey="ForReview" name="For Review" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={8}/>
