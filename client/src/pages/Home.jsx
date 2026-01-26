@@ -38,7 +38,7 @@ const Home = () => {
     switch (parsedUser.role) {
       case "implementor":
       case "instructor":
-        setActive("Create Proposal");
+        setActive("View Proposal");
         break;
 
       case "reviewer":
@@ -65,6 +65,7 @@ const Home = () => {
         setActive={setActive}
         isOpen={isOpen}
         toggleSidebar={toggleSidebar}
+        user={user}
       />
 
       <main className="flex-1 flex flex-col overflow-y-auto">

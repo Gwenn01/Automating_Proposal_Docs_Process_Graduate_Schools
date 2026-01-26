@@ -1,5 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Grid, Table, MoreVertical, Eye, FileText, Users, X } from 'lucide-react';
+import DocumentViewerModal from '../components/instructor/DocumentViewerModal';
+import axios from 'axios';
+import { getStatusStyle } from '../utils/statusStyles';
 
 const ReviewProposal = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -10,6 +13,10 @@ const ReviewProposal = () => {
   const [proposalsData, setProposalsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showViewerModal, setShowViewerModal] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState(null);
+
+  const statusStyle = getStatusStyle(proposalsData.status);
 
   useEffect(() => {
     // Get user from localStorage
@@ -78,7 +85,30 @@ const ReviewProposal = () => {
     fetchProposals();
   }, [user]);
 
-  console.log(user)
+
+  const fetchCoverPage = async (proposalId) => {
+    try {
+      const res = await axios.get(
+        `http://127.0.0.1:5000/api/my-coverpage-proposals/${proposalId}`
+      );
+      return res.data;
+    } catch (error) {
+      console.error("Error fetching cover page:", error);
+      return null;
+    }
+  };
+
+  const fetchProposalContent = async (proposalId) => {
+    try {
+      const res = await axios.get(
+        `http://127.0.0.1:5000/api/my-content-proposals/${proposalId}`
+      );
+      return res.data;
+    } catch (error) {
+      console.error("Error fetching proposal content:", error);
+      return null;
+    }
+  };
 
   // Filter and search logic
   const filteredProposals = useMemo(() => {
@@ -114,16 +144,6 @@ const ReviewProposal = () => {
   }, [proposalsData]);
 
   // Helper function to get status badge styles
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case 'Pending Evaluation':
-        return 'bg-[#FFF7ED] text-[#EA580C]';
-      case 'Reviewer Completed':
-        return 'bg-[#ECFDF5] text-[#059669]';
-      default:
-        return 'bg-gray-100 text-gray-600';
-    }
-  };
 
   const handleView = (proposal) => {
     setSelectedProposal(proposal);
@@ -139,7 +159,6 @@ const ReviewProposal = () => {
 
   return (
     <div className="flex-1 p-10 bg-white min-h-screen font-sans">
-      {/* Show loading state */}
       {loading ? (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
@@ -170,21 +189,7 @@ const ReviewProposal = () => {
           {/* --- Header Section --- */}
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-[32px] font-bold text-gray-900">Review Proposal</h1>
-            
-            {/* User Profile */}
-            <div className="flex items-center space-x-3 bg-white p-1.5 rounded-full shadow-sm border border-gray-200">
-              <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-white shadow-sm flex items-center justify-center overflow-hidden">
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.fullname} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="text-blue-600 font-bold">{user.fullname?.charAt(0) || 'U'}</div>
-                )}
-              </div>
-              <div className="pr-2">
-                <div className="font-semibold text-gray-700">{user.fullname}</div>
-                <div className="text-xs text-gray-500">{user.role}</div>
-              </div>
-            </div>
+
           </div>
 
           {/* --- Controls Section --- */}
@@ -262,19 +267,21 @@ const ReviewProposal = () => {
           {/* --- Grid View --- */}
           {viewMode === 'grid' && filteredProposals.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-              {filteredProposals.map((proposal) => (
-                <div key={proposal.id} className="bg-white rounded-[32px] p-7 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col justify-between h-full">
+              {filteredProposals.map((proposal) => {
+                  const statusStyle = getStatusStyle(proposal.status);
+                return (
+                <div key={proposal.id} className="bg-white rounded-[32px] p-7 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border flex flex-col justify-between h-full">
                   <div>
                     <div className="flex justify-between items-start mb-5">
-                      <span className={`px-4 py-2.5 rounded-full text-xs font-extrabold tracking-wide ${getStatusStyle(proposal.status)}`}>
-                        {proposal.status}
+                      <span className={`px-4 py-2.5 rounded-full text-xs font-extrabold tracking-wide ${statusStyle.className}`}>
+                        {statusStyle.label}
                       </span>
                       <button className="text-gray-300 hover:text-gray-500 transition-colors">
                         <MoreVertical className="w-6 h-6" />
                       </button>
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1 leading-tight" title={proposal.title}>
+                    <h3 className="text-base font-bold text-gray-900 mb-3 leading-tight" title={proposal.title}>
                       {proposal.title}
                     </h3>
                     <p className="text-gray-500 text-sm leading-relaxed line-clamp-3 mb-6">
@@ -287,8 +294,22 @@ const ReviewProposal = () => {
                     
                     <div className="flex space-x-3">
                       <button 
-                        onClick={() => handleView(proposal)}
-                        className="flex-1 flex items-center justify-center space-x-2 bg-[#16A34A] text-white py-3 rounded-2xl font-bold text-sm hover:bg-[#15803d] transition-colors"
+                      onClick={async () => {
+                        setLoading(true);
+
+                        const cover = await fetchCoverPage(proposal.id);
+                        const content = await fetchProposalContent(proposal.id);
+
+                        setSelectedDoc({
+                          ...proposal,
+                          cover_page: cover,
+                          full_content: content,
+                        });
+
+                        setShowViewerModal(true);
+                        setLoading(false);
+                      }}
+                        className="flex-1 flex items-center justify-center space-x-2 bg-[#16A34A] text-white py-2 rounded-md font-bold text-sm hover:bg-[#15803d] transition-colors"
                       >
                         <Eye className="w-[18px] h-[18px]" />
                         <span>View</span>
@@ -296,7 +317,7 @@ const ReviewProposal = () => {
                       
                       <button 
                         onClick={() => handleReview(proposal)}
-                        className="flex-1 flex items-center justify-center space-x-2 bg-[#DC2626] text-white py-3 rounded-2xl font-bold text-sm hover:bg-[#b91c1c] transition-colors"
+                        className="flex-1 flex items-center justify-center space-x-2 bg-[#DC2626] text-white py-2 rounded-md font-bold text-sm hover:bg-[#b91c1c] transition-colors"
                       >
                         <FileText className="w-[18px] h-[18px]" />
                         <span>Review</span>
@@ -304,7 +325,7 @@ const ReviewProposal = () => {
                       
                       <button 
                         onClick={() => handleViewOthers(proposal)}
-                        className="flex-none flex items-center justify-center bg-gray-900 text-white p-3 rounded-2xl hover:bg-gray-700 transition-colors" 
+                        className="flex-none flex items-center justify-center bg-gray-900 text-white p-3 rounded-2xl hover:bg-gray-700 transition-colors rounded-md" 
                         title="View Others"
                       >
                         <Users className="w-[18px] h-[18px]" />
@@ -312,29 +333,31 @@ const ReviewProposal = () => {
                     </div>
                   </div>
                 </div>
-              ))}     
+              );})}     
             </div>
           )}
 
           {/* --- Table View --- */}
           {viewMode === 'table' && filteredProposals.length > 0 && (
-            <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gradient-to-r from-gray-100 to-gray-200 border-b border-gray-200">
                   <tr>
                     <th className="text-left px-8 py-5 text-sm font-bold text-gray-600">Status</th>
                     <th className="text-left px-8 py-5 text-sm font-bold text-gray-600">Title</th>
-                    <th className="text-left px-8 py-5 text-sm font-bold text-gray-600">Description</th>
+                    <th className="text-left px-8 py-5 text-sm font-bold text-gray-600">Submited By</th>
                     <th className="text-left px-8 py-5 text-sm font-bold text-gray-600">Date</th>
                     <th className="text-left px-8 py-5 text-sm font-bold text-gray-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredProposals.map((proposal) => (
+                  {filteredProposals.map((proposal) => {
+                     const statusStyle = getStatusStyle(proposal.status);
+                    return (
                     <tr key={proposal.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="px-8 py-5">
-                        <span className={`px-3 py-1.5 rounded-full text-xs font-extrabold tracking-wide ${getStatusStyle(proposal.status)}`}>
-                          {proposal.status}
+                        <span className={`px-5 py-2.5 rounded-full text-xs font-extrabold tracking-wide ${statusStyle.className}`}>
+                          {statusStyle.label}
                         </span>
                       </td>
                       <td className="px-8 py-5 text-sm font-semibold text-gray-900 max-w-xs">
@@ -372,7 +395,7 @@ const ReviewProposal = () => {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  );})}
                 </tbody>
               </table>
             </div>
@@ -419,6 +442,13 @@ const ReviewProposal = () => {
           )}
         </>
       )}
+
+            {/* Review Document Modal */}
+      <DocumentViewerModal
+        isOpen={showViewerModal}
+        proposalData={selectedDoc}
+        onClose={() => setShowViewerModal(false)}
+      />
     </div>
   );
 };

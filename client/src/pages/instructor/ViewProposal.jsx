@@ -5,6 +5,8 @@ import axios from "axios";
 import ReviewerModal from "../../components/instructor/ReviewerModal";
 import DocumentReviewModal from "../../components/instructor/DocumentReviewModal";
 import DocumentViewerModal from "../../components/instructor/DocumentViewerModal";
+import { useProposals } from "../../context/ProposalContext";
+
 
 const ViewProposal = () => {
   const [documents, setDocuments] = useState([]);
@@ -17,6 +19,25 @@ const ViewProposal = () => {
 
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [selectedReviewer, setSelectedReviewer] = useState(null);
+  //const { documents, loading } = useProposals();
+
+
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (!loading) return;
+
+    setProgress(0);
+    let value = 0;
+
+    const interval = setInterval(() => {
+      value += Math.random() * 10;
+      setProgress(Math.min(value, 95)); // stop at 95% visually
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -142,34 +163,49 @@ const getStatusStyle = (status) => {
   }, [documents.length]);
 
   // ================= LOADING =================
-  if (loading) {
-    return (
-      <>
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in">
-          <div
-            key={selectedDoc?.proposal_id}
-            className="relative bg-white backdrop-blur-xl px-14 py-10 rounded-2xl shadow-2xl flex flex-col items-center animate-pop-out"
-          >
-            <div className="relative animate-float mb-5">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
-              <div className="absolute inset-2 bg-white rounded-full" />
-            </div>
+if (loading) {
 
-            <p className="text-lg font-semibold shimmer-text loading-dots mb-2">
-              Loading proposal
-            </p>
-
-            <p className="text-sm text-gray-500">
-              Please wait while we prepare the document
-            </p>
-          </div>
-        </div>
-      </>
-    );
-  }
 
   return (
-    <div className="flex-1 bg-gradient-to-br from-gray-50 to-white p-10 min-h-screen">
+    <div className="w-full h-full bg-white inset-0 z-[60] flex items-center justify-center backdrop-blur-md animate-fade-in">
+      <div
+        key={selectedDoc?.proposal_id}
+        className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-[380px]"
+      >
+        {/* Floating Spinner */}
+        {/* <div className="relative animate-float mb-6">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
+          <div className="absolute inset-2 bg-white rounded-full" />
+        </div> */}
+
+        <p className="text-lg font-semibold shimmer-text mb-1">
+          Loading proposal
+        </p>
+
+        <p className="text-sm text-gray-500 mb-4">
+          Preparing your document…
+        </p>
+
+        {/* Progress Bar */}
+        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500 ease-out relative"
+            style={{ width: `${progress}%` }}
+          >
+            <div className="absolute inset-0 bg-white/20 animate-pulse" />
+          </div>
+        </div>
+
+        <p className="mt-3 text-xs text-gray-500 font-medium">
+          {Math.round(progress)}%
+        </p>
+      </div>
+    </div>
+  );
+}
+
+  return (
+    <div className="flex-1 bg-white p-10 min-h-screen">
       <div className="mb-10 flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">View Proposals</h2>

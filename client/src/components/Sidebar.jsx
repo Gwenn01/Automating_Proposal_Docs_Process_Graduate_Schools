@@ -14,14 +14,14 @@ import { prmsuLogo } from "../assets";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../utils/auth";
 
-const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role }) => {
+const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role, user }) => {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const menuByRole = {
     implementor: [
-      { label: "Create Proposal", icon: Upload },
       { label: "View Proposal", icon: Eye },
+      { label: "Create Proposal", icon: Upload },
       { label: "Profile Overview", icon: Eye },
     ],
     reviewer: [{ label: "Review Proposal", icon: FileCheck }],
@@ -55,42 +55,42 @@ const handleLogout = () => {
         md:translate-x-0 flex flex-col`}
       >
         {/* Brand */}
-<div className="relative p-6 flex items-center gap-4 overflow-hidden border-b-[1px] border-gray-300">
-  {/* Wavy Gradient Background */}
-  <div className="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-green-900 opacity-90 " />
+        <div className="relative p-6 flex items-center gap-4 overflow-hidden border-b-[1px] border-gray-300">
+          {/* Wavy Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-green-900 opacity-90 " />
 
-  {/* Wave Overlay */}
-  <svg
-    className="absolute bottom-0 left-0 w-full h-16"
-    viewBox="0 0 1440 320"
-    preserveAspectRatio="none"
-  >
-    <path
-      fill="rgba(255,255,255,0.15)"
-      d="M0,192L60,170.7C120,149,240,107,360,112C480,117,600,171,720,186.7C840,203,960,181,1080,160C1200,139,1320,117,1380,106.7L1440,96L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z"
-    />
-  </svg>
+          {/* Wave Overlay */}
+          <svg
+            className="absolute bottom-0 left-0 w-full h-16"
+            viewBox="0 0 1440 320"
+            preserveAspectRatio="none"
+          >
+            <path
+              fill="rgba(255,255,255,0.15)"
+              d="M0,192L60,170.7C120,149,240,107,360,112C480,117,600,171,720,186.7C840,203,960,181,1080,160C1200,139,1320,117,1380,106.7L1440,96L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z"
+            />
+          </svg>
 
-  {/* Content */}
-  <div className="relative z-10 flex items-center gap-4">
-    <div className="bg-white p-1 rounded-full w-16 h-16 shadow-lg ring-2 ring-white/40">
-      <img
-        src={prmsuLogo}
-        alt="logo"
-        className="w-full h-full object-contain rounded-full"
-      />
-    </div>
+          {/* Content */}
+          <div className="relative z-10 flex items-center gap-4">
+            <div className="bg-white p-1 rounded-full w-16 h-16 shadow-lg ring-2 ring-white/40">
+              <img
+                src={prmsuLogo}
+                alt="logo"
+                className="w-full h-full object-contain rounded-full"
+              />
+            </div>
 
-    <div>
-      <h1 className="text-white font-bold text-sm tracking-wide">
-        G.A.D Extension Office
-      </h1>
-      <p className="text-white/80 text-xs capitalize">
-        {role} Panel
-      </p>
-    </div>
-  </div>
-</div>
+            <div>
+              <h1 className="text-white font-bold text-sm tracking-wide">
+                G.A.D Extension Office
+              </h1>
+              <p className="text-white/80 text-xs capitalize">
+                {role} Panel
+              </p>
+            </div>
+          </div>
+        </div>
 
 
         {/* Menu */}
@@ -127,17 +127,49 @@ const handleLogout = () => {
         </ul>
 
         {/* Logout */}
-        <div className="px-4 pb-6">
+        {/* User Info + Logout */}
+        <div className="px-4 pb-6 space-y-4">
+
+          {/* User Profile Card */}
+          {user && (
+            <div className="flex items-center space-x-3 bg-white p-2 rounded-full shadow-sm border border-gray-200">
+              <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-white shadow-sm flex items-center justify-center overflow-hidden">
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.fullname}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-blue-600 font-bold">
+                    {user.fullname?.charAt(0) || "U"}
+                  </div>
+                )}
+              </div>
+
+              <div className="pr-2 min-w-0">
+                <div className="font-semibold text-gray-700 text-sm truncate">
+                  {user.fullname}
+                </div>
+                <div className="text-xs text-gray-500 capitalize">
+                  {user.role}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Logout Button */}
           <button
             onClick={() => setShowLogoutModal(true)}
-            className="w-full flex items-center gap-4 px-6 py-3 rounded-xl
-            text-white/90 hover:bg-red-500/20 transition-all duration-300
+            className="w-full flex items-center justify-center gap-4 px-6 py-3 rounded-xl
+            text-white/90 hover:bg-white hover:text-primaryGreen transition-all duration-300
             hover:translate-x-1"
           >
             <LogOut className="w-5 h-5" />
-            <span className="text-sm font-semibold">Logout</span>
+            <span className="text-xs font-semibold">Logout</span>
           </button>
         </div>
+
       </div>
 
       {/* ================= LOGOUT MODAL ================= */}

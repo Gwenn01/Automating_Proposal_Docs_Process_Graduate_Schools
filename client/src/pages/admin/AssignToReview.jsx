@@ -10,6 +10,21 @@ const AssignToReview = () => {
   const [loading, setLoading] = useState(true);
   const [allDocs, setAllDocs] = useState([]);
   const [modalMode, setModalMode] = useState("assign")
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (!loading) return;
+
+    setProgress(0);
+    let value = 0;
+
+    const interval = setInterval(() => {
+      value += Math.random() * 10;
+      setProgress(Math.min(value, 95)); // stop at 95% visually
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, [loading]);
 
   useEffect(() => {
       const fetchDocuments = async () => {
@@ -47,30 +62,43 @@ const AssignToReview = () => {
 
   if (loading) {
     return (
-      <>
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in">
-          <div
-            className="relative bg-white backdrop-blur-xl px-14 py-10 rounded-2xl shadow-2xl flex flex-col items-center animate-pop-out"
-          >
-            {/* Gradient Ring Loader */}
-            <div className="relative animate-float mb-5">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
-              <div className="absolute inset-2 bg-white rounded-full" />
+      <div className="w-full h-full bg-white inset-0 z-[60] flex items-center justify-center backdrop-blur-md animate-fade-in">
+        <div
+          key={selectedDoc?.proposal_id}
+          className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-[450px]"
+        >
+          {/* Floating Spinner */}
+          {/* <div className="relative animate-float mb-6">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
+            <div className="absolute inset-2 bg-white rounded-full" />
+          </div> */}
+
+          <p className="text-lg font-semibold shimmer-text mb-2 text-center">
+          Synchronizing Registry
+          </p>
+
+          <p className="text-xs w-full text-gray-500 mb-4 text-center">
+            Preparing the latest proposals and reviewer data for you.
+          </p>
+
+          {/* Progress Bar */}
+          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500 ease-out relative"
+              style={{ width: `${progress}%` }}
+            >
+              <div className="absolute inset-0 bg-white/20 animate-pulse" />
             </div>
-
-            {/* Text */}
-            <p className="text-lg font-semibold shimmer-text loading-dots mb-2">
-              Synchronizing Registry
-            </p>
-
-            <p className="text-sm text-gray-500">
-              Preparing the latest proposals and reviewer data for you.
-            </p>
           </div>
+
+          <p className="mt-3 text-xs text-gray-500 font-medium">
+            {Math.round(progress)}%
+          </p>
         </div>
-      </>
+      </div>
     );
-  }
+}
+
 
   const handleUpdateReviewer = (proposalId, newReviewerNames) => {
       console.log(`UPDATING UI: ID ${proposalId} set to ${newReviewerNames}`);
