@@ -2,6 +2,7 @@ import React from "react";
 import { X } from "lucide-react";
 import InlineInput from "./inlineInput";
 import ReviewerComment from "./ReviewerComment";
+import { getStatusStyle } from "../../utils/statusStyles";
 
 const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   if (!isOpen || !proposalData) return null;
@@ -10,27 +11,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   const cover = proposalData.cover_page?.cover_pages || {};
   const content = proposalData.full_content?.content_pages || {};
 
-    const getStatusStyle = (proposalData) => {
-    // Matching the specific colors from the image
-    switch (proposalData.status) {
-      case "submitted":
-        return { label: "Initial Review", className: "bg-[#FFC107] text-white" }; // Yellow/Gold
-      case "under_review":
-        return { label: "Under Review", className: "bg-[#FFC107] text-white" }; // Yellow/Gold (Or Orange if preferred)
-      case "final_review": // Assuming you might have this status
-        return { label: "Final Review", className: "bg-[#FBBF24] text-white" };
-      case "approved":
-        return { label: "Completed", className: "bg-[#22C55E] text-white" }; // Green
-      case "rejected":
-        return { label: "Rejected", className: "bg-[#EF4444] text-white" }; // Red
-      case "for_revision":
-         return { label: "For Revision", className: "bg-[#F97316] text-white" }; // Orange
-      default:
-        return { label: status, className: "bg-gray-400 text-white" };
-    }
-  };
-
-  const statusStyle = getStatusStyle(proposalData);
+  const statusStyle = getStatusStyle(proposalData.status);
 
 
   return (

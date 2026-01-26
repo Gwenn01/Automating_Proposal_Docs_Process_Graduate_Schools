@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Grid, Table, MoreVertical, Eye, FileText, Users, X } from 'lucide-react';
 import DocumentViewerModal from '../components/instructor/DocumentViewerModal';
 import axios from 'axios';
+import { Bell } from "lucide-react";
 import { getStatusStyle } from '../utils/statusStyles';
 
 const ReviewProposal = () => {
@@ -15,6 +16,30 @@ const ReviewProposal = () => {
   const [error, setError] = useState(null);
   const [showViewerModal, setShowViewerModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
+  const [progress, setProgress] = useState(0);
+
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const notifications = [
+    { id: 1, message: "New proposal assigned to you", time: "2 mins ago" },
+    { id: 2, message: "Proposal review deadline tomorrow", time: "1 day ago" },
+  ];
+
+
+  useEffect(() => {
+    if (!loading) return;
+
+    setProgress(0);
+    let value = 0;
+
+    const interval = setInterval(() => {
+      value += Math.random() * 10;
+      setProgress(Math.min(value, 95)); // stop at 95% visually
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
 
   const statusStyle = getStatusStyle(proposalsData.status);
 
@@ -157,6 +182,42 @@ const ReviewProposal = () => {
     alert(`Viewing other reviewers for: ${proposal.title}`);
   };
 
+    // ================= LOADING =================
+if (loading) {
+
+
+  return (
+    <div className="w-full h-full bg-white inset-0 z-[60] flex items-center justify-center backdrop-blur-md animate-fade-in">
+      <div
+        key={selectedDoc?.proposal_id}
+        className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-[380px]"
+      >
+        <p className="text-lg font-semibold shimmer-text mb-1">
+          Loading Proposals
+        </p>
+
+        <p className="text-sm text-gray-500 mb-4">
+          Preparing documents…
+        </p>
+
+        {/* Progress Bar */}
+        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500 ease-out relative"
+            style={{ width: `${progress}%` }}
+          >
+            <div className="absolute inset-0 bg-white/20 animate-pulse" />
+          </div>
+        </div>
+
+        <p className="mt-3 text-xs text-gray-500 font-medium">
+          {Math.round(progress)}%
+        </p>
+      </div>
+    </div>
+  );
+}
+
   return (
     <div className="flex-1 p-10 bg-white min-h-screen font-sans">
       {loading ? (
@@ -187,10 +248,54 @@ const ReviewProposal = () => {
       ) : (
         <>
           {/* --- Header Section --- */}
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-[32px] font-bold text-gray-900">Review Proposal</h1>
+<div className="flex justify-between items-center mb-8 relative">
+  <h1 className="text-[32px] font-bold text-gray-900">Review Proposal</h1>
 
-          </div>
+  {/* Notification Bell */}
+  <div className="relative">
+    <button
+      onClick={() => setShowNotifications(!showNotifications)}
+      className="relative p-3 rounded-full hover:bg-gray-100 transition"
+    >
+      <p className="flex font-sans gap-2 text-gray-500 font-semibold">Notifications <Bell className="w-6 h-6 text-gray-700" /></p>
+
+      {/* Badge */}
+      {notifications.length > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+          {notifications.length}
+        </span>
+      )}
+    </button>
+
+    {/* Dropdown */}
+    {showNotifications && (
+      <div className="absolute right-0 mt-3 w-80 bg-white border border-black rounded-2xl shadow-lg z-50 px-2">
+        <div className="px-4 py-3 border-b font-bold text-gray-700">
+          Notifications
+        </div>
+
+        {notifications.length === 0 ? (
+          <p className="px-4 py-6 text-sm text-gray-400 text-center">
+            No new notifications
+          </p>
+        ) : (
+          <ul className="max-h-72 overflow-y-auto">
+            {notifications.map((notif) => (
+              <li
+                key={notif.id}
+                className="px-4 py-3 hover:bg-gray-50 transition cursor-pointer"
+              >
+                <p className="text-sm text-gray-700">{notif.message}</p>
+                <span className="text-xs text-gray-400">{notif.time}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    )}
+  </div>
+</div>
+
 
           {/* --- Controls Section --- */}
           <div className="flex flex-col xl:flex-row justify-between items-center mb-8 space-y-6 xl:space-y-0">
@@ -443,7 +548,7 @@ const ReviewProposal = () => {
         </>
       )}
 
-            {/* Review Document Modal */}
+    {/* Review Document Modal */}
       <DocumentViewerModal
         isOpen={showViewerModal}
         proposalData={selectedDoc}

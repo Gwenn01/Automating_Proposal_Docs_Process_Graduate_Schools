@@ -572,7 +572,7 @@ const CreateProposal = () => {
 
   return (
     <div className="bg-white p-8 font-sans animate-overlay-enter">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-5xl h-full mx-auto">
         
         <div className="mb-10 flex items-center justify-between">
           <div>

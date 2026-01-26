@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { List, Loader2, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { List, Loader2, Eye, ChevronLeft, ChevronRight, Bell } from "lucide-react";
 import axios from "axios";
 
 import ReviewerModal from "../../components/instructor/ReviewerModal";
@@ -10,7 +10,9 @@ import { useProposals } from "../../context/ProposalContext";
 
 const ViewProposal = () => {
   const [documents, setDocuments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);     // page skeleton
+  const [actionLoading, setActionLoading] = useState(false); // view / review
+
   const [user, setUser] = useState(null);
 
   const [showReviewerModal, setShowReviewerModal] = useState(false);
@@ -20,12 +22,18 @@ const ViewProposal = () => {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [selectedReviewer, setSelectedReviewer] = useState(null);
   //const { documents, loading } = useProposals();
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const notifications = [
+    { id: 1, message: "New proposal assigned to you", time: "2 mins ago" },
+    { id: 2, message: "Proposal review deadline tomorrow", time: "1 day ago" },
+  ];
 
 
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    if (!loading) return;
+    if (!actionLoading) return;
 
     setProgress(0);
     let value = 0;
@@ -36,7 +44,7 @@ const ViewProposal = () => {
     }, 300);
 
     return () => clearInterval(interval);
-  }, [loading]);
+  }, [actionLoading]);
 
 
   // Pagination state
@@ -66,9 +74,9 @@ useEffect(() => {
       }));
 
       setDocuments(documents);
-      setLoading(false);
+      setPageLoading(false);
     })
-    .catch(() => setLoading(false));
+    .catch(() => setPageLoading(false));
 }, [user]);
 
 
@@ -163,49 +171,70 @@ const getStatusStyle = (status) => {
   }, [documents.length]);
 
   // ================= LOADING =================
-if (loading) {
 
 
+if (pageLoading) {
   return (
-    <div className="w-full h-full bg-white inset-0 z-[60] flex items-center justify-center backdrop-blur-md animate-fade-in">
-      <div
-        key={selectedDoc?.proposal_id}
-        className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-[380px]"
-      >
-        {/* Floating Spinner */}
-        {/* <div className="relative animate-float mb-6">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
-          <div className="absolute inset-2 bg-white rounded-full" />
-        </div> */}
+    <div className="flex-1 bg-white p-10 min-h-screen animate-pulse">
+      {/* Header Skeleton */}
+      <div className="mb-10">
+        <div className="h-8 w-56 bg-gray-200 rounded mb-3"></div>
+        <div className="h-4 w-72 bg-gray-200 rounded"></div>
+      </div>
 
-        <p className="text-lg font-semibold shimmer-text mb-1">
-          Loading proposal
-        </p>
+      {/* Table Skeleton */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-100">
+            <tr>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <th key={i} className="px-6 py-4">
+                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-        <p className="text-sm text-gray-500 mb-4">
-          Preparing your document…
-        </p>
-
-        {/* Progress Bar */}
-        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500 ease-out relative"
-            style={{ width: `${progress}%` }}
-          >
-            <div className="absolute inset-0 bg-white/20 animate-pulse" />
-          </div>
-        </div>
-
-        <p className="mt-3 text-xs text-gray-500 font-medium">
-          {Math.round(progress)}%
-        </p>
+          <tbody>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <tr key={i} className="border-b">
+                {Array.from({ length: 5 }).map((_, j) => (
+                  <td key={j} className="px-6 py-5">
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
 
+
   return (
     <div className="flex-1 bg-white p-10 min-h-screen">
+{actionLoading && (
+  <div className="absolute inset-0 bg-white/80 z-[60] flex items-center justify-center backdrop-blur-sm">
+    <div className="relative bg-white px-14 py-10 flex flex-col items-center w-[380px] shadow-xl rounded-xl">
+      <p className="text-lg font-semibold mb-1">Loading proposal</p>
+      <p className="text-sm text-gray-500 mb-4">Preparing your document…</p>
+
+      <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <p className="mt-3 text-xs text-gray-500 font-medium">
+        {Math.round(progress)}%
+      </p>
+    </div>
+  </div>
+)}
+
       <div className="mb-10 flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">View Proposals</h2>
@@ -213,6 +242,50 @@ if (loading) {
             Track status, reviews, and proposal progress
           </p>
         </div>
+
+          <div className="relative">
+    <button
+      onClick={() => setShowNotifications(!showNotifications)}
+      className="relative p-3 rounded-full hover:bg-gray-100 transition"
+    >
+      <p className="flex font-sans gap-2 text-gray-500 font-semibold">Notifications <Bell className="w-6 h-6 text-gray-700" /></p>
+      
+
+      {/* Badge */}
+      {notifications.length > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+          {notifications.length}
+        </span>
+      )}
+    </button>
+
+    {/* Dropdown */}
+    {showNotifications && (
+      <div className="absolute right-0 mt-3 w-80 bg-white border border-black rounded-2xl shadow-lg z-50 px-2">
+        <div className="px-4 py-3 border-b font-bold text-gray-700">
+          Notifications
+        </div>
+
+        {notifications.length === 0 ? (
+          <p className="px-4 py-6 text-sm text-gray-400 text-center">
+            No new notifications
+          </p>
+        ) : (
+          <ul className="max-h-72 overflow-y-auto">
+            {notifications.map((notif) => (
+              <li
+                key={notif.id}
+                className="px-4 py-3 hover:bg-gray-50 transition cursor-pointer"
+              >
+                <p className="text-sm text-gray-700">{notif.message}</p>
+                <span className="text-xs text-gray-400">{notif.time}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    )}
+  </div>
       </div>
 
       {/* Table Container */}
@@ -275,7 +348,7 @@ if (loading) {
                   <td className="px-6 py-5 text-center align-middle">
                     <button
                       onClick={async () => {
-                        setLoading(true);
+                        setActionLoading(true);
 
                         const cover = await fetchCoverPage(doc.proposal_id);
                         const content = await fetchProposalContent(doc.proposal_id);
@@ -287,7 +360,7 @@ if (loading) {
                         });
 
                         setShowViewerModal(true);
-                        setLoading(false);
+                        setActionLoading(false);
                       }}
                       className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 text-[#4F46E5] px-5 py-2.5 rounded-lg text-xs font-semibold hover:from-blue-100 hover:to-indigo-100 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                     >
@@ -300,7 +373,7 @@ if (loading) {
                   <td className="px-6 py-5 text-center align-middle">
                     <button
                       onClick={async () => {
-                        setLoading(true);
+                        setActionLoading(true);
 
                         const cover = await fetchCoverPage(doc.proposal_id);
                         const content = await fetchProposalContent(doc.proposal_id);
@@ -312,7 +385,7 @@ if (loading) {
                         });
 
                         setShowReviewerModal(true);
-                        setLoading(false);
+                        setActionLoading(false);
                       }}
                       className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 text-[#166534] px-5 py-2.5 rounded-lg text-xs font-semibold hover:from-green-100 hover:to-emerald-100 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                     >
@@ -411,6 +484,8 @@ if (loading) {
         proposalData={selectedDoc}
         onClose={() => setShowViewerModal(false)}
       />
+
+
     </div>
   );
 };

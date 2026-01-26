@@ -58,7 +58,7 @@ const Home = () => {
   if (!user || !active) return null;
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden font-sans">
+    <div className="flex h-screen overflow-hidden font-sans">
       <Sidebar
         role={user.role}
         active={active}
@@ -68,7 +68,7 @@ const Home = () => {
         user={user}
       />
 
-      <main className="flex-1 flex flex-col overflow-y-auto">
+      <main className="flex-1 flex flex-col overflow-y-auto relative">
         {/* IMPLEMENTOR / INSTRUCTOR */}
         {active === "Create Proposal" && <CreateProposal />}
         {active === "View Proposal" && <ViewProposal />}

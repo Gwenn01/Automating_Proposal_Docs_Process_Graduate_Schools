@@ -24,7 +24,10 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role, user }) => {
       { label: "Create Proposal", icon: Upload },
       { label: "Profile Overview", icon: Eye },
     ],
-    reviewer: [{ label: "Review Proposal", icon: FileCheck }],
+    reviewer: [
+      { label: "Review Proposal", icon: FileCheck },
+      { label: "Profile Overview", icon: Eye },
+    ],
     admin: [
       { label: "Overview", icon: Home },
       { label: "Assign to Review", icon: UserCheck },
@@ -83,7 +86,7 @@ const handleLogout = () => {
 
             <div>
               <h1 className="text-white font-bold text-sm tracking-wide">
-                G.A.D Extension Office
+                Extension Office
               </h1>
               <p className="text-white/80 text-xs capitalize">
                 {role} Panel
