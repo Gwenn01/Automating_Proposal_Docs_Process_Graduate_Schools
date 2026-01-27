@@ -571,9 +571,10 @@ const CreateProposal = () => {
   };
 
   return (
-    <div className="bg-white p-8 font-sans animate-overlay-enter">
-      <div className="max-w-5xl h-full mx-auto">
-        
+  <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 md:p-8 animate-overlay-enter">
+        <div className="max-w-7xl mx-auto">
+          
+          {/* Modern Header */}
         <div className="mb-10 flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold text-gray-900">View Proposals</h2>
@@ -582,681 +583,723 @@ const CreateProposal = () => {
             </p>
           </div>
         </div>
-
-        <div className="flex flex-wrap gap-4 mb-10">
-          <button 
-            onClick={() => setActiveTab('program')}
-            className={`px-6 py-2 rounded-full font-semibold transition ${activeTab === 'program' ? 'bg-green-700 text-white' : 'bg-green-600/20 text-green-800 hover:bg-green-600/30'}`}
-          >
-            Program Proposal
-          </button>
-          <button 
-            onClick={() => setActiveTab('iba')}
-            className={`px-6 py-2 rounded-full font-semibold transition ${activeTab === 'iba' ? 'bg-green-700 text-white' : 'bg-green-600/20 text-green-800 hover:bg-green-600/30'}`}
-          >
-            Activity Proposal Iba Main
-          </button>
-          <button 
-            onClick={() => setActiveTab('satellite')}
-            className={`px-6 py-2 rounded-full font-semibold transition ${activeTab === 'satellite' ? 'bg-green-700 text-white' : 'bg-green-600/20 text-green-800 hover:bg-green-600/30'}`}
-          >
-            Activity Proposal Satellite Campus
-          </button>
-        </div>
-
-        <div className="space-y-8">
-          
-          <InputField 
-            type='text'
-            label="Title:"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-
-          <h2 className="text-2xl font-bold">Cover Page:</h2>
-            
-          <section className="max-w-5xl mx-auto bg-gray-100 p-12 rounded-sm shadow-sm font-sans text-gray-900 leading-relaxed">
-            <div className="space-y-6 text-sm">
-              <div>
-                <p>Select a Date of Submission</p>
-                <input 
-                  placeholder='Select Date of Submission'
-                  className='border p-2'
-                  type="date" 
-                  value={cover.submission_date}
-                  onChange={(e) => setCover({ ...cover, submission_date: e.target.value })}
-                />
-              </div>
-
-              <div className="uppercase ">
-                <p className='font-bold'>DR. ROY N. VILLALOBOS</p>
-                <p>University President</p>
-                <p>President Ramon Magsaysay State University</p>
-              </div>
-
-              <p>Dear Sir:</p>
-
-              <p>
-                I have the honor to submit the proposal for your consideration and appropriate action 
-                for the proposed extension program entitled 
-                <InlineInput 
-                  type='text' 
-                  placeholder="(Title referring to approved Board Reso)" 
-                  width="w-72"
-                  value={cover.board_resolution_title}
-                  onChange={(e) => setCover({ ...cover, board_resolution_title: e.target.value })}
-                />, 
-                <InlineInput 
-                  type='text' 
-                  placeholder="(Board Resolution No.)" 
-                  width="w-48"
-                  value={cover.board_resolution_no}
-                  onChange={(e) => setCover({ ...cover, board_resolution_no: e.target.value })}
-                />
-                with the approved budget of <InlineInput 
-                  type="text" 
-                  placeholder="____(Total amount in words)" 
-                  value={cover.approved_budget_words}
-                  onChange={(e) => setCover({ ...cover, approved_budget_words: e.target.value })}          
-                /> ; 
-                (<InlineInput 
-                  type="number" 
-                  placeholder="(Total amount in numbers)" 
-                  width="w-40"
-                  value={cover.approved_budget_amount}
-                  onChange={(e) => setCover({ ...cover, approved_budget_amount: e.target.value })}
-                />) with the duration 
-                of <InlineInput 
-                  type='text' 
-                  placeholder="____in words (in numbers)" 
-                  width="w-40" 
-                  value={cover.duration_words}
-                  onChange={(e) => setCover({ ...cover, duration_words: e.target.value })}          
-                /> years, 
-                <InlineInput 
-                  type='text' 
-                  placeholder="(date from-to). (please refer to the approved Board Reso)" 
-                  width="w-80" 
-                  value={cover.date_from_to}
-                  onChange={(e) => setCover({ ...cover, date_from_to: e.target.value })}          
-                />.
-              </p>
-
-              <p>
-                This program includes an activity entitled (
-                <InlineInput
-                  type='text'
-                  placeholder="activity title under the program"
-                  width="w-64"
-                  value={cover.activity_title}
-                  onChange={(e) => handleActivityTitleChange(e.target.value)}
-                />) on <input
-                  type="text"
-                  placeholder="select activity date"
-                  value={cover.activity_date ? formatDateLong(cover.activity_date) : ""}
-                  readOnly
-                  onClick={() => document.getElementById("hiddenDatePicker").showPicker()}
-                  className="bg-transparent cursor-pointer border-b border-gray-300 text-red-600 placeholder:text-red-400 font-medium text-center"
-                />
-                <input
-                  id="hiddenDatePicker"
-                  type="date"
-                  style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
-                  value={cover.activity_date}
-                  onChange={(e) => handleActivityDateChange(e.target.value)}
-                />
-                at 
-                <InlineInput 
-                  type='text' 
-                  placeholder="___ venue" 
-                  width="w-32" 
-                  value={cover.activity_venue}
-                  onChange={(e) => setCover({ ...cover, activity_venue: e.target.value })}          
-                />. This activity is valuable 
-                <InlineInput 
-                  type='text' 
-                  placeholder="____for what" 
-                  width="w-24" 
-                  value={cover.activity_value_statement}
-                  onChange={(e) => setCover({ ...cover, activity_value_statement: e.target.value })}          
-                />. The requested expenses 
-                for this activity from the university is Php 
-                <InlineInput 
-                  placeholder="____(Total amount in numbers)" 
-                  width="w-48" 
-                  type="number"
-                  value={cover.requested_activity_budget}
-                  onChange={(e) => setCover({ ...cover, requested_activity_budget: e.target.value })}          
-                />, 
-                which will be used to defray expenses for food, transportation, supplies and materials, 
-                and other expenses related to these activities.
-              </p>
-
-              <p>
-                Further, there is <InlineInput 
-                  type='text' 
-                  placeholder="____number of participants in words" 
-                  value={cover.prmsu_participants_words}
-                  onChange={(e) => setCover({ ...cover, prmsu_participants_words: e.target.value })}          
-                /> 
-                (<InlineInput 
-                  type='number' 
-                  placeholder="number of participants in numbers"
-                  value={cover.prmsu_participants_num}
-                  onChange={(e) => setCover({ ...cover, prmsu_participants_num: e.target.value })}          
-                /> ) the total number of participants from PRMSU, 
-                another <InlineInput 
-                  type='text' 
-                  placeholder="____ total number from partner agency in words" 
-                  value={cover.partner_agency_participants_words}
-                  onChange={(e) => setCover({ ...cover, partner_agency_participants_words: e.target.value })}          
-                /> 
-                (<InlineInput  
-                  placeholder="total number from partner agency in numbers" 
-                  type="number"
-                  value={cover.partner_agency_participants_num}
-                  onChange={(e) => setCover({ ...cover, partner_agency_participants_num: e.target.value })}          
-                /> ) from the collaborating agency, 
-                <InlineInput 
-                  type='text' 
-                  placeholder="_____(agency name)" 
-                  width="w-40" 
-                  value={cover.partner_agency_name}
-                  onChange={(e) => setCover({ ...cover, partner_agency_name: e.target.value })}          
-                />, and 
-                <InlineInput 
-                  type='text' 
-                  placeholder="____ total number of trainees in words" 
-                  value={cover.trainees_words}
-                  onChange={(e) => setCover({ ...cover, trainees_words: e.target.value })}          
-                /> 
-                ( <InlineInput 
-                  type='number' 
-                  placeholder="total number of trainees in numbers"
-                  value={cover.trainees_num}
-                  onChange={(e) => setCover({ ...cover, trainees_num: e.target.value })}          
-                /> ) trainees from the abovementioned community.
-              </p>
-
-              <p className="pt-4">Your favorable response regarding this matter will be highly appreciated.</p>
-            </div>
-          </section>
-          
-          <section>
-            <h3 className="text-xl font-bold mb-4">I. Program/Project Profile:</h3>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Program Title:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.program_title}
-                  onChange={(e) => setContent({...content, program_title: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Project Title:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.project_title}
-                  onChange={(e) => setContent({...content, project_title: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Activity Title:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.activity_title}
-                  onChange={(e) => handleActivityTitleChange(e.target.value)}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">SDG's:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.sdg_alignment}
-                  onChange={(e) => setContent({...content, sdg_alignment: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Extension Agenda:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.extension_agenda}
-                  onChange={(e) => setContent({...content, extension_agenda: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Proponents: Leader:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.project_leader}
-                  onChange={(e) => setContent({...content, project_leader: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Proponents: Members:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.members}
-                  onChange={(e) => setContent({...content, members: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">College/Campus/Mandated Program:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.college_campus_program}
-                  onChange={(e) => setContent({...content, college_campus_program: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Collaborating Agencies:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.collaborating_agencies}
-                  onChange={(e) => setContent({...content, collaborating_agencies: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Community Location:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.community_location}
-                  onChange={(e) => setContent({...content, community_location: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Target Sector:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.target_sector}
-                  onChange={(e) => setContent({...content, target_sector: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Number of Beneficiaries:</span>
-                <input 
-                  type="number"
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.number_of_beneficiaries}
-                  onChange={(e) => setContent({...content, number_of_beneficiaries: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Period of Implementation/Duration:</span>
-                <input 
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.implementation_period}
-                  onChange={(e) => setContent({...content, implementation_period: e.target.value})}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-48 text-sm font-semibold">Budgetary Requirements (PhP):</span>
-                <input 
-                  type="number"
-                  className="flex-1 bg-gray-200/80 p-2 text-sm outline-none focus:ring-2 focus:ring-green-600" 
-                  value={content.total_budget_requested}
-                  onChange={(e) => setContent({...content, total_budget_requested: e.target.value})}
-                />
-              </div>
-            </div>
-          </section>
-
-          <div>
-            <h3 className="text-xl font-bold mb-4">II. Rationale</h3>
-            <TextAreaField 
-              label="" 
-              value={content.rationale}
-              onChange={(e) => setContent({...content, rationale: e.target.value})}
-            />
-          </div>
-
-          <div>
-            <h3 className="text-xl font-bold mb-4">III. Significance</h3>
-            <TextAreaField 
-              label="" 
-              value={content.significance}
-              onChange={(e) => setContent({...content, significance: e.target.value})}
-            />
-          </div>
-
-          <div>
-            <h2 className='font-bold text-xl'>IV. Objectives</h2>
-            <div className='px-5 mt-5'>
-              <TextAreaField 
-                label="General Objectives:" 
-                value={content.general_objectives}
-                onChange={(e) => setContent({...content, general_objectives: e.target.value})}
-              />
-            </div>
-            <div className='px-5'>
-              <TextAreaField 
-                label="Specific Objectives:" 
-                value={content.specific_objectives}
-                onChange={(e) => setContent({...content, specific_objectives: e.target.value})}
-              />
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-xl font-bold mb-4">V. Methodology</h3>
-            <TextAreaField 
-              label="" 
-              value={content.methodology}
-              onChange={(e) => setContent({...content, methodology: e.target.value})}
-            />
-          </div>
-
-          <section>
-            <label className="block text-xl font-bold text-gray-800 mb-4">VI. Expected Output/Outcome:</label>
-            <table className="w-full border-collapse bg-gray-50">
-              <thead>
-                <tr className="text-left text-sm font-bold">
-                  <th className="p-3">6Ps</th>
-                  <th className="p-3">Output</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white">
-                <tr>
-                  <td className="p-3 text-sm font-medium w-1/3">Publications</td>
-                  <td className="p-1">
-                    <input 
-                      className="w-full bg-gray-200/80 p-2 outline-none focus:ring-2 focus:ring-green-600" 
-                      value={content.expected_output_6ps.publications}
-                      onChange={(e) => setContent({...content, expected_output_6ps: {...content.expected_output_6ps, publications: e.target.value}})}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-3 text-sm font-medium w-1/3">Patents/IP</td>
-                  <td className="p-1">
-                    <input 
-                      className="w-full bg-gray-200/80 p-2 outline-none focus:ring-2 focus:ring-green-600" 
-                      value={content.expected_output_6ps.patents}
-                      onChange={(e) => setContent({...content, expected_output_6ps: {...content.expected_output_6ps, patents: e.target.value}})}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-3 text-sm font-medium w-1/3">Products</td>
-                  <td className="p-1">
-                    <input 
-                      className="w-full bg-gray-200/80 p-2 outline-none focus:ring-2 focus:ring-green-600" 
-                      value={content.expected_output_6ps.products}
-                      onChange={(e) => setContent({...content, expected_output_6ps: {...content.expected_output_6ps, products: e.target.value}})}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-3 text-sm font-medium w-1/3">People Services</td>
-                  <td className="p-1">
-                    <input 
-                      className="w-full bg-gray-200/80 p-2 outline-none focus:ring-2 focus:ring-green-600" 
-                      value={content.expected_output_6ps.people_services}
-                      onChange={(e) => setContent({...content, expected_output_6ps: {...content.expected_output_6ps, people_services: e.target.value}})}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-3 text-sm font-medium w-1/3">Places and Partnerships</td>
-                  <td className="p-1">
-                    <input 
-                      className="w-full bg-gray-200/80 p-2 outline-none focus:ring-2 focus:ring-green-600" 
-                      value={content.expected_output_6ps.places_partnerships}
-                      onChange={(e) => setContent({...content, expected_output_6ps: {...content.expected_output_6ps, places_partnerships: e.target.value}})}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-3 text-sm font-medium w-1/3">Policy</td>
-                  <td className="p-1">
-                    <input 
-                      className="w-full bg-gray-200/80 p-2 outline-none focus:ring-2 focus:ring-green-600" 
-                      value={content.expected_output_6ps.policy}
-                      onChange={(e) => setContent({...content, expected_output_6ps: {...content.expected_output_6ps, policy: e.target.value}})}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-3 text-sm font-medium w-1/3">Social Impact</td>
-                  <td className="p-1">
-                    <input 
-                      className="w-full bg-gray-200/80 p-2 outline-none focus:ring-2 focus:ring-green-600" 
-                      value={content.expected_output_6ps.social_impact}
-                      onChange={(e) => setContent({...content, expected_output_6ps: {...content.expected_output_6ps, social_impact: e.target.value}})}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="p-3 text-sm font-medium w-1/3">Economic Impact</td>
-                  <td className="p-1">
-                    <input 
-                      className="w-full bg-gray-200/80 p-2 outline-none focus:ring-2 focus:ring-green-600" 
-                      value={content.expected_output_6ps.economic_impact}
-                      onChange={(e) => setContent({...content, expected_output_6ps: {...content.expected_output_6ps, economic_impact: e.target.value}})}
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
-
-          <div>
-            <h3 className="text-xl font-bold mb-4">VII. Sustainability Plan</h3>
-            <textarea 
-              rows={12}
-              className="w-full p-3 bg-gray-100 border-none rounded-sm focus:ring-2 focus:ring-green-600 outline-none"
-              value={content.sustainability_plan}
-              onChange={(e) => setContent({...content, sustainability_plan: e.target.value})}
-            />
-          </div>
-
-          <div>
-            <section>
-              <h2 className="text-xl font-bold mb-6">
-                VIII. Organization and Staffing <span className="italic text-md font-normal text-gray-600">(Persons involved and responsibility):</span>
-              </h2>
-              <div className="bg-gray-50 p-6 rounded-sm">
-                <div className="grid grid-cols-3 gap-4 mb-4 text-sm font-bold border-b pb-2">
-                  <div>Activity's</div>
-                  <div>Designation/Name</div>
-                  <div>Terms of Reference</div>
+          {/* Modern Tab Navigation */}
+          <div className="mb-8 bg-white rounded-2xl shadow-md border border-gray-200 p-2">
+            <div className="flex flex-wrap gap-2">
+              <button 
+                onClick={() => setActiveTab('program')}
+                className={`flex-1 min-w-[200px] px-6 py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                  activeTab === 'program' 
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/30 scale-[1.02]' 
+                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${activeTab === 'program' ? 'bg-white' : 'bg-green-600'}`} />
+                  Program Proposal
                 </div>
-                
-                {content.org_and_staffing_json.map((item, index) => (
-                  <div key={index} className="grid grid-cols-3 gap-4 py-3 border-b border-gray-200 last:border-0">
-                    <div className="text-sm font-medium self-center">{item.activity}</div>
-                    <textarea 
-                      placeholder="Full name of faculty. Include also the non-teaching (INSERT THE Plantilla)"
-                      className="bg-gray-200 p-2 text-xs h-20 resize-none outline-none focus:ring-1 focus:ring-blue-400"
-                      value={item.designation}
-                      onChange={(e) => {
-                        const updated = [...content.org_and_staffing_json];
-                        updated[index].designation = e.target.value;
-                        setContent({...content, org_and_staffing_json: updated});
-                      }}
-                    />
-                    <textarea 
-                      placeholder="Full name of faculty. Include also the non-teaching (INSERT THE Plantilla)"
-                      className="bg-gray-200 p-2 text-xs h-20 resize-none outline-none focus:ring-1 focus:ring-blue-400"
-                      value={item.terms}
-                      onChange={(e) => {
-                        const updated = [...content.org_and_staffing_json];
-                        updated[index].terms = e.target.value;
-                        setContent({...content, org_and_staffing_json: updated});
-                      }}
+              </button>
+              <button 
+                onClick={() => setActiveTab('iba')}
+                className={`flex-1 min-w-[200px] px-6 py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                  activeTab === 'iba' 
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/30 scale-[1.02]' 
+                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${activeTab === 'iba' ? 'bg-white' : 'bg-green-600'}`} />
+                  Activity Proposal Iba Main
+                </div>
+              </button>
+              <button 
+                onClick={() => setActiveTab('satellite')}
+                className={`flex-1 min-w-[200px] px-6 py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                  activeTab === 'satellite' 
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/30 scale-[1.02]' 
+                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${activeTab === 'satellite' ? 'bg-white' : 'bg-green-600'}`} />
+                  Activity Proposal Satellite
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Main Form Container */}
+          <div className="space-y-6">
+            
+            {/* Title Section */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 md:p-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-emerald-600 rounded-full" />
+                <h3 className="text-xl font-bold text-gray-900">Proposal Title</h3>
+              </div>
+              <InputField 
+                type='text'
+                label=""
+                placeholder="Enter your proposal title..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+
+            {/* Cover Page Section */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 md:px-8 py-5">
+                <h2 className="text-2xl font-bold text-white">Cover Page</h2>
+                <p className="text-white/80 text-sm mt-1">Formal submission letter details</p>
+              </div>
+              
+              <section className="p-6 md:p-10 bg-gradient-to-br from-gray-50 to-white">
+                <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 p-8 md:p-12">
+                  <div className="space-y-6 text-sm leading-relaxed text-gray-800">
+                    
+                    {/* Date Selection */}
+                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                      <label className="block text-sm font-semibold text-gray-900 mb-2">Date of Submission</label>
+                      <input 
+                        placeholder='Select Date of Submission'
+                        className='w-full md:w-auto border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all'
+                        type="date" 
+                        value={cover.submission_date}
+                        onChange={(e) => setCover({ ...cover, submission_date: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Recipient Info Card */}
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-l-4 border-green-500">
+                      <p className='font-bold text-lg text-gray-900'>DR. ROY N. VILLALOBOS</p>
+                      <p className="text-gray-700 font-medium">University President</p>
+                      <p className="text-gray-600">President Ramon Magsaysay State University</p>
+                    </div>
+
+                    <p className="text-gray-700 font-medium">Dear Sir:</p>
+
+                    {/* Program Details */}
+                    <div className="space-y-4 bg-gray-50 rounded-xl p-6">
+                      <p className="text-gray-800 leading-relaxed">
+                        I have the honor to submit the proposal for your consideration and appropriate action 
+                        for the proposed extension program entitled 
+                        <InlineInput 
+                          type='text' 
+                          placeholder="(Title referring to approved Board Reso)" 
+                          width="w-full md:w-72"
+                          value={cover.board_resolution_title}
+                          onChange={(e) => setCover({ ...cover, board_resolution_title: e.target.value })}
+                        />, 
+                        <InlineInput 
+                          type='text' 
+                          placeholder="(Board Resolution No.)" 
+                          width="w-full md:w-48"
+                          value={cover.board_resolution_no}
+                          onChange={(e) => setCover({ ...cover, board_resolution_no: e.target.value })}
+                        />
+                        with the approved budget of <InlineInput 
+                          type="text" 
+                          placeholder="____(Total amount in words)" 
+                          value={cover.approved_budget_words}
+                          onChange={(e) => setCover({ ...cover, approved_budget_words: e.target.value })}          
+                        /> ; 
+                        (<InlineInput 
+                          type="number" 
+                          placeholder="(Total amount in numbers)" 
+                          width="w-full md:w-40"
+                          value={cover.approved_budget_amount}
+                          onChange={(e) => setCover({ ...cover, approved_budget_amount: e.target.value })}
+                        />) with the duration 
+                        of <InlineInput 
+                          type='text' 
+                          placeholder="____in words (in numbers)" 
+                          width="w-full md:w-40" 
+                          value={cover.duration_words}
+                          onChange={(e) => setCover({ ...cover, duration_words: e.target.value })}          
+                        /> years, 
+                        <InlineInput 
+                          type='text' 
+                          placeholder="(date from-to). (please refer to the approved Board Reso)" 
+                          width="w-full md:w-80" 
+                          value={cover.date_from_to}
+                          onChange={(e) => setCover({ ...cover, date_from_to: e.target.value })}          
+                        />.
+                      </p>
+
+                      <p className="text-gray-800 leading-relaxed">
+                        This program includes an activity entitled (
+                        <InlineInput
+                          type='text'
+                          placeholder="activity title under the program"
+                          width="w-full md:w-64"
+                          value={cover.activity_title}
+                          onChange={(e) => handleActivityTitleChange(e.target.value)}
+                        />) on <input
+                          type="text"
+                          placeholder="select activity date"
+                          value={cover.activity_date ? formatDateLong(cover.activity_date) : ""}
+                          readOnly
+                          onClick={() => document.getElementById("hiddenDatePicker").showPicker()}
+                          className="bg-white border-b-2 border-green-500 cursor-pointer text-green-700 placeholder:text-green-400 font-semibold text-center px-2 py-1 rounded hover:bg-green-50 transition-colors"
+                        />
+                        <input
+                          id="hiddenDatePicker"
+                          type="date"
+                          style={{ position: "absolute", opacity: 0, pointerEvents: "none" }}
+                          value={cover.activity_date}
+                          onChange={(e) => handleActivityDateChange(e.target.value)}
+                        />
+                        at 
+                        <InlineInput 
+                          type='text' 
+                          placeholder="___ venue" 
+                          width="w-full md:w-32" 
+                          value={cover.activity_venue}
+                          onChange={(e) => setCover({ ...cover, activity_venue: e.target.value })}          
+                        />. This activity is valuable 
+                        <InlineInput 
+                          type='text' 
+                          placeholder="____for what" 
+                          width="w-full md:w-24" 
+                          value={cover.activity_value_statement}
+                          onChange={(e) => setCover({ ...cover, activity_value_statement: e.target.value })}          
+                        />. The requested expenses 
+                        for this activity from the university is Php 
+                        <InlineInput 
+                          placeholder="____(Total amount in numbers)" 
+                          width="w-full md:w-48" 
+                          type="number"
+                          value={cover.requested_activity_budget}
+                          onChange={(e) => setCover({ ...cover, requested_activity_budget: e.target.value })}          
+                        />, 
+                        which will be used to defray expenses for food, transportation, supplies and materials, 
+                        and other expenses related to these activities.
+                      </p>
+
+                      <p className="text-gray-800 leading-relaxed">
+                        Further, there is <InlineInput 
+                          type='text' 
+                          placeholder="____number of participants in words" 
+                          value={cover.prmsu_participants_words}
+                          onChange={(e) => setCover({ ...cover, prmsu_participants_words: e.target.value })}          
+                        /> 
+                        (<InlineInput 
+                          type='number' 
+                          placeholder="number of participants in numbers"
+                          value={cover.prmsu_participants_num}
+                          onChange={(e) => setCover({ ...cover, prmsu_participants_num: e.target.value })}          
+                        /> ) the total number of participants from PRMSU, 
+                        another <InlineInput 
+                          type='text' 
+                          placeholder="____ total number from partner agency in words" 
+                          value={cover.partner_agency_participants_words}
+                          onChange={(e) => setCover({ ...cover, partner_agency_participants_words: e.target.value })}          
+                        /> 
+                        (<InlineInput  
+                          placeholder="total number from partner agency in numbers" 
+                          type="number"
+                          value={cover.partner_agency_participants_num}
+                          onChange={(e) => setCover({ ...cover, partner_agency_participants_num: e.target.value })}          
+                        /> ) from the collaborating agency, 
+                        <InlineInput 
+                          type='text' 
+                          placeholder="_____(agency name)" 
+                          width="w-full md:w-40" 
+                          value={cover.partner_agency_name}
+                          onChange={(e) => setCover({ ...cover, partner_agency_name: e.target.value })}          
+                        />, and 
+                        <InlineInput 
+                          type='text' 
+                          placeholder="____ total number of trainees in words" 
+                          value={cover.trainees_words}
+                          onChange={(e) => setCover({ ...cover, trainees_words: e.target.value })}          
+                        /> 
+                        ( <InlineInput 
+                          type='number' 
+                          placeholder="total number of trainees in numbers"
+                          value={cover.trainees_num}
+                          onChange={(e) => setCover({ ...cover, trainees_num: e.target.value })}          
+                        /> ) trainees from the abovementioned community.
+                      </p>
+                    </div>
+
+                    <p className="text-gray-700 pt-4">Your favorable response regarding this matter will be highly appreciated.</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+            
+            {/* Project Profile Section */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 md:px-8 py-5">
+                <h3 className="text-2xl font-bold text-white">I. Program/Project Profile</h3>
+                <p className="text-white/80 text-sm mt-1">Essential project information and details</p>
+              </div>
+              
+              <div className="p-6 md:p-8 space-y-4">
+                {[
+                  { label: 'Program Title', key: 'program_title', type: 'text' },
+                  { label: 'Project Title', key: 'project_title', type: 'text' },
+                  { label: 'Activity Title', key: 'activity_title', type: 'text', onChange: handleActivityTitleChange },
+                  { label: "SDG's", key: 'sdg_alignment', type: 'text' },
+                  { label: 'Extension Agenda', key: 'extension_agenda', type: 'text' },
+                  { label: 'Proponents: Leader', key: 'project_leader', type: 'text' },
+                  { label: 'Proponents: Members', key: 'members', type: 'text' },
+                  { label: 'College/Campus/Mandated Program', key: 'college_campus_program', type: 'text' },
+                  { label: 'Collaborating Agencies', key: 'collaborating_agencies', type: 'text' },
+                  { label: 'Community Location', key: 'community_location', type: 'text' },
+                  { label: 'Target Sector', key: 'target_sector', type: 'text' },
+                  { label: 'Number of Beneficiaries', key: 'number_of_beneficiaries', type: 'number' },
+                  { label: 'Period of Implementation/Duration', key: 'implementation_period', type: 'text' },
+                  { label: 'Budgetary Requirements (PhP)', key: 'total_budget_requested', type: 'number' },
+                ].map((field, index) => (
+                  <div key={index} className="flex flex-col md:flex-row md:items-center gap-3 group">
+                    <span className="md:w-64 text-sm font-semibold text-gray-900 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      {field.label}:
+                    </span>
+                    <input 
+                      type={field.type}
+                      className="flex-1 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-50 
+                      border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none 
+                      focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                      placeholder={`Enter ${field.label.toLowerCase()}...`}
+                      value={content[field.key]}
+                      onChange={(e) => field.onChange 
+                        ? field.onChange(e.target.value)
+                        : setContent({...content, [field.key]: e.target.value})
+                      }
                     />
                   </div>
                 ))}
               </div>
-            </section>
-          </div>
+            </div>
 
-          <section>
-            <h2 className="text-xl font-bold mt-8">IX. Plan of Activities:</h2>
-
-            <div className="max-w-5xl mx-auto p-8 rounded-sm">
-              <div className="text-center p-3 border border-black">
-                <input
-                  placeholder="ENTER ACTIVITY TITLE HERE"
-                  className="p-2 w-full text-center font-semibold text-xl outline-none text-red-600 placeholder-red-400 border-b border-red-600"
-                  value={activitySchedule.activity_title}
-                  onChange={(e) => handleActivityTitleChange(e.target.value)}
+            {/* Text Sections (Rationale, Significance, etc.) */}
+            {[
+              { title: 'II. Rationale', key: 'rationale' },
+              { title: 'III. Significance', key: 'significance' },
+            ].map((section, index) => (
+              <div key={index} className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 md:p-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-emerald-600 rounded-full" />
+                  <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
+                </div>
+                <TextAreaField 
+                  label="" 
+                  value={content[section.key]}
+                  onChange={(e) => setContent({...content, [section.key]: e.target.value})}
                 />
-                <div className='p-2'>
-                  <span className="px-2 py-1 text-sm font-semibold rounded">Date:</span>
-                  <input 
-                    placeholder='Select Date'
-                    className='border p-2'
-                    type="date" 
-                    value={activitySchedule.activity_date}
-                    onChange={(e) => handleActivityDateChange(e.target.value)}
+              </div>
+            ))}
+
+            {/* Objectives Section */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 md:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-emerald-600 rounded-full" />
+                <h2 className='text-xl font-bold text-gray-900'>IV. Objectives</h2>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                    <label className="font-bold text-gray-900">General Objectives:</label>
+                  </div>
+                  <TextAreaField 
+                    label="" 
+                    value={content.general_objectives}
+                    onChange={(e) => setContent({...content, general_objectives: e.target.value})}
                   />
                 </div>
-                <p className="text-lg font-medium">PROGRAMME</p>
+                
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    <label className="font-bold text-gray-900">Specific Objectives:</label>
+                  </div>
+                  <TextAreaField 
+                    label="" 
+                    value={content.specific_objectives}
+                    onChange={(e) => setContent({...content, specific_objectives: e.target.value})}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Methodology Section */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 md:p-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-emerald-600 rounded-full" />
+                <h3 className="text-xl font-bold text-gray-900">V. Methodology</h3>
+              </div>
+              <TextAreaField 
+                label="" 
+                value={content.methodology}
+                onChange={(e) => setContent({...content, methodology: e.target.value})}
+              />
+            </div>
+
+            {/* Expected Output Section */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 md:px-8 py-5">
+                <h3 className="text-2xl font-bold text-white">VI. Expected Output/Outcome</h3>
+                <p className="text-white/80 text-sm mt-1">6Ps Framework Assessment</p>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-gray-100 to-gray-50 border-b-2 border-green-500">
+                      <th className="px-6 py-4 text-left font-bold text-gray-900">6Ps</th>
+                      <th className="px-6 py-4 text-left font-bold text-gray-900">Output</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {[
+                      { label: 'Publications', key: 'publications' },
+                      { label: 'Patents/IP', key: 'patents' },
+                      { label: 'Products', key: 'products' },
+                      { label: 'People Services', key: 'people_services' },
+                      { label: 'Places and Partnerships', key: 'places_partnerships' },
+                      { label: 'Policy', key: 'policy' },
+                      { label: 'Social Impact', key: 'social_impact' },
+                      { label: 'Economic Impact', key: 'economic_impact' },
+                    ].map((item, index) => (
+                      <tr key={index} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 font-semibold text-gray-900 bg-gray-50 w-1/3">
+                          {item.label}
+                        </td>
+                        <td className="px-6 py-4">
+                          <input 
+                            className="w-full bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 
+                            rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                            placeholder={`Enter ${item.label.toLowerCase()}...`}
+                            value={content.expected_output_6ps[item.key]}
+                            onChange={(e) => setContent({
+                              ...content, 
+                              expected_output_6ps: {...content.expected_output_6ps, [item.key]: e.target.value}
+                            })}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Sustainability Plan */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 md:p-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-emerald-600 rounded-full" />
+                <h3 className="text-xl font-bold text-gray-900">VII. Sustainability Plan</h3>
+              </div>
+              <textarea 
+                rows={12}
+                className="w-full p-4 bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl 
+                focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                placeholder="Describe the sustainability plan for this project..."
+                value={content.sustainability_plan}
+                onChange={(e) => setContent({...content, sustainability_plan: e.target.value})}
+              />
+            </div>
+
+            {/* Organization and Staffing */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 md:px-8 py-5">
+                <h2 className="text-2xl font-bold text-white">
+                  VIII. Organization and Staffing
+                </h2>
+                <p className="text-white/80 text-sm mt-1 italic">Persons involved and responsibility</p>
+              </div>
+              
+              <div className="p-6 md:p-8">
+                <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-gray-100 to-gray-50 border-b-2 border-green-500">
+                    <div className="font-bold text-gray-900 text-sm">Activity's</div>
+                    <div className="font-bold text-gray-900 text-sm">Designation/Name</div>
+                    <div className="font-bold text-gray-900 text-sm">Terms of Reference</div>
+                  </div>
+                  
+                  {content.org_and_staffing_json.map((item, index) => (
+                    <div key={index} className="grid grid-cols-3 gap-4 p-4 border-b border-gray-200 last:border-0 hover:bg-gray-50 transition-colors">
+                      <div className="text-sm font-semibold text-gray-900 self-center">{item.activity}</div>
+                      <textarea 
+                        placeholder="Full name of faculty. Include also the non-teaching (INSERT THE Plantilla)"
+                        className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-xs h-24 resize-none 
+                        outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        value={item.designation}
+                        onChange={(e) => {
+                          const updated = [...content.org_and_staffing_json];
+                          updated[index].designation = e.target.value;
+                          setContent({...content, org_and_staffing_json: updated});
+                        }}
+                      />
+                      <textarea 
+                        placeholder="Responsibilities and terms of reference"
+                        className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-xs h-24 resize-none 
+                        outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        value={item.terms}
+                        onChange={(e) => {
+                          const updated = [...content.org_and_staffing_json];
+                          updated[index].terms = e.target.value;
+                          setContent({...content, org_and_staffing_json: updated});
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Plan of Activities */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 md:px-8 py-5">
+                <h2 className="text-2xl font-bold text-white">IX. Plan of Activities</h2>
+                <p className="text-white/80 text-sm mt-1">Activity schedule and program flow</p>
               </div>
 
-              <table className="w-full border-collapse border border-black">
-                <thead className='border border-black'>
-                  <tr className="text-center">
-                    <th className="py-2 border-r border-black">
-                      <span className="text-red-600 px-2 py-1 text-md font-bold rounded">Time</span>
-                    </th>
-                    <th className="py-2">
-                      <span className="text-red-600 px-2 py-1 text-md font-bold rounded">Part of the Program / Speaker</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {activitySchedule.schedule.map((row, index) => (
-                    <tr key={index} className="border-b border-black text-center">
-                      <td className="py-3 align-top border-r border-black">
-                        <input 
-                          placeholder='Time'
-                          className="w-full text-center bg-transparent outline-none"
-                          value={row.time}
-                          onChange={(e) => updateScheduleRow(index, 'time', e.target.value)}
-                        />
-                      </td>
-                      <td className="py-3">
-                        <div className="space-y-1">
-                          <input 
-                            placeholder='Activity / Part of Program'
-                            className="w-full text-center font-semibold text-md bg-transparent outline-none" 
-                            value={row.activity}
-                            onChange={(e) => updateScheduleRow(index, 'activity', e.target.value)}
-                          />
-                          <input 
-                            placeholder='Speaker / Facilitator (optional)'
-                            className="w-full text-center font-normal text-sm text-gray-600 bg-transparent outline-none" 
-                            value={row.speaker}
-                            onChange={(e) => updateScheduleRow(index, 'speaker', e.target.value)}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              
-              <button
-                onClick={addScheduleRow}
-                className="mt-4 text-blue-600 text-sm hover:text-blue-800"
+              <div className="p-6 md:p-10">
+                {/* Activity Header Card */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
+                  <input
+                    placeholder="ENTER ACTIVITY TITLE HERE"
+                    className="w-full text-center font-bold text-xl md:text-2xl outline-none bg-transparent 
+                    text-blue-700 placeholder-blue-400 border-b-2 border-blue-400 pb-2 mb-4 focus:border-blue-600 transition-colors"
+                    value={activitySchedule.activity_title}
+                    onChange={(e) => handleActivityTitleChange(e.target.value)}
+                  />
+                  
+                  <div className='flex items-center justify-center gap-3 mb-3'>
+                    <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm font-semibold text-gray-700">Date:</span>
+                    <input 
+                      placeholder='Select Date'
+                      className='border-2 border-blue-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all'
+                      type="date" 
+                      value={activitySchedule.activity_date}
+                      onChange={(e) => handleActivityDateChange(e.target.value)}
+                    />
+                  </div>
+                  
+                  <p className="text-lg font-bold text-center text-gray-900 uppercase tracking-wide">Programme</p>
+                </div>
+
+                {/* Schedule Table */}
+                <div className="overflow-x-auto rounded-xl border-2 border-gray-200">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-green-600 to-emerald-600">
+                        <th className="py-4 px-6 text-center border-r border-white/20">
+                          <div className="flex items-center justify-center gap-2">
+                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-white font-bold text-sm">Time</span>
+                          </div>
+                        </th>
+                        <th className="py-4 px-6 text-center">
+                          <span className="text-white font-bold text-sm">Part of the Program / Speaker</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {activitySchedule.schedule.map((row, index) => (
+                        <tr key={index} className="hover:bg-gray-50 transition-colors">
+                          <td className="py-4 px-6 align-top border-r border-gray-200 bg-gray-50">
+                            <input 
+                              placeholder='e.g., 9:00 AM'
+                              className="w-full text-center bg-white border border-gray-200 rounded-lg px-3 py-2 
+                              outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                              value={row.time}
+                              onChange={(e) => updateScheduleRow(index, 'time', e.target.value)}
+                            />
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="space-y-2">
+                              <input 
+                                placeholder='Activity / Part of Program'
+                                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 font-semibold 
+                                outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                                value={row.activity}
+                                onChange={(e) => updateScheduleRow(index, 'activity', e.target.value)}
+                              />
+                              <input 
+                                placeholder='Speaker / Facilitator (optional)'
+                                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm text-gray-600 
+                                outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" 
+                                value={row.speaker}
+                                onChange={(e) => updateScheduleRow(index, 'speaker', e.target.value)}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <button
+                  onClick={addScheduleRow}
+                  className="mt-4 flex items-center gap-2 text-green-600 hover:text-green-700 text-sm font-semibold 
+                  bg-green-50 hover:bg-green-100 px-4 py-2 rounded-lg transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add Schedule Row
+                </button>
+              </div>
+            </div>
+
+            {/* Budgetary Requirement */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 md:px-8 py-5 flex items-center gap-3">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">X. Budgetary Requirement</h2>
+                  <p className="text-white/80 text-sm mt-1">Detailed budget breakdown</p>
+                </div>
+              </div>
+
+              <div className="p-6 md:p-8 bg-gradient-to-br from-gray-50 to-white">
+                <div className="overflow-x-auto rounded-xl border border-gray-200">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+                        <th className="px-6 py-4 text-left font-bold">Item</th>
+                        <th className="px-6 py-4 text-left font-bold">Cost (PHP)</th>
+                        <th className="px-6 py-4 text-left font-bold">Pax / Qty</th>
+                        <th className="px-6 py-4 text-left font-bold">Amount</th>
+                      </tr>
+                    </thead>
+
+                    <tbody className="divide-y divide-gray-200">
+                      {/* Meals Section */}
+                      <tr className="bg-gradient-to-r from-orange-50 to-orange-100">
+                        <td colSpan="4" className="px-6 py-3 font-bold text-orange-900 flex items-center gap-2">
+                          <div className="w-3 h-3 bg-orange-500 rounded-full" />
+                          A. Meals and Snacks
+                        </td>
+                      </tr>
+                      {renderRows("meals")}
+                      <tr className="font-bold bg-orange-100 border-t-2 border-orange-300">
+                        <td className="px-6 py-3" colSpan="3">Subtotal - Meals</td>
+                        <td className='px-6 py-3 text-orange-900'>₱ {totalAmount("meals")}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan="4" className="px-6 py-2">
+                          <button
+                            onClick={() => addRow("meals")}
+                            className="flex items-center gap-2 text-orange-600 hover:text-orange-700 text-xs font-semibold 
+                            bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg transition-all"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Row
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* Transport Section */}
+                      <tr className="bg-gradient-to-r from-blue-50 to-blue-100">
+                        <td colSpan="4" className="px-6 py-3 font-bold text-blue-900 flex items-center gap-2">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                          B. Transportation
+                        </td>
+                      </tr>
+                      {renderRows("transport")}
+                      <tr className="font-bold bg-blue-100 border-t-2 border-blue-300">
+                        <td className="px-6 py-3" colSpan="3">Subtotal - Transportation</td>
+                        <td className='px-6 py-3 text-blue-900'>₱ {totalAmount("transport")}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan="4" className="px-6 py-2">
+                          <button
+                            onClick={() => addRow("transport")}
+                            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-xs font-semibold 
+                            bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Row
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* Supplies Section */}
+                      <tr className="bg-gradient-to-r from-purple-50 to-purple-100">
+                        <td colSpan="4" className="px-6 py-3 font-bold text-purple-900 flex items-center gap-2">
+                          <div className="w-3 h-3 bg-purple-500 rounded-full" />
+                          C. Supplies and Materials
+                        </td>
+                      </tr>
+                      {renderRows("supplies")}
+                      <tr className="font-bold bg-purple-100 border-t-2 border-purple-300">
+                        <td className="px-6 py-3" colSpan="3">Subtotal - Supplies</td>
+                        <td className='px-6 py-3 text-purple-900'>₱ {totalAmount("supplies")}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan="4" className="px-6 py-2">
+                          <button
+                            onClick={() => addRow("supplies")}
+                            className="flex items-center gap-2 text-purple-600 hover:text-purple-700 text-xs font-semibold 
+                            bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-all"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Row
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end py-6">
+              <button 
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className={`group relative bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 
+                text-white px-12 py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-500/30 
+                transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]
+                ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl hover:shadow-green-500/40'}`}
               >
-                + Add Schedule Row
+                <span className="flex items-center gap-3">
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      Submit Proposal
+                      <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </>
+                  )}
+                </span>
               </button>
             </div>
-          </section>
 
-          <section>
-            <h2 className="text-xl font-bold mb-6 mt-8">X. Budgetary Requirement:</h2>
-
-            <div className="bg-gray-50 p-6 rounded-sm overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="font-bold border-b">
-                    <th>Item</th>
-                    <th>Cost (PHP)</th>
-                    <th>Pax / Qty</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  <tr><td colSpan="4" className="pt-4 font-bold">A. Meals and Snacks</td></tr>
-                  {renderRows("meals")}
-                  <tr className="font-bold italic border-[1px] border-black">
-                    <td className="pl-4">Total</td>
-                    <td></td>
-                    <td></td>
-                    <td className='pl-3'>{totalAmount("meals")}</td>
-                  </tr>
-                  <tr>
-                    <td colSpan="4">
-                      <button
-                        onClick={() => addRow("meals")}
-                        className="text-blue-600 text-xs mt-2"
-                      >
-                        + Add Row
-                      </button>
-                    </td>
-                  </tr>
-
-                  <tr><td colSpan="4" className="pt-6 font-bold">B. Transportation</td></tr>
-                  {renderRows("transport")}
-                  <tr className="font-bold italic border-[1px] border-black">
-                    <td className="pl-4">Total</td>
-                    <td></td>
-                    <td></td>
-                    <td className='pl-3'>{totalAmount("transport")}</td>
-                  </tr>
-                  <tr>
-                    <td colSpan="4">
-                      <button
-                        onClick={() => addRow("transport")}
-                        className="text-blue-600 text-xs mt-2"
-                      >
-                        + Add Row
-                      </button>
-                    </td>
-                  </tr>
-
-                  <tr><td colSpan="4" className="pt-6 font-bold">C. Supplies and Materials</td></tr>
-                  {renderRows("supplies")}
-                  <tr className="font-bold italic border-[1px] border-black">
-                    <td className="pl-4">Total</td>
-                    <td></td>
-                    <td></td>
-                    <td className='pl-3'>{totalAmount("supplies")}</td>
-                  </tr>
-                  <tr>
-                    <td colSpan="4">
-                      <button
-                        onClick={() => addRow("supplies")}
-                        className="text-blue-600 text-xs mt-2"
-                      >
-                        + Add Row
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <div className="flex justify-end pt-10">
-            <button 
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className={`bg-green-600 hover:bg-green-700 text-white px-10 py-3 rounded-md font-bold text-lg shadow-lg transition ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Proposal'}
-            </button>
           </div>
-
         </div>
       </div>
-    </div>
   );
 };
 

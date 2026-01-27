@@ -215,25 +215,25 @@ if (pageLoading) {
 
   return (
     <div className="flex-1 bg-white p-10 min-h-screen">
-{actionLoading && (
-  <div className="absolute inset-0 bg-white/80 z-[60] flex items-center justify-center backdrop-blur-sm">
-    <div className="relative bg-white px-14 py-10 flex flex-col items-center w-[380px] shadow-xl rounded-xl">
-      <p className="text-lg font-semibold mb-1">Loading proposal</p>
-      <p className="text-sm text-gray-500 mb-4">Preparing your document…</p>
+      {actionLoading && (
+        <div className="absolute inset-0 bg-white/80 z-[60] flex items-center justify-center backdrop-blur-sm">
+          <div className="relative bg-white px-14 py-10 flex flex-col items-center w-[380px] shadow-xl rounded-xl">
+            <p className="text-lg font-semibold mb-1">Loading proposal</p>
+            <p className="text-sm text-gray-500 mb-4">Preparing your document…</p>
 
-      <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+            <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
 
-      <p className="mt-3 text-xs text-gray-500 font-medium">
-        {Math.round(progress)}%
-      </p>
-    </div>
-  </div>
-)}
+            <p className="mt-3 text-xs text-gray-500 font-medium">
+              {Math.round(progress)}%
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="mb-10 flex items-center justify-between">
         <div>

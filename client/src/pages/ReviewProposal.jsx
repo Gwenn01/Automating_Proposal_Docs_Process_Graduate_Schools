@@ -4,6 +4,7 @@ import DocumentViewerModal from '../components/instructor/DocumentViewerModal';
 import axios from 'axios';
 import { Bell } from "lucide-react";
 import { getStatusStyle } from '../utils/statusStyles';
+import ReviewerCommentModal from '../components/reviewer/ReviewerCommentModal';
 
 const ReviewProposal = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,6 +16,7 @@ const ReviewProposal = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showViewerModal, setShowViewerModal] = useState(false);
+  const [showReviewerModal, setShowReviewerModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [progress, setProgress] = useState(0);
 
@@ -111,6 +113,8 @@ const ReviewProposal = () => {
   }, [user]);
 
 
+
+
   const fetchCoverPage = async (proposalId) => {
     try {
       const res = await axios.get(
@@ -187,10 +191,10 @@ if (loading) {
 
 
   return (
-    <div className="w-full h-full bg-white inset-0 z-[60] flex items-center justify-center backdrop-blur-md animate-fade-in">
+    <div className="w-full h-full bg-white/80 inset-0 z-[60] flex items-center justify-center backdrop-blur-md animate-fade-in">
       <div
         key={selectedDoc?.proposal_id}
-        className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-[380px]"
+        className="relative bg-white/80 px-14 py-10 flex flex-col items-center animate-pop-out w-[380px]"
       >
         <p className="text-lg font-semibold shimmer-text mb-1">
           Loading Proposals
@@ -248,53 +252,53 @@ if (loading) {
       ) : (
         <>
           {/* --- Header Section --- */}
-<div className="flex justify-between items-center mb-8 relative">
-  <h1 className="text-[32px] font-bold text-gray-900">Review Proposal</h1>
+          <div className="flex justify-between items-center mb-8 relative">
+            <h1 className="text-[32px] font-bold text-gray-900">Review Proposal</h1>
 
-  {/* Notification Bell */}
-  <div className="relative">
-    <button
-      onClick={() => setShowNotifications(!showNotifications)}
-      className="relative p-3 rounded-full hover:bg-gray-100 transition"
-    >
-      <p className="flex font-sans gap-2 text-gray-500 font-semibold">Notifications <Bell className="w-6 h-6 text-gray-700" /></p>
-
-      {/* Badge */}
-      {notifications.length > 0 && (
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
-          {notifications.length}
-        </span>
-      )}
-    </button>
-
-    {/* Dropdown */}
-    {showNotifications && (
-      <div className="absolute right-0 mt-3 w-80 bg-white border border-black rounded-2xl shadow-lg z-50 px-2">
-        <div className="px-4 py-3 border-b font-bold text-gray-700">
-          Notifications
-        </div>
-
-        {notifications.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-gray-400 text-center">
-            No new notifications
-          </p>
-        ) : (
-          <ul className="max-h-72 overflow-y-auto">
-            {notifications.map((notif) => (
-              <li
-                key={notif.id}
-                className="px-4 py-3 hover:bg-gray-50 transition cursor-pointer"
+            {/* Notification Bell */}
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-3 rounded-full hover:bg-gray-100 transition"
               >
-                <p className="text-sm text-gray-700">{notif.message}</p>
-                <span className="text-xs text-gray-400">{notif.time}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    )}
-  </div>
-</div>
+                <p className="flex font-sans gap-2 text-gray-500 font-semibold">Notifications <Bell className="w-6 h-6 text-gray-700" /></p>
+
+                {/* Badge */}
+                {notifications.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown */}
+              {showNotifications && (
+                <div className="absolute right-0 mt-3 w-80 bg-white border border-black rounded-2xl shadow-lg z-50 px-2">
+                  <div className="px-4 py-3 border-b font-bold text-gray-700">
+                    Notifications
+                  </div>
+
+                  {notifications.length === 0 ? (
+                    <p className="px-4 py-6 text-sm text-gray-400 text-center">
+                      No new notifications
+                    </p>
+                  ) : (
+                    <ul className="max-h-72 overflow-y-auto">
+                      {notifications.map((notif) => (
+                        <li
+                          key={notif.id}
+                          className="px-4 py-3 hover:bg-gray-50 transition cursor-pointer"
+                        >
+                          <p className="text-sm text-gray-700">{notif.message}</p>
+                          <span className="text-xs text-gray-400">{notif.time}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
 
 
           {/* --- Controls Section --- */}
@@ -421,7 +425,21 @@ if (loading) {
                       </button>
                       
                       <button 
-                        onClick={() => handleReview(proposal)}
+                      onClick={async () => {
+                        setLoading(true);
+
+                        const cover = await fetchCoverPage(proposal.id);
+                        const content = await fetchProposalContent(proposal.id);
+
+                        setSelectedDoc({
+                          ...proposal,
+                          cover_page: cover,
+                          full_content: content,
+                        });
+
+                        setShowReviewerModal(true);
+                        setLoading(false);
+                      }}
                         className="flex-1 flex items-center justify-center space-x-2 bg-[#DC2626] text-white py-2 rounded-md font-bold text-sm hover:bg-[#b91c1c] transition-colors"
                       >
                         <FileText className="w-[18px] h-[18px]" />
@@ -430,7 +448,7 @@ if (loading) {
                       
                       <button 
                         onClick={() => handleViewOthers(proposal)}
-                        className="flex-none flex items-center justify-center bg-gray-900 text-white p-3 rounded-2xl hover:bg-gray-700 transition-colors rounded-md" 
+                        className="flex-none flex items-center justify-center bg-gray-900 text-white p-3 hover:bg-gray-700 transition-colors rounded-md" 
                         title="View Others"
                       >
                         <Users className="w-[18px] h-[18px]" />
@@ -553,6 +571,13 @@ if (loading) {
         isOpen={showViewerModal}
         proposalData={selectedDoc}
         onClose={() => setShowViewerModal(false)}
+      />
+
+      <ReviewerCommentModal
+        isOpen={showReviewerModal}
+        proposalData={selectedDoc}
+        onClose={() => setShowReviewerModal(false)}
+        reviewe={user?.user_id}
       />
     </div>
   );

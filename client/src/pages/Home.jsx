@@ -10,6 +10,7 @@ import {
 } from "./admin";
 import { CreateProposal, EditProposal, ViewProposal } from "./instructor";
 import ReviewProposal from "./ReviewProposal";
+import ProfileOverview from "./ProfileOverview";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -73,6 +74,7 @@ const Home = () => {
         {active === "Create Proposal" && <CreateProposal />}
         {active === "View Proposal" && <ViewProposal />}
         {active === "Edit Proposal" && <EditProposal />}
+        {active === "Profile Overview" && <ProfileOverview />}
 
         {/* ADMIN */}
         {active === "Overview" && <Overview />}
@@ -82,6 +84,7 @@ const Home = () => {
 
         {/* REVIEWER */}
         {active === "Review Proposal" && <ReviewProposal />}
+        {active === "Profile Overview" && <ProfileOverview />}
       </main>
     </div>
   );
