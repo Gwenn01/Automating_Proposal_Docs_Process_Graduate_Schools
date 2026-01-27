@@ -29,6 +29,7 @@ from routes.reviewer.reviewer_routes import reviewer_db
 # general proposal-------------------------------------------------
 from routes.general.get_proposal_routes import proposals_bp
 from routes.implementor.create_proposal_routes import create_proposal_bp
+from routes.implementor.implementor_routes import implementor_bp
 # implementor
 
 #---------------------------------------------------------------------------------
@@ -49,6 +50,7 @@ app.register_blueprint(reviewer_db, url_prefix="/api")
 # general proposal-----------------------------------------------------------------
 app.register_blueprint(proposals_bp, url_prefix="/api")
 app.register_blueprint(create_proposal_bp, url_prefix="/api")
+app.register_blueprint(implementor_bp, url_prefix="/api")
 # implementor
 # -------------------------------------------------
 # Entry Point
