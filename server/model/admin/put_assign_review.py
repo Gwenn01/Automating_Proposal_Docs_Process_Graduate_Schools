@@ -4,6 +4,18 @@ def assign_reviewer(proposal_id, reviewer_id):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+          # Check first
+        cursor.execute("""
+            SELECT review_id
+            FROM proposal_reviews
+            WHERE proposal_id = %s AND user_id = %s
+        """, (proposal_id, reviewer_id))
+
+        existing = cursor.fetchone()
+        if existing:
+            print("DEBUG: Assignment already exists")
+            return False
 
         query = """
             INSERT INTO proposal_reviews (proposal_id, user_id)

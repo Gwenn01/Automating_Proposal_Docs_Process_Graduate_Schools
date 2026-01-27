@@ -1,6 +1,7 @@
 from flask import jsonify, request
 from model.reviewer.get_docs_for_reviewer import get_docs_for_reviewers
 from model.reviewer.insert_reviewer_item import insert_review_item
+from model.reviewer.get_reviewer import get_reviewer_per_docs
 from controller.mapper.reviewer_get_docs_mapper import get_docs_mapper
 
 def get_docs_controller():
@@ -32,6 +33,24 @@ def put_reviews_item_docs_controller():
             return {"error": "Failed to insert review"}, 500
 
         return jsonify({"message": "Review inserted successfully"}), 200
+
+    except Exception as e:
+        return {"error": str(e)}, 500
+    
+def get_review_per_docs_controller():
+    try:
+        data = request.get_json(force=True)  
+        proposal_id = data.get('proposal_id')
+        reviewer_id = data.get('user_id')
+        
+        if not data:
+            return {"error": "review data are required"}, 400
+
+        data = get_reviewer_per_docs(proposal_id, reviewer_id)
+        if not data:
+            return {"error": "Failed to get reviewer"}, 500
+
+        return jsonify(data), 200
 
     except Exception as e:
         return {"error": str(e)}, 500
