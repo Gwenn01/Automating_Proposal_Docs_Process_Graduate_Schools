@@ -1,4 +1,7 @@
 from flask import jsonify, request
+from werkzeug.security import generate_password_hash
+# default = pbkdf2:sha256 (secure)
+
 # admin overview
 from controller.mapper.admin_overview_mapper import (
     status_cycle_mapper, 
@@ -15,6 +18,7 @@ from model.admin.put_assign_review import (
     assign_reviewer, increment_review_count, reassign_reviewer, decrement_review_count,
 
 )
+from model.admin.insert_account import insert_account
 from controller.mapper.admin_assign_reviewer_mapper import (
     get_proposal_with_user_mapper,
     get_reviewer_mapper,
@@ -127,6 +131,29 @@ def get_all_users_controller():
         return jsonify(data), 200
     except Exception as e:
         return {"error": str(e)} 
+
+def create_account_controller():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"message": "There is no data"}), 400
+        
+        fullname = data.get("fullname")
+        email = data.get("email")
+        password = data.get("password")
+        hash_password = generate_password_hash(password)
+        role = data.get("role")
+        
+        if not fullname or not email or not password or not role:
+            return jsonify({"message": "Invalid Data"}), 400
+        
+        success = insert_account(fullname, email, hash_password, role)
+        if not success:
+            return jsonify({"message": "Error in Inserting to database"}
+                           ), 400
+        return jsonify({"message": "Account Created Successfully"}), 200
+    except Exception as e:
+        return {"error": str(e)}
     
 # ADMIN MANAGE DOCS
 def get_all_docs_controller():
