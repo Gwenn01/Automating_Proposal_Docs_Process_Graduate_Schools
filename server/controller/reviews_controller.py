@@ -19,7 +19,6 @@ def get_docs_with_review_controller():
         proposal_reviews = get_reviews(proposal_id)
         
         
-    
     except Exception as e:
         return jsonify({'error': str(e)}), 400
     
