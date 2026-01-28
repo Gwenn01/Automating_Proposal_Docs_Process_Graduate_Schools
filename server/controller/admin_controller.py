@@ -176,13 +176,12 @@ def edit_account_controller():
         fullname = data.get("fullname")
         email = data.get("email")
         password = data.get("password")
-        hash_password = generate_password_hash(password)
         role = data.get("role")
         
         if not id or not fullname or not email or not password or not role:
             return jsonify({"message": "Invalid Data"}), 400
 
-        success = edit_account(user_id, fullname, email, hash_password, role)
+        success = edit_account(user_id, fullname, email, password, role)
         if not success:
             return jsonify({"message": "Error in updating to database"}), 400
         
