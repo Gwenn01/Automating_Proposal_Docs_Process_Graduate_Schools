@@ -16,7 +16,7 @@ from model.admin.get_total_documents import get_all_documents_with_user
 from model.admin.get_reviewer_user import get_reviewers_with_assignment
 from model.admin.put_assign_review import (
     assign_reviewer, increment_review_count, reassign_reviewer, decrement_review_count,
-
+    check_proposal_review_items
 )
 from model.admin.insert_account import insert_account
 from model.admin.put_account import edit_account
@@ -111,6 +111,15 @@ def reassign_reviewer_controller():
         if not  assign_reviewer_validation(data):
             return jsonify({"message": "Invalid Data"}), 400
         proposal_id = data["proposal_id"]
+        
+        already_reviewed = check_proposal_review_items(proposal_id)
+
+        if already_reviewed:
+            return jsonify({
+                "message": "Reviewer already reviewed this proposal. Reassignment not allowed."
+            }), 400
+
+        
         for r in data["reviewers"]:
              #debugger in database 
            success_reassign = reassign_reviewer(proposal_id, r["reviewer_id"]) 

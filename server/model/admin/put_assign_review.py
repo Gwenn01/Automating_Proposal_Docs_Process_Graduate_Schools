@@ -128,3 +128,27 @@ def decrement_review_count(proposal_id):
 #    finally:
 #         cursor.close()
 #         conn.close()
+
+def check_proposal_review_items(proposal_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+            SELECT 1
+            FROM proposal_reviews pr
+            JOIN proposal_review_items pri ON pr.review_id = pri.review_id
+            WHERE pr.proposal_id = %s
+            LIMIT 1
+        """
+        cursor.execute(query, (proposal_id,))
+        result = cursor.fetchone()
+
+        return result is not None
+
+    except Exception as e:
+        print("Check proposal review items error:", e)
+        return False
+    finally:
+        cursor.close()
+        conn.close()
