@@ -15,6 +15,7 @@ const ManageAccount = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [loadingAction, setLoadingAction] = useState("");
 
   useEffect(() => {
     if (!loading) return;
@@ -45,71 +46,90 @@ const ManageAccount = () => {
     setIsDeleteModalOpen(false);
   };
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await axios.get(
-          "http://127.0.0.1:5000/api/get-all-accounts",
-        );
-        setUsers(res.data);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to fetch users");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleUserAdded = () => {
+    setLoadingAction("add");
+    fetchUsers();
+    setLoading(true);
+  };
 
+  const handleUserUpdated = () => {
+    setLoadingAction("edit")
+    fetchUsers();
+    setLoading(true);
+  };
+
+  const handleUserDeleted = () => {
+    setLoading("delete")
+    fetchUsers();
+    setLoading(true);
+  };
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("http://127.0.0.1:5000/api/get-all-accounts");
+      setUsers(res.data);
+    } catch {
+      setError("Failed to fetch users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
   }, []);
 
   // Filter logic
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredUsers = users.filter((user) => {
+    const name = (user?.name ?? "").toString().toLowerCase();
+    const email = (user?.email ?? "").toString().toLowerCase();
+    const query = searchQuery.toLowerCase();
 
-  if (loading) {
-    return (
-      <div className="w-full h-full bg-white inset-0 z-[60] flex items-center justify-center backdrop-blur-md animate-fade-in">
-        <div
-          
-          className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-[450px]"
-        >
-          {/* Floating Spinner */}
-          {/* <div className="relative animate-float mb-6">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
-            <div className="absolute inset-2 bg-white rounded-full" />
-          </div> */}
+    return name.includes(query) || email.includes(query);
+  });
 
-          <p className="text-lg font-semibold shimmer-text mb-2 text-center">
-          Synchronizing Records
-          </p>
 
-          <p className="text-xs w-full text-gray-500 mb-4 text-center">
-            Preparing the latest user and reviewer data
-          </p>
+if (loading) {
+  return (
+    /* Ginawang absolute at tinanggal ang fixed para sa loob lang siya ng page */
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm animate-fade-in">
+      <div className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-full max-w-[450px]">
+        
+        {/* Dynamic Title */}
+        <p className="text-lg font-semibold shimmer-text mb-2 text-center">
+          {loadingAction === "add" && "Adding Account..."}
+          {loadingAction === "edit" && "Updating Account..."}
+          {loadingAction === "delete" && "Deleting Account..."}
+          {!loadingAction && "Synchronizing Records..."}
+        </p>
 
-          {/* Progress Bar */}
-          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500 ease-out relative"
-              style={{ width: `${progress}%` }}
-            >
-              <div className="absolute inset-0 bg-white/20 animate-pulse" />
-            </div>
+        {/* Dynamic Subtitle */}
+        <p className="text-xs w-full text-gray-500 mb-4 text-center">
+          {loadingAction === "add" && "Saving the new user."}
+          {loadingAction === "edit" && "Saving the updated user info."}
+          {loadingAction === "delete" && "Erasing the selected user."}
+          {!loadingAction && "Preparing the latest user and reviewer data."}
+        </p>
+
+        {/* Progress Bar Style */}
+        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500 ease-out relative"
+            style={{ width: `${progress}%` }}
+          >
+            <div className="absolute inset-0 bg-white/20 animate-pulse" />
           </div>
-
-          <p className="mt-3 text-xs text-gray-500 font-medium">
-            {Math.round(progress)}%
-          </p>
         </div>
+
+        {/* Progress Percent */}
+        <p className="mt-3 text-xs text-gray-500 font-medium">
+          {Math.round(progress)}%
+        </p>
       </div>
-    );
+    </div>
+  );
 }
-
-
 
   if (error) return <p>{error}</p>;
 
@@ -200,7 +220,7 @@ const ManageAccount = () => {
                     {/* Monospace ID with Badge Effect */}
                     <div className="flex items-center">
                       <span className="relative z-10 font-mono text-[11px] font-black tracking-tighter px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-green-50 group-hover:text-green-600 transition-colors duration-300">
-                        #{user.id.toString().padStart(2, "0")}
+                        #{user?.id ? String(user.id).padStart(2, "0") : "00"}
                       </span>
 
                       {/* Subtle Vertical Indicator on Hover */}
@@ -330,17 +350,20 @@ const ManageAccount = () => {
       <AddAccountModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+        onSuccess={handleUserAdded}
       />
       <EditModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         data={selectedUser}
+        onSuccess={handleUserUpdated}
       />
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={confirmDelete}
         data={selectedUser}
+        onSuccess={handleUserDeleted}
       />
     </div>
   );

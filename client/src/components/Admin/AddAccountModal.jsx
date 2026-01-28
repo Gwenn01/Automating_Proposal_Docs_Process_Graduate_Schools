@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, UserPlus, Eye, EyeOff, Loader2, ChevronDown, User, ShieldCheck, Mail, Lock } from 'lucide-react';
 
-const AddAccountModal = ({ isOpen, onClose }) => {
+const AddAccountModal = ({ isOpen, onClose, onSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -30,6 +30,8 @@ const AddAccountModal = ({ isOpen, onClose }) => {
       });
 
       if (response.ok) {
+        const newUser = await response.json();
+        onSuccess(newUser);
         onClose();
       } else {
         const data = await response.json();

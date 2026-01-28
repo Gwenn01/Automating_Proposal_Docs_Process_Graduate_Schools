@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle2, User, Mail, ShieldCheck, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 
-const EditModal = ({ isOpen, onClose, data, onRefresh }) => {
+const EditModal = ({ isOpen, onClose, data, onSuccess }) => {
   const [formData, setFormData] = useState({
     user_id: '',
     fullname: '',
@@ -19,7 +19,7 @@ const EditModal = ({ isOpen, onClose, data, onRefresh }) => {
         user_id: data.id || data.user_id || '',
         fullname: data.name || data.fullname || '',
         email: data.email || '',
-        role: data.role ? data.role.charAt(0).toUpperCase() + data.role.slice(1) : 'Implementor',
+        role: data.role || 'implementor',
         password: '' 
       });
     }
@@ -42,7 +42,14 @@ const EditModal = ({ isOpen, onClose, data, onRefresh }) => {
       const result = await response.json();
 
       if (response.ok) {
-        onRefresh?.(); 
+        const updateUser = {
+          id: formData.user_id,
+          name: formData.fullname,
+          email: formData.email,
+          role: formData.role
+        };
+
+        onSuccess(updateUser);
         onClose();
       } else {
         alert(result.message || "Error updating account");
@@ -125,8 +132,8 @@ const EditModal = ({ isOpen, onClose, data, onRefresh }) => {
                     onChange={(e) => setFormData({...formData, role: e.target.value})}
                     className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-green-500/10 focus:border-[#00923f] focus:bg-white transition-all font-black text-gray-700 appearance-none cursor-pointer"
                   >
-                    <option value="Implementor">Implementor</option>
-                    <option value="Reviewer">Reviewer</option>
+                    <option value="implementor">Implementor</option>
+                    <option value="reviewer">Reviewer</option>
                   </select>
                   <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                     <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
