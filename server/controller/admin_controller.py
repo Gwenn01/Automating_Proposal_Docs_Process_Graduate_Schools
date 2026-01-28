@@ -24,7 +24,6 @@ from model.admin.delete_account import delete_account
 from controller.mapper.admin_assign_reviewer_mapper import (
     get_proposal_with_user_mapper,
     get_reviewer_mapper,
-
 )
 from middleware.assign_review_validator import assign_reviewer_validation
 
@@ -112,12 +111,11 @@ def reassign_reviewer_controller():
             return jsonify({"message": "Invalid Data"}), 400
         proposal_id = data["proposal_id"]
         
-        already_reviewed = check_proposal_review_items(proposal_id)
-
-        if already_reviewed:
-            return jsonify({
-                "message": "Reviewer already reviewed this proposal. Reassignment not allowed."
-            }), 400
+        # already_reviewed = check_proposal_review_items(proposal_id)
+        # if already_reviewed:
+        #     return jsonify({
+        #         "message": "Reviewer already reviewed this proposal. Reassignment not allowed."
+        #     }), 400
 
         
         for r in data["reviewers"]:
