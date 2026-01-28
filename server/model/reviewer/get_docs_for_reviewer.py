@@ -8,7 +8,7 @@ def get_docs_for_reviewers(reviewer_id):
         SELECT 
             pr.proposal_id,
             pr.user_id,
-            
+            pr.review_id,
             pd.title,
             pd.status,
             pd.reviewer_count,

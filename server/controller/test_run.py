@@ -24,6 +24,8 @@ from model.admin.get_total_user import get_all_users
 from model.reviewer.get_docs_for_reviewer import get_docs_for_reviewers
 from model.admin.get_total_documents import get_all_documents
 from model.general.get_reviews import get_reviews
+from controller.mapper.reviewer_get_docs_mapper import get_docs_mapper
+from model.reviewer.get_docs_for_reviewer import get_docs_for_reviewers
 
 def run_tests_controller():
     # data = fetch_user_proposals(7)
@@ -50,4 +52,8 @@ def run_tests_controller():
     
     #print(get_all_documents())
     #print(get_reviews(1))
+    # docs = get_docs_for_reviewers(6)
+    # print(docs)
+    # data_docs = [get_docs_mapper(d) for d in docs]
+    # print(data_docs)
     print("Running test controller..")
