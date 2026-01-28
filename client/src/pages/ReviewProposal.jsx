@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Bell } from "lucide-react";
 import { getStatusStyle } from '../utils/statusStyles';
 import ReviewerCommentModal from '../components/reviewer/ReviewerCommentModal';
+import ReviewerList from '../components/reviewer/ReviewerList';
 
 const ReviewProposal = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,6 +20,8 @@ const ReviewProposal = () => {
   const [showReviewerModal, setShowReviewerModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [showReviewerList, setShowReviewerList] = useState(false);
+  const [selectedProposalId, setSelectedProposalId] = useState(null);
 
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -451,7 +454,10 @@ if (loading) {
                       </button>
                       
                       <button 
-                        onClick={() => handleViewOthers(proposal)}
+                        onClick={() => {
+                          setSelectedProposalId(proposal.id);
+                          setShowReviewerList(true);
+                        }}
                         className="flex-none flex items-center justify-center bg-gray-900 text-white p-3 hover:bg-gray-700 transition-colors rounded-md" 
                         title="View Others"
                       >
@@ -513,7 +519,10 @@ if (loading) {
                             <FileText className="w-4 h-4" />
                           </button>
                           <button 
-                            onClick={() => handleViewOthers(proposal)}
+                            onClick={() => {
+                              setSelectedProposalId(proposal.id);
+                              setShowReviewerList(true);
+                            }}
                             className="p-2 bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition-colors"
                             title="View Others"
                           >
@@ -584,6 +593,14 @@ if (loading) {
         reviewe={user?.user_id}
         review_id={proposalsData.review_id}
       />
+
+      <ReviewerList
+        isOpen={showReviewerList}
+        proposalId={selectedProposalId}
+        user_id={user?.user_id}
+        onClose={() => setShowReviewerList(false)}
+      />
+
     </div>
   );
 };
