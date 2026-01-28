@@ -31,11 +31,18 @@ const handleSubmitReview = async () => {
   setIsSubmitting(true);
 
   const reviewData = {
-    review_id: proposalData.id, // 🔥 REQUIRED by backend
+    review_id: proposalData.review_id,
     proposal_id: proposalData.id,
-    comments: JSON.stringify(comments), // 🔥 MUST be string
-    reviewed_by: reviewe, // or 6
+    reviewed_by: reviewe,
     reviewed_at: new Date().toISOString(),
+
+    // ✅ metadata
+    review_round: "1st",
+    proposal_type: "Project",
+    source_of_fund: "Resolution No. 1436, S. 2025",
+
+    // ✅ flat feedback fields
+    ...comments
   };
 
   console.log("Submitting review:", reviewData);
@@ -56,6 +63,7 @@ const handleSubmitReview = async () => {
     setIsSubmitting(false);
   }
 };
+
 
 
 

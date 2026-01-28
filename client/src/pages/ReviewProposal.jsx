@@ -98,9 +98,11 @@ const ReviewProposal = () => {
           description: row.name,
           date: row.date,
           name: row.name,
+          review_id: row.review_id
         }));
         
         setProposalsData(mappedProposals);
+        
       } catch (err) {
         console.error("Error fetching proposals:", err);
         setError(err.message);
@@ -111,6 +113,8 @@ const ReviewProposal = () => {
 
     fetchProposals();
   }, [user]);
+  
+ 
 
 
 
@@ -578,6 +582,7 @@ if (loading) {
         proposalData={selectedDoc}
         onClose={() => setShowReviewerModal(false)}
         reviewe={user?.user_id}
+        review_id={proposalsData.review_id}
       />
     </div>
   );
