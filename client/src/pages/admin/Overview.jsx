@@ -21,30 +21,60 @@ const STATIC_CARD_LOOKUP = {
   "Total Documents": { icon: FileText, color: "text-green-600", bg: "bg-green-50" },
 };
 
-const CustomLegend = ({ payload }) => {
+const CustomLegend = ({ payload, currentIndex }) => {
+  const activeEntry = payload[currentIndex];
+
+  if (!activeEntry) return <div className="mb-10 min-h-[48px]" />;
+
   return (
-    <div className="flex flex-wrap items-center justify-start md:justify-end gap-x-6 gap-y-3 mb-8 px-2">
-      {payload.map((entry, index) => (
-        <div 
-          key={`item-${index}`} 
-          className="flex items-center gap-2.5 group cursor-default transition-all duration-300 hover:translate-y-[-1px]"
-        >
-          {/* Custom Circle Icon with Glow */}
+    <div className="flex items-center justify-end mb-10 px-2 min-h-[48px]">
+      <div 
+        key={activeEntry.value} 
+        className="flex items-center gap-4 animate-[premiumReveal_0.6s_cubic-bezier(0.23,1,0.32,1)]"
+      >
+        {/* Label with very subtle tracking */}
+        <div className="flex flex-col items-end">
+          <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em] leading-none mb-1">
+            Analytics Focus
+          </span>
+          <div className="h-[1px] w-6 bg-slate-100" />
+        </div>
+        
+        {/* Premium Capsule */}
+        <div className="flex items-center gap-3 bg-white/40 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative group overflow-hidden">
+          
+          {/* subtle background glow that matches status color */}
           <div 
-            className="w-2.5 h-2.5 rounded-full shadow-sm relative"
-            style={{ backgroundColor: entry.color }}
-          >
+            className="absolute -left-2 -top-2 w-12 h-12 blur-2xl opacity-10 transition-colors duration-1000"
+            style={{ backgroundColor: activeEntry.color }}
+          />
+
+          {/* Indicator with Inner Glow */}
+          <div className="relative flex items-center justify-center">
             <div 
-              className="absolute inset-0 rounded-full blur-[2px] opacity-0 group-hover:opacity-60 transition-opacity"
-              style={{ backgroundColor: entry.color }}
+              className="w-2 h-2 rounded-full z-10"
+              style={{ backgroundColor: activeEntry.color }}
+            />
+            <div 
+              className="absolute w-4 h-4 rounded-full opacity-20 animate-ping"
+              style={{ backgroundColor: activeEntry.color }}
+            />
+            <div 
+              className="absolute w-3 h-3 rounded-full blur-[3px] opacity-40"
+              style={{ backgroundColor: activeEntry.color }}
             />
           </div>
           
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.12em] whitespace-nowrap">
-            {entry.value}
+          <span className="text-[12px] font-black text-slate-800 uppercase tracking-[0.15em] relative z-10">
+            {activeEntry.value}
           </span>
+          
+          {/* Modern Right Arrow/Caret focus icon */}
+          <div className="ml-1 opacity-20 group-hover:opacity-100 transition-opacity">
+            <div className="w-[1px] h-3 bg-slate-300 rotate-[30deg] translate-y-[-1px]" />
+          </div>
         </div>
-      ))}
+      </div>
     </div>
   );
 };
@@ -370,30 +400,115 @@ const Overview = () => {
           </div>
         </div>
 
-        {/* Bar Chart Sync with Active Card */}
-        <div className="bg-white p-8 rounded-[32px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col">
-          <div className="mb-8">
-            <h3 className="text-2xl font-black text-slate-800 tracking-tight">Proposal Status Report</h3>
-            <p className="text-sm text-slate-400 font-medium">Monthly performance highlights</p>
+        {/* Premium Bar Chart Container */}
+        <div className="relative group bg-white p-8 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100/80 flex flex-col transition-all duration-500 hover:shadow-[0_30px_60px_rgba(0,0,0,0.04)] overflow-hidden">
+          
+          {/* Modern Mesh Gradient Background (Subtle) */}
+          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-br from-slate-50 to-transparent opacity-50 rounded-full blur-3xl -z-10" />
+
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+                  Proposal Status Report
+                </h3>
+              </div>
+              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.15em]">
+                Live Performance Metrics & Cycle Distribution
+              </p>
+            </div>
+
+            {/* CustomLegend integration */}
+            <CustomLegend currentIndex={currentStatusIndex} payload={[
+              { value: 'For Review', color: '#3b82f6' },
+              { value: 'Under Review', color: '#4f46e5' },
+              { value: 'For Revisions', color: '#f59e0b' },
+              { value: 'For Approval', color: '#9333ea' },
+              { value: 'Approved', color: '#059669' },
+              { value: 'Rejected', color: '#ef4444' }
+            ]} />
           </div>
-          <div className="flex-1 w-full min-h-[320px]">
+
+          <div className="flex-1 w-full min-h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} margin={{ top: 20, right: 10, left: 0, bottom: 20 }} barGap={10}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} dy={15} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} width={30} />
-              <Tooltip cursor={{ fill: '#f8fafc', radius: 8 }} />
-              <Legend verticalAlign="top" align="right" content={<CustomLegend />} />
-              
-              {/* Bars for each Status */}
-              <Bar dataKey="ForReview" name="For Review" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={8}/>
-              <Bar dataKey="UnderReview" name="Under Review" fill="#4f46e5" radius={[6, 6, 0, 0]} barSize={8} />
-              <Bar dataKey="Revisions" name="For Revisions" fill="#f59e0b" radius={[6, 6, 0, 0]} barSize={8}/>
-              <Bar dataKey="ForApproval" name="For Approval" fill="#9333ea" radius={[6, 6, 0, 0]} barSize={8}/>
-              <Bar dataKey="Approved" name="Approved" fill="#059669" radius={[6, 6, 0, 0]} barSize={8}/>
-              <Bar dataKey="Rejected" name="Rejected" fill="#ef4444" radius={[6, 6, 0, 0]} barSize={8}/>
-            </BarChart>
+              <BarChart 
+                data={barData} 
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }} 
+                barGap={12}
+              >
+                <defs>
+                  {/* Premium Gradients for Bars */}
+                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="currentColor" stopOpacity={1} />
+                    <stop offset="100%" stopColor="currentColor" stopOpacity={0.6} />
+                  </linearGradient>
+                </defs>
+                
+                <CartesianGrid 
+                  strokeDasharray="8 8" 
+                  vertical={false} 
+                  stroke="#f1f5f9" 
+                  strokeOpacity={0.8}
+                />
+                
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#cbd5e1', fontWeight: 700 }} 
+                  dy={20}
+                />
+                
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#cbd5e1', fontWeight: 700 }} 
+                />
+
+                <Tooltip 
+                  cursor={{ fill: '#f8fafc', radius: 12 }}
+                  contentStyle={{ 
+                    borderRadius: '16px', 
+                    border: 'none', 
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
+                    padding: '12px' 
+                  }}
+                />
+                
+                {/* Bars: Ang active status (currentIndex) ay full color, ang iba ay low opacity */}
+                <Bar dataKey="ForReview" radius={[4, 4, 0, 0]} barSize={6}
+                    fill="#3b82f6" opacity={currentStatusIndex === 0 ? 1 : 0.15} />
+                
+                <Bar dataKey="UnderReview" radius={[4, 4, 0, 0]} barSize={6}
+                    fill="#4f46e5" opacity={currentStatusIndex === 1 ? 1 : 0.15} />
+                
+                <Bar dataKey="Revisions" radius={[4, 4, 0, 0]} barSize={6}
+                    fill="#f59e0b" opacity={currentStatusIndex === 2 ? 1 : 0.15} />
+                
+                <Bar dataKey="ForApproval" radius={[4, 4, 0, 0]} barSize={6}
+                    fill="#9333ea" opacity={currentStatusIndex === 3 ? 1 : 0.15} />
+                
+                <Bar dataKey="Approved" radius={[4, 4, 0, 0]} barSize={6}
+                    fill="#059669" opacity={currentStatusIndex === 4 ? 1 : 0.15} />
+                
+                <Bar dataKey="Rejected" radius={[4, 4, 0, 0]} barSize={6}
+                    fill="#ef4444" opacity={currentStatusIndex === 5 ? 1 : 0.15} />
+              </BarChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* Bottom Info Bar */}
+          <div className="mt-8 pt-6 border-t border-slate-50 flex justify-between items-center">
+            <div className="flex gap-4">
+              <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-slate-200" />
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Historical Data</span>
+              </div>
+            </div>
+            <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">
+              Auto-refreshing in 5s
+            </span>
           </div>
         </div>
       </div>
@@ -401,7 +516,24 @@ const Overview = () => {
         @keyframes progress { 
           0% { width: 0%; } 
           100% { width: 100%; } 
-        }
+          }
+          @keyframes premiumReveal {
+            0% { 
+              opacity: 0; 
+              transform: translateX(20px) scale(0.98); 
+              filter: blur(4px);
+            }
+            100% { 
+              opacity: 1; 
+              transform: translateX(0) scale(1);
+              filter: blur(0);
+            }
+          }
+
+          @keyframes progress { 
+            0% { width: 0%; } 
+            100% { width: 100%; } 
+          }
       ` }} />
     </div>
   );

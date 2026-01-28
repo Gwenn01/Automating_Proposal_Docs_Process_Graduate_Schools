@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Edit, Trash2, Search, UserPlus, MoreHorizontal } from "lucide-react";
 import EditModal from "../../components/Admin/EditModal";
 import DeleteConfirmationModal from "../../components/Admin/DeleteConfirmationModal";
-import AddReviewerModal from "../../components/Admin/AddReviewerModal";
+import AddAccountModal from "../../components/Admin/AddAccountModal";
 import axios from "axios";
 
 const ManageAccount = () => {
@@ -114,7 +114,7 @@ const ManageAccount = () => {
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="p-8 lg:p-10 space-y-10 bg-[#fbfcfb] h-auto animate-in fade-in duration-500">
+    <div className="relative min-h-screen p-8 lg:p-10 bg-[#fbfcfb] animate-in fade-in duration-700">
       {/* Header Section - Identical to Overview */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
         <div>
@@ -167,7 +167,7 @@ const ManageAccount = () => {
 
             {/* 4. Button Text */}
             <span className="relative z-10 text-[11px] uppercase tracking-[0.2em] whitespace-nowrap drop-shadow-sm">
-              Create Reviewer
+              Create Account
             </span>
 
             {/* 5. Subtle Glow Layer - Nag-a-activate sa hover */}
@@ -327,20 +327,20 @@ const ManageAccount = () => {
       </div>
 
       {/* Modals */}
-      <AddReviewerModal
+      <AddAccountModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
       />
       <EditModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        userData={selectedUser}
+        data={selectedUser}
       />
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={confirmDelete}
-        userData={selectedUser}
+        data={selectedUser}
       />
     </div>
   );
