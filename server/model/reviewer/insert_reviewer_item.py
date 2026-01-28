@@ -59,3 +59,25 @@ def insert_review_item(review_id, data):
     db.close()
 
     return True
+
+def updated_reviewed_count(proposal_id):
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        
+        query = """
+            UPDATE proposals_docs SET reviewed_count = reviewed_count + 1 WHERE proposal_id = %s
+        """
+        values = (proposal_id,)
+
+        cursor.execute(query, values)
+        db.commit()
+
+        cursor.close()
+        db.close()
+        
+        return True
+    except Exception as e:
+        print(e)
+        return False
+        
