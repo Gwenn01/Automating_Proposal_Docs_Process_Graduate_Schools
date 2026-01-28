@@ -6,12 +6,75 @@ import { getStatusStyle } from "../../utils/statusStyles";
 
 const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   if (!isOpen || !proposalData) return null;
+  const rpd = proposalData?.reviews_per_docs;
+
+  if (!rpd) return null;
+
 
   // Correct mapping based on actual API structure
   const cover = proposalData.cover_page?.cover_pages || {};
   const content = proposalData.full_content?.content_pages || {};
 
   const statusStyle = getStatusStyle(proposalData.status);
+
+
+
+
+  console.log("Proposal Data in ReviewerModal:", proposalData);
+
+  const normalized = {
+  cover: rpd.cover_page,
+
+  project_profile: rpd.project_profile,
+
+  rationale: {
+    content: rpd.rationale?.rationale_content,
+    reviews: rpd.rationale?.reviews || [],
+  },
+
+  significance: {
+    content: rpd.significance?.significance_content,
+    reviews: rpd.significance?.reviews || [],
+  },
+
+  methodology: {
+    content: rpd.methodology?.methodology_content,
+    reviews: rpd.methodology?.reviews || [],
+  },
+
+  objectives: {
+    general: rpd.objectives?.general_content,
+    specific: rpd.objectives?.specific_content,
+    reviewsGeneral: rpd.objectives?.reviews_general || [],
+    reviewsSpecific: rpd.objectives?.reviews_specific || [],
+  },
+
+  planOfActivities: {
+    content: rpd.plan_of_activities?.plan_of_activities_content,
+    reviews: rpd.plan_of_activities?.reviews || [],
+  },
+
+  organization: {
+    content: rpd.organization_and_staffing?.organization_and_staffing_content,
+    reviews: rpd.organization_and_staffing?.reviews || [],
+  },
+
+  expectedOutput: {
+    content: rpd.expected_output_outcome?.["6ps"],
+    reviews: rpd.expected_output_outcome?.reviews || [],
+  },
+
+  sustainability: {
+    content: rpd.sustainability_plan?.sustainability_plan_content,
+    reviews: rpd.sustainability_plan?.reviews || [],
+  },
+
+  budget: {
+    content: rpd.budgetary_requirement?.budgetary_requirement,
+    reviews: rpd.budgetary_requirement?.reviews || [],
+  },
+};
+
 
 
   return (
@@ -21,11 +84,11 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-6 animate-overlay-enter">
         
         {/* 4. Apply the Modal Pop-in Animation Class */}
-        <div className="bg-white w-full max-w-5xl h-[95vh] rounded-xl shadow-2xl flex flex-col overflow-hidden animate-modal-enter">
+        <div className="bg-white w-full max-w-5xl h-[95vh] rounded-bl-xl rounded-tl-xl shadow-2xl flex flex-col overflow-hidden">
           
           {/* Header */}
           <div className="flex justify-between items-center px-8 py-5 border-b bg-primaryGreen text-white">
-            <div>
+            {/* <div>
               <h3 className="font-semibold text-xs">Proposal Details</h3>
 
               <h1 className="text-lg font-bold mb-2">
@@ -37,14 +100,29 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
               >
                 {statusStyle.label}
               </span>
+            </div> */}
+
+            <div className="absolute inset-0 bg-grid-white/[0.05] pointer-events-none"></div>
+            
+            <div className="relative z-10 flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-1 h-5 bg-white/80 rounded-full"></div>
+                <h3 className="font-semibold text-xs uppercase tracking-wider text-emerald-100">
+                  Reviewer's Evaluation on Proposal
+                </h3>
+              </div>
+
+              <h1 className="text-xl font-bold leading-tight text-white drop-shadow-sm">
+                {proposalData.title}
+              </h1>
             </div>
 
-            <button
+            {/* <button
               onClick={onClose}
               className="p-2 bg-white rounded-full text-black hover:text-red-600 hover:bg-red-50 transition-colors"
             >
               <X className="w-5 h-5" />
-            </button>
+            </button> */}
           </div>
 
 
@@ -57,7 +135,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
               
             <div className="space-y-4 font-normal text-base">
               <div>
-                <p className="font-medium">{cover.submission_date || "N/A"}</p>
+                <p className="font-medium">{normalized?.cover.submission_date || "N/A"}</p>
               </div>
 
               <div className="uppercase ">
@@ -70,21 +148,21 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
 
               <p className="">
                       I have the honor to submit the proposal for your consideration and appropriate action 
-                for the proposed extension program entitled {cover.proposal_summary?.program_title || "N/A"}
-                ,with the approved budget of {cover.proposal_summary?.approved_budget?.words || "N/A"}; {cover.proposal_summary?.approved_budget?.amount || "N/A"} with the duration 
-                of {cover.proposal_summary?.duration?.words || "N/A"} years, {cover.proposal_summary?.coverage_period || "N/A"}.
+                for the proposed extension program entitled {normalized?.cover.proposal_summary.program_title || "N/A"}
+                ,with the approved budget of {normalized?.cover.proposal_summary.approved_budget?.words || "N/A"}; {normalized?.cover.proposal_summary.approved_budget?.amount || "N/A"} with the duration 
+                of {normalized?.cover.proposal_summary.duration?.words || "N/A"} years, {normalized?.cover.proposal_summary.proposal_coverage_period || "N/A"}.
               </p>
 
               <p>
-                This program includes an activity entitled {cover.activity_details?.title || "N/A"} on {content.plan_of_activities?.activity_date ? new Date(content.plan_of_activities.activity_date).toLocaleDateString("en-US",{ year: "numeric", month: "long", day: "numeric" }): "N/A"} at {cover.activity_details?.venue || "N/A"}. This activity is valuable {cover.activity_details?.value_statement || "N/A"}. The requested expenses 
-                for this activity from the university is {cover.activity_details?.requested_budget || "N/A"}, 
+                This program includes an activity entitled {normalized?.cover.activity_details?.title || "N/A"} on {normalized?.cover.activity_details?.date ? new Date(normalized?.cover.activity_details.date).toLocaleDateString("en-US",{ year: "numeric", month: "long", day: "numeric" }): "N/A"} at {normalized?.cover.activity_details?.venue || "N/A"}. This activity is valuable {normalized?.cover.activity_details?.value_statement || "N/A"}. The requested expenses 
+                for this activity from the university is {normalized?.cover.activity_details?.requested_budget || "N/A"}, 
                 which will be used to defray expenses for food, transportation, supplies and materials, 
                 and other expenses related to these activities.
               </p>
 
               <p>
-                Further, there is {cover.participants?.prmsu?.words || "N/A"} ({cover.participants?.prmsu?.count || "N/A"}) the total number of participants from PRMSU, 
-                another {cover.participants?.partner_agency?.words || "N/A"} ({cover.participants?.partner_agency?.count || "N/A"}) from the collaborating agency, {cover.participants?.partner_agency?.name || "N/A"}, and {cover.participants?.trainees?.words || "N/A"} ({cover.participants?.trainees?.count || "N/A"}) trainees from the abovementioned community.
+                Further, there is {normalized?.cover.participants?.prmsu?.words || "N/A"} ({normalized?.cover.participants?.prmsu?.count || "N/A"}) the total number of participants from PRMSU, 
+                another {normalized?.cover.participants?.partner_agency?.words || "N/A"} ({normalized?.cover.participants?.partner_agency?.count || "N/A"}) from the collaborating agency, {normalized?.cover.participants?.partner_agency?.name || "N/A"}, and {normalized?.cover.participants?.trainees?.words || "N/A"} ({normalized?.cover.participants?.trainees?.count || "N/A"}) trainees from the abovementioned community.
               </p>
 
               <p className="">Your favorable response regarding this matter will be highly appreciated.</p>
@@ -124,10 +202,23 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
           </section>         
 
           {/* ========== REVIEWER'S COMMENT ========== */}
-          <ReviewerComment
-            comment=""
-            reviewerName="Dr. Juan Dela Cruz"
-          />
+{/* ========== REVIEWER'S COMMENTS (RATIONALE) ========== */}
+{rationale?.reviews?.length > 0 ? (
+  rationale.reviews.map((review, index) => (
+    <ReviewerComment
+      key={review.review_id || index}
+      title={`Reviewer’s Comment ${index + 1}`}
+      comment={review.comment}
+      reviewerName={review.reviewer_name}
+    />
+  ))
+) : (
+  <ReviewerComment
+    comment=""
+    reviewerName=""
+  />
+)}
+
 
 
 
@@ -144,7 +235,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Program Title:
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.program_title || "N/A"}
+                        {normalized?.project_profile?.program_title || "N/A"}
                       </td>
                     </tr>
 
@@ -153,7 +244,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Project Title:
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.project_title || "N/A"}
+                        {normalized?.project_profile?.project_title || "N/A"}
                       </td>
                     </tr>
 
@@ -162,7 +253,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Activity Title:
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.activity_title || "N/A"}
+                        {normalized?.project_profile?.activity_title || "N/A"}
                       </td>
                     </tr>
 
@@ -171,7 +262,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         SDG’s
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.sdg_alignment || "N/A"}
+                        {normalized?.project_profile?.sdg_alignment || "N/A"}
                       </td>
                     </tr>
 
@@ -180,7 +271,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Extension Agenda 
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.extension_agenda || "N/A"}
+                        {normalized?.project_profile?.extension_agenda || "N/A"}
                       </td>
                     </tr>
 
@@ -189,7 +280,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Proponents:  Project Leader
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.proponents?.project_leader || "N/A"}
+                        {normalized?.project_profile?.proponents?.project_leader || "N/A"}
                       </td>
                     </tr>
 
@@ -198,7 +289,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Members:
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.proponents?.members || "N/A"}
+                        {normalized?.project_profile?.proponents?.members || "N/A"}
                       </td>
                     </tr>
 
@@ -207,7 +298,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         College/Campus/Mandated Program:
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.college_campus_program || "N/A"}
+                        {normalized?.project_profile?.college_campus_program || "N/A"}
                       </td>
                     </tr>
 
@@ -216,7 +307,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Collaborating Agencies:
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.collaborating_agencies || "N/A"}
+                        {normalized?.project_profile?.collaborating_agencies || "N/A"}
                       </td>
                     </tr>
 
@@ -225,7 +316,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Community Location:
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.community_location || "N/A"}
+                        {normalized?.project_profile?.community_location || "N/A"}
                       </td>
                     </tr>
 
@@ -234,7 +325,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Target Sector:
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.target_sector || "N/A"}
+                        {normalized?.project_profile?.target_sector || "N/A"}
                       </td>
                     </tr>
 
@@ -243,7 +334,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Number of Beneficiaries
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.number_of_beneficiaries || "N/A"}
+                        {normalized?.project_profile?.number_of_beneficiaries || "N/A"}
                       </td>
                     </tr>
 
@@ -252,7 +343,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Period of Implementation/ Duration:
                       </td>
                       <td className="px-4 py-3">
-                        {content.project_profile?.implementation_period || "N/A"}
+                        {normalized?.project_profile?.implementation_period || "N/A"}
                       </td>
                     </tr>
 
@@ -261,7 +352,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Budgetary Requirements (PhP): 
                       </td>
                       <td className="px-4 py-3">
-                        Php {content.project_profile?.budgetary_requirements || "N/A"}
+                        Php {normalized?.project_profile?.budgetary_requirements || "N/A"}
                       </td>
                     </tr>
                   </tbody>
@@ -279,7 +370,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
               <div className="space-y-6 text-gray-700 leading-relaxed">
                   <div className="">
                       <h3 className="font-bold text-gray-900 pt-10 text-xl ">II. RATIONALE</h3>
-                      <p className="text-base mt-3">{content.rationale || "N/A"}</p>
+                      <p className="text-base mt-3">{normalized?.rationale.content || "N/A"}</p>
 
                       {/* ========== REVIEWER'S COMMENT ========== */}
                       <ReviewerComment
@@ -291,7 +382,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                   
                   <div>
                       <h3 className="font-bold text-gray-900 pt-5 text-xl ">III. SIGNIFICANCE</h3>
-                      <p className="text-base mt-3">{content.significance || "N/A"}</p>
+                      <p className="text-base mt-3">{normalized?.significance.content || "N/A"}</p>
 
                       {/* ========== REVIEWER'S COMMENT ========== */}
                       <ReviewerComment
@@ -304,9 +395,9 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                   <div className="">
                       <h3 className="font-bold text-gray-900 pt-5 text-xl ">IV. OBJECTIVES</h3>
                       <p className="text-base font-semibold mb-2 mt-3"> General Objectives</p>
-                      <p className="p-5 bg-gray-100">{content.objectives?.general || "N/A"}</p>
+                      <p className="p-5 bg-gray-100">{normalized?.objectives?.general || "N/A"}</p>
                       <p className="text-base font-semibold mb-2 mt-3">Specific Objectives</p>
-                      <p className="p-5 bg-gray-100">{content.objectives?.specific || "N/A"}</p>
+                      <p className="p-5 bg-gray-100">{normalized?.objectives?.specific || "N/A"}</p>
 
                       {/* ========== REVIEWER'S COMMENT ========== */}
                       <ReviewerComment
@@ -317,7 +408,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
 
                   <div className="">
                       <h3 className="font-bold text-gray-900 pt-10 text-xl ">V. METHODOLOGY</h3>
-                      <p className="text-base mt-3">{content.methodology || "N/A"}</p>
+                      <p className="text-base mt-3">{normalized?.methodology.content || "N/A"}</p>
 
                       {/* ========== REVIEWER'S COMMENT ========== */}
                       <ReviewerComment
@@ -346,7 +437,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                               Publications
                             </td>
                             <td className="px-4 py-3">
-                              {content?.expected_output_outcome?.["6ps"]?.publications || "N/A"}
+                              {normalized?.expectedOutput?.content?.publications || "N/A"}
                             </td>
                           </tr>
 
@@ -355,7 +446,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                               Patents/IP
                             </td>
                             <td className="px-4 py-3">
-                              {content?.expected_output_outcome?.["6ps"]?.patents || "N/A"}
+                              {normalized?.expectedOutput?.content?.patents || "N/A"}
                             </td>
                           </tr>
 
@@ -364,7 +455,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                               Products
                             </td>
                             <td className="px-4 py-3">
-                              {content?.expected_output_outcome?.["6ps"]?.products || "N/A"}
+                              {normalized?.expectedOutput?.content?.products || "N/A"}
                             </td>
                           </tr>
 
@@ -373,7 +464,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                               People Services 
                             </td>
                             <td className="px-4 py-3">
-                              {content?.expected_output_outcome?.["6ps"]?.people_services || "N/A"}
+                              {normalized?.expectedOutput?.content?.people_services || "N/A"}
                             </td>
                           </tr>
 
@@ -382,7 +473,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                               Places and Partnerships
                             </td>
                             <td className="px-4 py-3">
-                              {content?.expected_output_outcome?.["6ps"]?.places_partnerships || "N/A"}
+                              {normalized?.expectedOutput?.content?.places_partnerships || "N/A"}
                             </td>
                           </tr>
 
@@ -391,7 +482,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                               Policy
                             </td>
                             <td className="px-4 py-3">
-                              {content?.expected_output_outcome?.["6ps"]?.policy || "N/A"}
+                              {normalized?.expectedOutput?.content?.policy || "N/A"}
                             </td>
                           </tr>
 
@@ -400,7 +491,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                               Social Impact
                             </td>
                             <td className="px-4 py-3">
-                              {content?.expected_output_outcome?.["6ps"]?.social_impact || "N/A"}
+                              {normalized?.expectedOutput?.content?.social_impact || "N/A"}
                             </td>
                           </tr>
 
@@ -409,7 +500,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                               Economic Impact
                             </td>
                             <td className="px-4 py-3">
-                              {content?.expected_output_outcome?.["6ps"]?.economic_impact || "N/A"}
+                              {normalized?.expectedOutput?.content?.economic_impact || "N/A"}
                             </td>
                           </tr>
 
@@ -426,7 +517,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
 
                   <div className="">
                       <h3 className="font-bold text-gray-900 pt-10 text-xl ">VII. SUSTAINABILITY PLAN</h3>
-                      <p className="text-base mt-3">{content.sustainability_plan || "N/A"}</p>
+                      <p className="text-base mt-3">{normalized?.sustainability.content || "N/A"}</p>
 
                       {/* ========== REVIEWER'S COMMENT ========== */}
                       <ReviewerComment
@@ -454,8 +545,8 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                           </tr>
 
                           {/* TABLE BODY */}
-                          {content?.organization_and_staffing?.length > 0 ? (
-                            content.organization_and_staffing.map((item, index) => (
+                          {normalized?.organization?.content.length > 0 ? (
+                            normalized?.organization?.content.map((item, index) => (
                               <tr key={index} className="border-b border-black">
                                 <td className="border-r border-black px-4 py-3 text-gray-900">
                                   {item.activity || "N/A"}
@@ -490,10 +581,10 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
 
                   <div className="">
                       <h3 className="font-bold text-gray-900 pt-10 text-xl ">IX. PLAN OF ACTIVITIES</h3>
-                      <p className="text-xl font-bold mt-3 text-center">{content.plan_of_activities?.activity_title || "N/A"}</p>
+                      <p className="text-xl font-bold mt-3 text-center">{normalized?.planOfActivities?.content.activity_title || "N/A"}</p>
                       <p className="text-lg mt-3 text-center">
-                        {content.plan_of_activities?.activity_date
-                          ? new Date(content.plan_of_activities.activity_date).toLocaleDateString(
+                        {normalized?.planOfActivities?.content.activity_date
+                          ? new Date(normalized?.planOfActivities?.content.activity_date).toLocaleDateString(
                               "en-US",
                               { year: "numeric", month: "long", day: "numeric" }
                             )
@@ -515,8 +606,8 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                           </tr>
 
                           {/* TABLE BODY */}
-                          {content?.plan_of_activities?.schedule.length > 0 ? (
-                            content.plan_of_activities?.schedule.map((item, index) => (
+                          {normalized?.planOfActivities?.content.schedule.length > 0 ? (
+                            normalized?.planOfActivities?.content.schedule.map((item, index) => (
                               <tr key={index} className="border-b border-black">
                                 <td className="border-r border-black px-4 py-3 text-gray-900">
                                   {item.time || "N/A"}
@@ -571,7 +662,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                             </tr>
 
                             {/* MEALS */}
-                            {content?.budgetary_requirement?.meals?.map((row, index) => (
+                            {normalized?.budget?.content.meals.map((row, index) => (
                               <tr key={`meals-${index}`} className="border-b border-black">
                                 <td className="border-r border-black px-4 py-3">Meals</td>
                                 <td className="border-r border-black px-4 py-3">{row.item}</td>
@@ -582,7 +673,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                             ))} 
 
                             {/* TRANSPORT */}
-                            {content?.budgetary_requirement?.transport?.map((row, index) => (
+                            {normalized?.budget?.content.transport?.map((row, index) => (
                               <tr key={`transport-${index}`} className="border-b border-black">
                                 <td className="border-r border-black px-4 py-3">Transport</td>
                                 <td className="border-r border-black px-4 py-3">{row.item}</td>
@@ -593,7 +684,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                             ))}
 
                             {/* SUPPLIES */}
-                            {content?.budgetary_requirement?.supplies?.map((row, index) => (
+                            {normalized?.budget?.content.supplies?.map((row, index) => (
                               <tr key={`supplies-${index}`} className="border-b border-black">
                                 <td className="border-r border-black px-4 py-3">Supplies</td>
                                 <td className="border-r border-black px-4 py-3">{row.item}</td>
@@ -660,6 +751,91 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
             </section>
           </div>
         </div>
+
+        {/*History */}                   
+        <div className="bg-white h-[95vh] w-1/5 max-w-2xl shadow-sm border border-gray-200 flex flex-col rounded-tr-xl rounded-br-xl">
+  
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">History</h2>
+              <p className="text-xs text-gray-400 mt-1">Recent changes of proposal</p>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="p-3 bg-gray-200 rounded-full text-black hover:text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+        </div>
+
+        {/* History List */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          
+          {/* Row */}
+          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
+            <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-sm font-semibold">
+              JD
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-gray-700 font-medium">
+                Proposal submitted
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Extension Program • 2 hours ago
+              </p>
+            </div>
+          </div>
+
+          {/* Row */}
+          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
+            <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-semibold">
+              MK
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-gray-700 font-medium">
+                Review approved
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Community Outreach • Yesterday
+              </p>
+            </div>
+          </div>
+
+          {/* Row */}
+          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
+            <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-sm font-semibold">
+              AR
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-gray-700 font-medium">
+                Document updated
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                GAD Report • 3 days ago
+              </p>
+            </div>
+          </div>
+
+          {/* Row */}
+          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
+            <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-sm font-semibold">
+              LS
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-gray-700 font-medium">
+                Comment added
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Proposal Review • 1 week ago
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       </div>
     </>
   );

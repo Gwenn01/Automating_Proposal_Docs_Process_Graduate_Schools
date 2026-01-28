@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { prmsuLogo } from "../assets";
 import { CustomButton, FormInput } from "../components";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,9 @@ const Auth = () => {
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+
 
 
   const [loginData, setLoginData] = useState({
@@ -147,30 +150,45 @@ const handleRegister = async () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Email Address
                   </label>
-                  <FormInput
-                    type="email"
-                    placeholder="you@example.com"
-                    value={loginData.identifier}
-                    onChange={(e) => {
-                      setLoginData({ ...loginData, identifier: e.target.value });
-                      setLoginError("");
-                    }}
-                  />
+                    <FormInput
+                      ref={emailRef}
+                      type="email"
+                      placeholder="you@example.com"
+                      value={loginData.identifier}
+                      onChange={(e) => {
+                        setLoginData({ ...loginData, identifier: e.target.value });
+                        setLoginError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          passwordRef.current?.focus();
+                        }
+                      }}
+                    />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Password
                   </label>
-                  <FormInput
-                    type="password"
-                    placeholder="••••••••"
-                    value={loginData.password}
-                    onChange={(e) => {
-                      setLoginData({ ...loginData, password: e.target.value });
-                      setLoginError("");
-                    }}
-                  />
+                    <FormInput
+                      ref={passwordRef}
+                      type="password"
+                      placeholder="••••••••"
+                      value={loginData.password}
+                      onChange={(e) => {
+                        setLoginData({ ...loginData, password: e.target.value });
+                        setLoginError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleLogin();
+                        }
+                      }}
+                    />
+
                 </div>
 
                 {loginError && (

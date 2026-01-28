@@ -121,14 +121,14 @@ const ReviewerList = ({ isOpen, onClose, proposalId, user_id }) => {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t flex justify-end">
+        {/* <div className="px-6 py-4 border-t flex justify-end">
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-semibold text-sm transition"
           >
             Close
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

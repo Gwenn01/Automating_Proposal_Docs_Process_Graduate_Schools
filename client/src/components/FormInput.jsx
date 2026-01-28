@@ -1,18 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef } from "react";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 
-const FormInput = ({
+const FormInput = forwardRef(({
   type = "text",
   placeholder,
   value,
   onChange,
+  onKeyDown,
   name,
   required = false,
   error = "",
-  options = [], // for select
-  icon: Icon = null, // lucide icon component
+  options = [],
+  icon: Icon = null,
   disabled = false,
-}) => {
+}, ref) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const isPassword = type === "password";
@@ -21,17 +22,15 @@ const FormInput = ({
 
   return (
     <div className="w-full mb-4">
-      {/* INPUT CONTAINER */}
       <div
         className={`
-          flex items-center gap-2 px-5 py-3 rounded-full border transition bg-[#F5F5F5]
+          flex items-center gap-2 px-5 py-3 rounded-full border transition
           ${hasError ? "border-red-500" : "border-gray-300"}
           focus-within:ring-2
           ${hasError ? "focus-within:ring-red-400" : "focus-within:ring-secondary"}
           ${disabled ? "bg-gray-100" : "bg-white"}
         `}
       >
-        {/* LEFT ICON */}
         {Icon && (
           <Icon
             size={18}
@@ -39,7 +38,6 @@ const FormInput = ({
           />
         )}
 
-        {/* SELECT */}
         {type === "select" ? (
           <select
             name={name}
@@ -57,12 +55,13 @@ const FormInput = ({
             ))}
           </select>
         ) : (
-          /* INPUT */
           <input
+            ref={ref}
             type={inputType}
             name={name}
             value={value}
             onChange={onChange}
+            onKeyDown={onKeyDown}
             placeholder={placeholder}
             required={required}
             disabled={disabled}
@@ -70,7 +69,6 @@ const FormInput = ({
           />
         )}
 
-        {/* PASSWORD TOGGLE */}
         {isPassword && (
           <button
             type="button"
@@ -82,7 +80,6 @@ const FormInput = ({
         )}
       </div>
 
-      {/* ERROR MESSAGE */}
       {hasError && (
         <div className="flex items-center gap-1 mt-1 text-xs text-red-500">
           <AlertCircle size={14} />
@@ -91,6 +88,6 @@ const FormInput = ({
       )}
     </div>
   );
-};
+});
 
 export default FormInput;

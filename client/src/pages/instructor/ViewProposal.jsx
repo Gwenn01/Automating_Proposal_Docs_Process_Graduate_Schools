@@ -104,6 +104,23 @@ useEffect(() => {
     }
   };
 
+const fetchReviewsPerDocs = async (proposalId) => {
+  try {
+    const res = await axios.post(
+      "http://127.0.0.1:5000/api/get-reviews-per-docs",
+      {
+        proposal_id: proposalId, // ✅ EXACT payload backend expects
+      }
+    );
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching reviews per docs:", error);
+    return null;
+  }
+};
+
+
+
   // ================= STATUS LABEL STYLE =================
 const getStatusStyle = (status) => {
   switch (status) {
@@ -375,18 +392,19 @@ if (pageLoading) {
                       onClick={async () => {
                         setActionLoading(true);
 
-                        const cover = await fetchCoverPage(doc.proposal_id);
-                        const content = await fetchProposalContent(doc.proposal_id);
+                        const reviewsPerDocs = await fetchReviewsPerDocs(doc.proposal_id);
 
                         setSelectedDoc({
                           ...doc,
-                          cover_page: cover,
-                          full_content: content,
+
+                          // 🔥 THIS is the mapper output
+                          reviews_per_docs: reviewsPerDocs,
                         });
 
                         setShowReviewerModal(true);
                         setActionLoading(false);
                       }}
+
                       className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 text-[#166534] px-5 py-2.5 rounded-lg text-xs font-semibold hover:from-green-100 hover:to-emerald-100 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                     >
                       <List className="w-4 h-4" />
