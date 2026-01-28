@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from controller.reviewer_controller import (
     get_docs_controller,
     put_reviews_item_docs_controller,
-    get_review_per_docs_controller
+    get_reviewer_per_docs_controller
 )
 
 reviewer_db = Blueprint('reviewer', __name__)
@@ -17,4 +17,4 @@ def post_review_item():
 
 @reviewer_db.route('/get-reviewer-per-docs', methods=['POST'])
 def get_reviewer_per_docs():
-   return get_review_per_docs_controller()
+   return get_reviewer_per_docs_controller()

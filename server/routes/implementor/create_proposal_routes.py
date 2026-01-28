@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from controller.proposal_controller import save_proposal, update_proposal_cover_page, update_proposal_content   
+from controller.implementor_controller import save_proposal, update_proposal_cover_page, update_proposal_content   
 
 create_proposal_bp = Blueprint("create_proposal_bp", __name__)
 

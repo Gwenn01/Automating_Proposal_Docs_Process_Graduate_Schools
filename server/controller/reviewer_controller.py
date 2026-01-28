@@ -37,7 +37,7 @@ def put_reviews_item_docs_controller():
     except Exception as e:
         return {"error": str(e)}, 500
     
-def get_review_per_docs_controller():
+def get_reviewer_per_docs_controller():
     try:
         data = request.get_json(force=True)  
         proposal_id = data.get('proposal_id')
