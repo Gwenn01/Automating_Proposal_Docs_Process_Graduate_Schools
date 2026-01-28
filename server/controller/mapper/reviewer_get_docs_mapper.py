@@ -29,7 +29,7 @@ def get_review_per_docs_mapper(proposal_cover, proposal_content, proposal_review
     review_for_org_and_staffing = []
     review_for_activity_schedule = []
     review_for_budget_breakdown = []
-    review_for_participants = []
+    #review_for_participants = []
     
     def safe_json(value, default):
         try:
@@ -177,10 +177,10 @@ def get_review_per_docs_mapper(proposal_cover, proposal_content, proposal_review
         },
         "objectives": {
             "general_content": proposal_content["general_objectives"],
-            "reviews": review_for_general_objectives,
+            "reviews_general": review_for_general_objectives,
             
             "specific_content": proposal_content["specific_objectives"],
-            "reviews": review_for_specific_objectives
+            "reviews_specific": review_for_specific_objectives
         },
         "methodology": {
             "methodology_content": proposal_content["methodology"], 
