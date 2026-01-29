@@ -12,9 +12,9 @@ def get_docs_with_review_controller():
         data = request.get_json()
         proposal_id = data.get('proposal_id')
         # get the cover content and review data
-        proposal_cover = fetch_proposal_cover_page(1)
-        proposal_content = fetch_proposal_content(1)
-        proposal_review = get_reviews(1)
+        proposal_cover = fetch_proposal_cover_page(proposal_id)
+        proposal_content = fetch_proposal_content(proposal_id)
+        proposal_review = get_reviews(proposal_id)
         # initialize only one data in the cover and content for duplicate data
         proposal_cover = proposal_cover[0]
         proposal_content = proposal_content[0]
