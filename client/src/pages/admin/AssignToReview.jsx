@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search, UserCheck, FileText, RefreshCcw } from "lucide-react";
 import AssignModal from "../../components/Admin/AssignModal";
 import axios from "axios";
+import ReactDOM from "react-dom"
 
 const AssignToReview = () => {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -11,6 +12,7 @@ const AssignToReview = () => {
   const [allDocs, setAllDocs] = useState([]);
   const [modalMode, setModalMode] = useState("assign")
   const [progress, setProgress] = useState(0);
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
   useEffect(() => {
     if (!loading) return;
@@ -97,22 +99,38 @@ const AssignToReview = () => {
         </div>
       </div>
     );
-}
+  }
 
+  const showToast = (message, type = "success") => {
+  setToast({ show: true, message, type });
+  
+  setTimeout(() => {
+    setToast((prev) => ({ ...prev, show: false }));
+  }, 4000);
+};
 
-  const handleUpdateReviewer = (proposalId, newReviewerNames) => {
-      console.log(`UPDATING UI: ID ${proposalId} set to ${newReviewerNames}`);
-      
-      setAllDocs((prevDocs) =>
-        prevDocs.map((doc) => {
-          const currentId = doc.proposal_id || doc.id;
-          if (currentId === proposalId) {
-            return { ...doc, reviewer: newReviewerNames };
-          }
-          return doc;
-        })
-      );
-    };
+  const handleUpdateReviewer = (proposalId, newReviewerNames, actionMode) => {
+    setIsAssignModalOpen(false);
+
+    // 2. I-update ang local state ng documents
+    setAllDocs((prevDocs) =>
+      prevDocs.map((doc) => {
+        const currentId = doc.proposal_id || doc.id;
+        if (currentId === proposalId) {
+          return { ...doc, reviewer: newReviewerNames };
+        }
+        return doc;
+      })
+    );
+
+    // 3. Maghintay ng sandali (approx 300ms para sa modal fade out) bago ipakita ang toast
+    setTimeout(() => {
+      const toastMessage = actionMode === "reassign" 
+        ? "Reviewer reassigned successfully!" 
+        : "New reviewer(s) assigned successfully!";
+      showToast(toastMessage, "success");
+    }, 300);
+  };
 
   const filteredDocs = allDocs.filter(
     (doc) =>
@@ -121,7 +139,7 @@ const AssignToReview = () => {
   );
 
   return (
-    /* Pinantay ang padding (p-8 lg:p-10) at background color (#fbfcfb) */
+    
     <div className="p-8 lg:p-10 space-y-10 bg-[#fbfcfb] h-full animate-in fade-in duration-500">
       {/* Header Section - Sakto ang typography at spacing sa ManageAccount */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
@@ -159,10 +177,38 @@ const AssignToReview = () => {
             />
           </div>
 
-          {/* Info Badge (Optional) - Adds professionalism */}
-          <div className="hidden lg:flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-            {filteredDocs.length} Pending Proposals
+         {/* Professional Metric Badge */}
+          <div className="hidden lg:flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white border border-slate-100 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-md hover:border-slate-200 group/metric">
+            
+            {/* Multi-layered Animated Indicator */}
+            <div className="relative flex items-center justify-center">
+              <span className="absolute w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping opacity-25" />
+              <span className="relative w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+            </div>
+
+            <div className="flex flex-col -space-y-0.5">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] leading-tight">
+                Document Index
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[14px] font-black text-slate-800 tabular-nums">
+                  {filteredDocs.length}
+                </span>
+                <span className="text-[11px] font-bold text-slate-500 tracking-tight">
+                  Total Proposals
+                </span>
+              </div>
+            </div>
+
+            {/* Subtle Vertical Divider */}
+            <div className="h-6 w-[1px] bg-slate-100 mx-1" />
+
+            {/* Activity Label */}
+            <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 group-hover/metric:bg-emerald-50/50 group-hover/metric:border-emerald-100 transition-colors duration-300">
+              <span className="text-[10px] font-bold text-slate-500 group-hover/metric:text-emerald-600 transition-colors">
+                Live Update
+              </span>
+            </div>
           </div>
         </div>
 
@@ -286,14 +332,6 @@ const AssignToReview = () => {
                               <span className="relative">Add More</span>
                             </button>
                           </div>
-
-                          {/* Current Reviewer Badge (Styled inside the same div) */}
-                          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100">
-                            <span className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
-                            <span className="text-[9px] font-bold text-slate-400 truncate max-w-[180px]">
-                              To: {doc.reviewer}
-                            </span>
-                          </div>
                         </div>
                       ) : (
                         /* --- ASSIGN NOW STATE (Wala pang reviewer - Single Button) --- */
@@ -339,7 +377,59 @@ const AssignToReview = () => {
         data={selectedDoc}
         mode={modalMode}
         onUpdate={handleUpdateReviewer}
+        showToast={showToast}
       />
+
+      {toast.show && ReactDOM.createPortal(
+        <div className="fixed top-8 right-8 z-[10000] pointer-events-none">
+          <div className={`
+            relative flex items-center gap-4 px-6 py-4 rounded-[24px] 
+            bg-white/80 backdrop-blur-xl border-2 shadow-[0_20px_50px_rgba(0,0,0,0.1)]
+            transition-all duration-500 pointer-events-auto
+            /* Right-side Animation: Slide in from the right */
+            animate-in fade-in slide-in-from-right-10 cubic-bezier(0.16, 1, 0.3, 1)
+            ${toast.message.toLowerCase().includes("reassign") 
+              ? "border-blue-500/20 shadow-blue-500/10" 
+              : "border-emerald-500/20 shadow-emerald-500/10"}
+          `}>
+            {/* Decorative Side Accent */}
+            <div className={`absolute left-0 top-1/4 bottom-1/4 w-1 rounded-r-full 
+              ${toast.message.toLowerCase().includes("reassign") ? "bg-blue-500" : "bg-emerald-500"}`} 
+            />
+
+            {/* Icon Container with Soft Glow */}
+            <div className={`flex items-center justify-center w-10 h-10 rounded-2xl
+              ${toast.message.toLowerCase().includes("reassign") 
+                ? "bg-blue-50 text-blue-600 shadow-inner shadow-blue-200/50" 
+                : "bg-emerald-50 text-emerald-600 shadow-inner shadow-emerald-200/50"}`}
+            >
+              {toast.message.toLowerCase().includes("reassign") ? (
+                <RefreshCcw size={18} strokeWidth={2.5} className="animate-[spin_3s_linear_infinite]" />
+              ) : (
+                <UserCheck size={18} strokeWidth={2.5} className="animate-pulse" />
+              )}
+            </div>
+
+            {/* Text Content */}
+            <div className="flex flex-col gap-0.5 pr-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                System Notification
+              </span>
+              <span className="text-[13px] font-bold text-slate-800 tracking-tight">
+                {toast.message}
+              </span>
+            </div>
+
+            {/* Subtle Close Indicator */}
+            <div className="ml-2 pl-4 border-l border-slate-100">
+              <div className={`w-1.5 h-1.5 rounded-full animate-pulse
+                ${toast.message.toLowerCase().includes("reassign") ? "bg-blue-400" : "bg-emerald-400"}`} 
+              />
+            </div>
+          </div>
+        </div>,
+        document.body 
+      )}
     </div>
   );
 };
