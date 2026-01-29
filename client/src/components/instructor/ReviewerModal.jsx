@@ -201,23 +201,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
             </div>
           </section>         
 
-          {/* ========== REVIEWER'S COMMENT ========== */}
-{/* ========== REVIEWER'S COMMENTS (RATIONALE) ========== */}
-{rationale?.reviews?.length > 0 ? (
-  rationale.reviews.map((review, index) => (
-    <ReviewerComment
-      key={review.review_id || index}
-      title={`Reviewer’s Comment ${index + 1}`}
-      comment={review.comment}
-      reviewerName={review.reviewer_name}
-    />
-  ))
-) : (
-  <ReviewerComment
-    comment=""
-    reviewerName=""
-  />
-)}
+          {/* ========== REVIEWER'S COMMENTS (Cover page) ========== */}
+          {normalized?.cover.reviews.length > 0 ? (
+            normalized?.cover.reviews.map((review, index) => (
+              <ReviewerComment
+                key={review.review_id || index}
+                title={`Reviewer’s Comment ${index + 1}`}
+                comment={review.comment}
+                reviewerName={review.reviewer_name}
+              />
+            ))
+          ) : (
+            <ReviewerComment
+              comment=""
+              reviewerName=""
+            />
+          )}
 
 
 
@@ -358,11 +357,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                   </tbody>
                 </table>
 
-                {/* ========== REVIEWER'S COMMENT ========== */}
-                <ReviewerComment
-                  comment="The proposal is well-structured but needs more budget justification."
-                  reviewerName="Dr. Juan Dela Cruz"
-                />
+                {/* ========== REVIEWER'S COMMENTS (Project Profile) ========== */}
+                {normalized?.project_profile.reviews.length > 0 ? (
+                  normalized?.project_profile.reviews.map((review, index) => (
+                    <ReviewerComment
+                      key={review.review_id || index}
+                      title={`Reviewer’s Comment ${index + 1}`}
+                      comment={review.comment}
+                      reviewerName={review.reviewer_name}
+                    />
+                  ))
+                ) : (
+                  <ReviewerComment
+                    comment=""
+                    reviewerName=""
+                  />
+                )}
 
               </div>
 
@@ -373,10 +383,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                       <p className="text-base mt-3">{normalized?.rationale.content || "N/A"}</p>
 
                       {/* ========== REVIEWER'S COMMENT ========== */}
-                      <ReviewerComment
-                        comment="The proposal is well-structured but needs more budget justification."
-                        reviewerName="Dr. Juan Dela Cruz"
-                      />
+                      {/* ========== REVIEWER'S COMMENTS (RATIONALE) ========== */}
+                      {normalized?.rationale.reviews.length > 0 ? (
+                        normalized?.rationale.reviews.map((review, index) => (
+                          <ReviewerComment
+                            key={review.review_id || index}
+                            title={`Reviewer’s Comment ${index + 1}`}
+                            comment={review.comment}
+                            reviewerName={review.reviewer_name}
+                          />
+                        ))
+                      ) : (
+                        <ReviewerComment
+                          comment=""
+                          reviewerName=""
+                        />
+                      )}
 
                   </div>
                   
@@ -384,11 +406,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                       <h3 className="font-bold text-gray-900 pt-5 text-xl ">III. SIGNIFICANCE</h3>
                       <p className="text-base mt-3">{normalized?.significance.content || "N/A"}</p>
 
-                      {/* ========== REVIEWER'S COMMENT ========== */}
-                      <ReviewerComment
-                        comment="The proposal is well-structured but needs more budget justification."
-                        reviewerName="Dr. Juan Dela Cruz"
-                      />
+                        {/* ========== REVIEWER'S COMMENTS (SIGNIFICANCE) ========== */}
+                        {normalized?.significance.reviews.length > 0 ? (
+                          normalized?.significance.reviews.map((review, index) => (
+                            <ReviewerComment
+                              key={review.review_id || index}
+                              title={`Reviewer’s Comment ${index + 1}`}
+                              comment={review.comment}
+                              reviewerName={review.reviewer_name}
+                            />
+                          ))
+                        ) : (
+                          <ReviewerComment
+                            comment=""
+                            reviewerName=""
+                          />
+                        )}
                   </div>
 
                   {/* OBJECTIVES */}
@@ -396,25 +429,64 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                       <h3 className="font-bold text-gray-900 pt-5 text-xl ">IV. OBJECTIVES</h3>
                       <p className="text-base font-semibold mb-2 mt-3"> General Objectives</p>
                       <p className="p-5 bg-gray-100">{normalized?.objectives?.general || "N/A"}</p>
+
+                    {/* ========== REVIEWER'S COMMENTS (GENERAL OBJECTIVES) ========== */}
+                      {normalized?.objectives.reviewsGeneral.length > 0 ? (
+                        normalized?.objectives.reviewsGeneral.map((review, index) => (
+                          <ReviewerComment
+                            key={review.review_id || index}
+                            title={`Reviewer’s Comment ${index + 1}`}
+                            comment={review.comment}
+                            reviewerName={review.reviewer_name}
+                          />
+                        ))
+                      ) : (
+                        <ReviewerComment
+                          comment=""
+                          reviewerName=""
+                        />
+                      )}
                       <p className="text-base font-semibold mb-2 mt-3">Specific Objectives</p>
                       <p className="p-5 bg-gray-100">{normalized?.objectives?.specific || "N/A"}</p>
 
-                      {/* ========== REVIEWER'S COMMENT ========== */}
-                      <ReviewerComment
-                        comment="The proposal is well-structured but needs more budget justification."
-                        reviewerName="Dr. Juan Dela Cruz"
-                      />
+                      {/* ========== REVIEWER'S COMMENTS (SPECIFIC OBJECTIVES) ========== */}
+                      {normalized?.objectives.reviewsGeneral.length > 0 ? (
+                        normalized?.objectives.reviewsGeneral.map((review, index) => (
+                          <ReviewerComment
+                            key={review.review_id || index}
+                            title={`Reviewer’s Comment ${index + 1}`}
+                            comment={review.comment}
+                            reviewerName={review.reviewer_name}
+                          />
+                        ))
+                      ) : (
+                        <ReviewerComment
+                          comment=""
+                          reviewerName=""
+                        />
+                      )}
                   </div>
 
                   <div className="">
                       <h3 className="font-bold text-gray-900 pt-10 text-xl ">V. METHODOLOGY</h3>
                       <p className="text-base mt-3">{normalized?.methodology.content || "N/A"}</p>
 
-                      {/* ========== REVIEWER'S COMMENT ========== */}
-                      <ReviewerComment
-                        comment="The proposal is well-structured but needs more budget justification."
-                        reviewerName="Dr. Juan Dela Cruz"
-                      />
+                      {/* ========== REVIEWER'S COMMENTS (METHODOLOGY) ========== */}
+                      {normalized?.methodology.reviews.length > 0 ? (
+                        normalized?.methodology.reviews.map((review, index) => (
+                          <ReviewerComment
+                            key={review.review_id || index}
+                            title={`Reviewer’s Comment ${index + 1}`}
+                            comment={review.comment}
+                            reviewerName={review.reviewer_name}
+                          />
+                        ))
+                      ) : (
+                        <ReviewerComment
+                          comment=""
+                          reviewerName=""
+                        />
+                      )}
                   </div>
 
 
@@ -507,11 +579,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         </tbody>
                       </table>
 
-                      {/* ========== REVIEWER'S COMMENT ========== */}
-                      <ReviewerComment
-                        comment="The proposal is well-structured but needs more budget justification."
-                        reviewerName="Dr. Juan Dela Cruz"
-                      />
+                      {/* ========== REVIEWER'S COMMENTS (EXPECTED OUTPUT) ========== */}
+                      {normalized?.expectedOutput.reviews.length > 0 ? (
+                        normalized?.expectedOutput.reviews.map((review, index) => (
+                          <ReviewerComment
+                            key={review.review_id || index}
+                            title={`Reviewer’s Comment ${index + 1}`}
+                            comment={review.comment}
+                            reviewerName={review.reviewer_name}
+                          />
+                        ))
+                      ) : (
+                        <ReviewerComment
+                          comment=""
+                          reviewerName=""
+                        />
+                      )}
 
                   </div>
 
@@ -519,11 +602,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                       <h3 className="font-bold text-gray-900 pt-10 text-xl ">VII. SUSTAINABILITY PLAN</h3>
                       <p className="text-base mt-3">{normalized?.sustainability.content || "N/A"}</p>
 
-                      {/* ========== REVIEWER'S COMMENT ========== */}
-                      <ReviewerComment
-                        comment="The proposal is well-structured but needs more budget justification."
-                        reviewerName="Dr. Juan Dela Cruz"
-                      />
+                      {/* ========== REVIEWER'S COMMENTS (SUSTAINABILITY PLAN) ========== */}
+                      {normalized?.sustainability.reviews.length > 0 ? (
+                        normalized?.sustainability.reviews.map((review, index) => (
+                          <ReviewerComment
+                            key={review.review_id || index}
+                            title={`Reviewer’s Comment ${index + 1}`}
+                            comment={review.comment}
+                            reviewerName={review.reviewer_name}
+                          />
+                        ))
+                      ) : (
+                        <ReviewerComment
+                          comment=""
+                          reviewerName=""
+                        />
+                      )}
                   </div>
 
                   <div className="">
@@ -571,11 +665,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         </tbody>
                       </table>
 
-                      {/* ========== REVIEWER'S COMMENT ========== */}
-                      <ReviewerComment
-                        comment="The proposal is well-structured but needs more budget justification."
-                        reviewerName="Dr. Juan Dela Cruz"
-                      />
+                      {/* ========== REVIEWER'S COMMENTS (ORGANIZATION AND STAFFING) ========== */}
+                      {normalized?.organization.reviews.length > 0 ? (
+                        normalized?.organization.reviews.map((review, index) => (
+                          <ReviewerComment
+                            key={review.review_id || index}
+                            title={`Reviewer’s Comment ${index + 1}`}
+                            comment={review.comment}
+                            reviewerName={review.reviewer_name}
+                          />
+                        ))
+                      ) : (
+                        <ReviewerComment
+                          comment=""
+                          reviewerName=""
+                        />
+                      )}
 
                   </div>
 
@@ -629,11 +734,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         </tbody>
                       </table>
 
-                      {/* ========== REVIEWER'S COMMENT ========== */}
-                      <ReviewerComment
-                        comment="The proposal is well-structured but needs more budget justification."
-                        reviewerName="Dr. Juan Dela Cruz"
-                      />
+                      {/* ========== REVIEWER'S COMMENTS (PLAN OF ACTIVITIES) ========== */}
+                      {normalized?.planOfActivities.reviews.length > 0 ? (
+                        normalized?.planOfActivities.reviews.map((review, index) => (
+                          <ReviewerComment
+                            key={review.review_id || index}
+                            title={`Reviewer’s Comment ${index + 1}`}
+                            comment={review.comment}
+                            reviewerName={review.reviewer_name}
+                          />
+                        ))
+                      ) : (
+                        <ReviewerComment
+                          comment=""
+                          reviewerName=""
+                        />
+                      )}
 
                   </div>
 
@@ -706,11 +822,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
 
                           </tbody>
                         </table>
-                      {/* ========== REVIEWER'S COMMENT ========== */}
-                      <ReviewerComment
-                        comment="The proposal is well-structured but needs more budget justification."
-                        reviewerName="Dr. Juan Dela Cruz"
-                      />
+                      {/* ========== REVIEWER'S COMMENTS (BUDGET) ========== */}
+                      {normalized?.budget.reviews.length > 0 ? (
+                        normalized?.budget.reviews.map((review, index) => (
+                          <ReviewerComment
+                            key={review.review_id || index}
+                            title={`Reviewer’s Comment ${index + 1}`}
+                            comment={review.comment}
+                            reviewerName={review.reviewer_name}
+                          />
+                        ))
+                      ) : (
+                        <ReviewerComment
+                          comment=""
+                          reviewerName=""
+                        />
+                      )}
                   </div>
 
                   <div className="py-4">
