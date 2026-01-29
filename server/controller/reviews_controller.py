@@ -5,7 +5,18 @@ from model.general.get_proposal import (
 )
 from model.general.get_reviews import get_reviews
 from controller.mapper.reviewer_get_docs_mapper import get_review_per_docs_mapper
+from model.general.get_assigned_reviewer import get_assigned_reviewer
 
+def get_assigned_reviewers_controller():
+    ...
+    try:
+        data = request.get_json()
+        proposal_id = data.get('proposal_id')
+        return jsonify(get_assigned_reviewer(proposal_id)), 200
+    except Exception as e:
+        return jsonify({"message": "Invalid request"}), 400
+    
+    
 def get_docs_with_review_controller():
     ...
     try:

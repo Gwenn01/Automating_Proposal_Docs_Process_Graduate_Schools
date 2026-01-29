@@ -31,6 +31,7 @@ from model.general.get_proposal import (
     fetch_proposal_content
 )
 from controller.mapper.reviewer_get_docs_mapper import get_review_per_docs_mapper
+from model.general.get_assigned_reviewer import get_assigned_reviewer
 
 def run_tests_controller():
     # data = fetch_user_proposals(7)
@@ -61,7 +62,8 @@ def run_tests_controller():
     # print(docs)
     # data_docs = [get_docs_mapper(d) for d in docs]
     # print(data_docs)
-            
+    
+    #print(get_assigned_reviewer(2))     
     
     
     print("Running test controller..")
