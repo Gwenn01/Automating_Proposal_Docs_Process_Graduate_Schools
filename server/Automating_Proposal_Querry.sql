@@ -218,71 +218,183 @@ CREATE TABLE proposal_review_items (
     FOREIGN KEY (review_id) REFERENCES proposal_reviews(review_id) ON DELETE CASCADE
 );
 
-
-
-CREATE TABLE proposal_assignments (
-    assignment_id INT AUTO_INCREMENT PRIMARY KEY,
-	reviewer_id INT NOT NULL,
-    proposal_id INT NOT NULL,
-    assigned_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('assigned', 'completed', 'reassigned') DEFAULT 'assigned',
-	
-    FOREIGN KEY (reviewer_id) REFERENCES users(user_id)
-        ON DELETE CASCADE,
-    
-    FOREIGN KEY (proposal_id) REFERENCES proposals_docs(proposal_id)
-        ON DELETE CASCADE
-);
-
-
-CREATE TABLE proposal_revisions (
-    revision_id INT AUTO_INCREMENT PRIMARY KEY,
-    proposal_id INT NOT NULL,
-    user_id INT NOT NULL,
-    revised_file_path VARCHAR(255) NOT NULL,
-    revision_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (proposal_id) REFERENCES  proposals_docs(proposal_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
-
-CREATE TABLE office_checks (
-    check_id INT AUTO_INCREMENT PRIMARY KEY,
-    proposal_id INT NOT NULL,
-    user_id INT NOT NULL,
-    remarks VARCHAR(255) NOT NULL,
-    check_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (proposal_id) REFERENCES  proposals_docs(proposal_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
-
-CREATE TABLE proposal_status_history (
+CREATE TABLE proposal_history (
     history_id INT AUTO_INCREMENT PRIMARY KEY,
+
     proposal_id INT NOT NULL,
     user_id INT NOT NULL,
-    old_status VARCHAR(50),
-    new_status VARCHAR(50),
-    date_changed DATETIME DEFAULT CURRENT_TIMESTAMP,
+    review_id INT NOT NULL,
 
-    FOREIGN KEY (proposal_id) REFERENCES  proposals_docs(proposal_id)
-        ON DELETE CASCADE
+    version_no INT NOT NULL,
+	
+    remarks TEXT NULL,
+
+    -- Foreign Keys
+    CONSTRAINT fk_proposal_history_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE RESTRICT
         ON UPDATE CASCADE,
 
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    CONSTRAINT fk_proposal_history_proposal
+        FOREIGN KEY (proposal_id)
+        REFERENCES proposals_docs(proposal_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+ALTER TABLE proposal_history
+DROP FOREIGN KEY fk_proposal_history_review;
+
+ALTER TABLE proposal_history
+DROP COLUMN review_id;
+
+ALTER TABLE proposal_history
+DROP INDEX uq_proposal_history_version,
+ADD CONSTRAINT uq_ph_proposal_version UNIQUE (proposal_id, version_no);
+
+CREATE TABLE proposal_cover_page_history (
+    cover_history_id INT AUTO_INCREMENT PRIMARY KEY,
+    history_id INT NOT NULL,
+
+    submission_date DATE,
+
+    -- Program Details
+    board_resolution_title TEXT,
+    board_resolution_no VARCHAR(100),
+    approved_budget_words TEXT,
+    approved_budget_amount DECIMAL(15, 2),
+    duration_words VARCHAR(255),
+    duration_years INT,
+    date_from_to VARCHAR(100),
+
+    -- Activity Details
+    activity_title VARCHAR(255),
+    activity_date VARCHAR(100),
+    activity_venue VARCHAR(255),
+    activity_value_statement TEXT,
+    requested_activity_budget DECIMAL(15, 2),
+
+    -- Participant Counts
+    prmsu_participants_words VARCHAR(255),
+    prmsu_participants_num INT,
+    partner_agency_participants_words VARCHAR(255),
+    partner_agency_participants_num INT,
+    partner_agency_name VARCHAR(255),
+    trainees_words VARCHAR(255),
+    trainees_num INT,
+
+    CONSTRAINT fk_cover_history_history
+        FOREIGN KEY (history_id)
+        REFERENCES proposal_history(history_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE proposal_content_history (
+    content_history_id INT AUTO_INCREMENT PRIMARY KEY,
+    history_id INT NOT NULL,
+
+    -- I. PROJECT PROFILE
+    program_title VARCHAR(255),
+    project_title VARCHAR(255),
+    activity_title VARCHAR(255),
+    sdg_alignment TEXT,
+    extension_agenda TEXT,
+    project_leader VARCHAR(255),
+    members TEXT,
+    college_campus_program VARCHAR(255),
+    collaborating_agencies VARCHAR(255),
+    community_location VARCHAR(255),
+    target_sector VARCHAR(255),
+    number_of_beneficiaries INT,
+    implementation_period VARCHAR(100),
+    total_budget_requested DECIMAL(15, 2),
+
+    -- II – IV. NARRATIVE
+    rationale TEXT,
+    significance TEXT,
+    general_objectives TEXT,
+    specific_objectives TEXT,
+
+    -- V – VI. METHODOLOGY & OUTPUTS
+    methodology JSON,
+    expected_output_6ps JSON,
+
+    -- VII – VIII. SUSTAINABILITY & STAFFING
+    sustainability_plan TEXT,
+    org_and_staffing_json JSON,
+
+    -- IX. PLAN OF ACTIVITIES
+    activity_schedule_json JSON,
+
+    -- XI. BUDGETARY REQUIREMENTS
+    budget_breakdown_json JSON,
+
+    -- PARTICIPANT BREAKDOWN
+    prmsu_participants_count INT,
+    partner_agency_participants_count INT,
+    trainees_count INT,
+
+    CONSTRAINT fk_content_history_history
+        FOREIGN KEY (history_id)
+        REFERENCES proposal_history(history_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE proposal_review_history (
+    review_history_id INT AUTO_INCREMENT PRIMARY KEY,
+    history_id INT NOT NULL,          -- links to proposal_history
+    user_id INT NOT NULL,             -- reviewer
+    review_round VARCHAR(10),          -- 1st, 2nd, 3rd
+    changed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_prh_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_prh_proposal_history
+        FOREIGN KEY (history_id)
+        REFERENCES proposal_history(history_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE proposal_review_items_history (
+    review_item_history_id INT AUTO_INCREMENT PRIMARY KEY,
+    review_history_id INT NOT NULL,
+
+    proposal_type VARCHAR(20),
+    source_of_fund TEXT,
+    cover_letter_feedback TEXT,
+    form1_proposal_feedback TEXT,
+    project_profile_feedback TEXT,
+    rationale_feedback TEXT,
+    significance_feedback TEXT,
+    general_objectives_feedback TEXT,
+    specific_objectives_feedback TEXT,
+    methodology_feedback TEXT,
+    expected_output_feedback TEXT,
+    potential_impact_feedback TEXT,
+    sustainability_plan_feedback TEXT,
+    org_staffing_feedback TEXT,
+    work_financial_plan_feedback TEXT,
+    budget_summary_feedback TEXT,
+    attachment_availability_json JSON,
+
+    CONSTRAINT fk_prih_review_history
+        FOREIGN KEY (review_history_id)
+        REFERENCES proposal_review_history(review_history_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+
+
 
 INSERT INTO users (fullname, email, password, role)
 VALUES (
@@ -354,6 +466,11 @@ SELECT * FROM proposal_content;
 SELECT * FROM proposal_cover_page;
 SELECT * FROM proposal_reviews;
 SELECT * FROM proposal_review_items;
+SELECT * FROM proposal_history;
+SELECT * FROM proposal_cover_page_history;
+SELECT * FROM proposal_cover_history;
+SELECT * FROM proposal_review_history;
+SELECT * FROM proposal_review_items_history;
 
 UPDATE proposals_docs SET reviewed_count = 0 where proposal_id = 2;
 UPDATE proposals_docs SET reviewer_count = 2 WHERE proposal_id = 1;
