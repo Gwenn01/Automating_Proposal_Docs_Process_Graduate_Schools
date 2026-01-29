@@ -80,7 +80,7 @@ def insert_cover_page_history(history_id, data):
         })
 
         conn.commit()
-        return True
+        return cursor.rowcount == 1
 
     except Exception as e:
         conn.rollback()
@@ -182,7 +182,7 @@ def insert_proposal_content_history(history_id, data):
         })
 
         conn.commit()
-        return True
+        return cursor.rowcount == 1
 
     except Exception as e:
         conn.rollback()

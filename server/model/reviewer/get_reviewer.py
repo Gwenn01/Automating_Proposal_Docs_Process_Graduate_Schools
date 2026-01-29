@@ -1,5 +1,23 @@
 from database.connection import get_db_connection
 
+def get_reviewer_id(proposal_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(dictionary=True)
+
+        query = """
+            SELECT 
+                pr.user_id,
+                u.fullname,
+            FROM proposal_reviews pr
+            WHERE pr.proposal_id = %s
+        """
+        cur.execute(query, (proposal_id,))
+        return cur.fetchall()
+    except Exception as e:
+        print(e)
+        return None
+
 def get_reviewer_per_docs(proposal_id, reviewer_id):
     conn = get_db_connection()
     cur = conn.cursor(dictionary=True)

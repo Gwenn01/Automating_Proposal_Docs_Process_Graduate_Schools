@@ -64,6 +64,6 @@ def run_tests_controller():
     # print(data_docs)
     
     #print(get_assigned_reviewer(2))     
-    
+    print(fetch_proposal_cover_page(1))
     
     print("Running test controller..")

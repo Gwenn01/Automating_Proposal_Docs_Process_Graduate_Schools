@@ -472,6 +472,10 @@ SELECT * FROM proposal_cover_history;
 SELECT * FROM proposal_review_history;
 SELECT * FROM proposal_review_items_history;
 
+
+ALTER TABLE proposals_docs
+ADD COLUMN last_edited_at DATETIME NULL after reviewed_count,
+ADD COLUMN edit_version_count INT DEFAULT 0 after reviewed_count;
 UPDATE proposals_docs SET reviewed_count = 0 where proposal_id = 2;
 UPDATE proposals_docs SET reviewer_count = 2 WHERE proposal_id = 1;
 DELETE FROM proposal_review_items WHERE review_item_id  = 12;
