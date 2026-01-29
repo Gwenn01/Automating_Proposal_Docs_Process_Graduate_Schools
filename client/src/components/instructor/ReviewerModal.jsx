@@ -1,11 +1,12 @@
-import React from "react";
-import { X } from "lucide-react";
+import React, { useState } from "react";
+import { Check, Pencil, X } from "lucide-react";
 import InlineInput from "./inlineInput";
 import ReviewerComment from "./ReviewerComment";
 import { getStatusStyle } from "../../utils/statusStyles";
 
 const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   if (!isOpen || !proposalData) return null;
+  const [isEditing, setIsEditing] = useState(false);
   const rpd = proposalData?.reviews_per_docs;
 
   if (!rpd) return null;
@@ -75,6 +76,23 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   },
 };
 
+ const handleEdit = () => {
+   
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+   
+    setIsEditing(false);
+  };
+
+  const handleSave = () => {
+    // 🔥 call API here if needed
+    // await axios.put(...)
+
+    setIsEditing(false);
+  };
+
 
 
   return (
@@ -104,17 +122,52 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
 
             <div className="absolute inset-0 bg-grid-white/[0.05] pointer-events-none"></div>
             
-            <div className="relative z-10 flex-1">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-1 h-5 bg-white/80 rounded-full"></div>
-                <h3 className="font-semibold text-xs uppercase tracking-wider text-emerald-100">
-                  Reviewer's Evaluation on Proposal
-                </h3>
+            <div className="relative z-10 flex flex-1 items-center justify-between">
+              <div className="flex flex-col justify-center items-start gap-3 mb-3">
+                <div className="flex items-center gap-3 ">
+                  <div className="w-1 h-5 bg-white/80 rounded-full"></div>
+                  <h3 className="font-semibold text-xs uppercase tracking-wider text-emerald-100">
+                    Reviewer's Evaluation on Proposal
+                  </h3>
+                </div>
+                <h1 className="text-xl font-bold leading-tight text-white drop-shadow-sm">
+                  {proposalData.title}
+                </h1>
               </div>
 
-              <h1 className="text-xl font-bold leading-tight text-white drop-shadow-sm">
-                {proposalData.title}
-              </h1>
+
+              <div className="">
+                {!isEditing ? (
+                    <button
+                      onClick={handleEdit}
+                      className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-md font-semibold
+                                bg-yellow-500 text-white hover:bg-white/20 transition text-sm"
+                    >
+                      <Pencil className="w-4 h-4" />
+                      Edit
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleSave}
+                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-semibold
+                                  bg-green-500 text-white hover:bg-green-700 transition"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        Save
+                      </button>
+
+                      <button
+                        onClick={handleCancel}
+                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-semibold
+                                  bg-red-600 text-white hover:bg-red-800 transition"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+              </div>
             </div>
 
             {/* <button

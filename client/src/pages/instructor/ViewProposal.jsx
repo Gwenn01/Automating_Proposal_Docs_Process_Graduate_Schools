@@ -6,6 +6,7 @@ import ReviewerModal from "../../components/instructor/ReviewerModal";
 import DocumentReviewModal from "../../components/instructor/DocumentReviewModal";
 import DocumentViewerModal from "../../components/instructor/DocumentViewerModal";
 import { useProposals } from "../../context/ProposalContext";
+import ReviewerListStatus from "../../components/instructor/ReviewerListStatus";
 
 
 const ViewProposal = () => {
@@ -23,6 +24,8 @@ const ViewProposal = () => {
   const [selectedReviewer, setSelectedReviewer] = useState(null);
   //const { documents, loading } = useProposals();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showReviewerStatus, setShowReviewerStatus] = useState(false);
+
 
   const notifications = [
     { id: 1, message: "New proposal assigned to you", time: "2 mins ago" },
@@ -413,14 +416,21 @@ if (pageLoading) {
                   </td>
 
                   {/* Reviews Count Column */}
-                  <td className="px-2 py-5 text-center align-middle">
-                    <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-green-700 font-semibold text-xs">
-                        {doc.reviews}
-                      </span>
-                    </div>
-                  </td>
+                <td className="px-2 py-5 text-center align-middle">
+                  <button
+                    onClick={() => {
+                      setSelectedDoc(doc);
+                      setShowReviewerStatus(true);
+                    }}
+                    className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg hover:bg-green-100 transition"
+                  >
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-green-700 font-semibold text-xs">
+                      {doc.reviews}
+                    </span>
+                  </button>
+                </td>
+
                 </tr>
               );
             })}
@@ -502,6 +512,13 @@ if (pageLoading) {
         proposalData={selectedDoc}
         onClose={() => setShowViewerModal(false)}
       />
+
+      <ReviewerListStatus
+        isOpen={showReviewerStatus}
+        proposalId={selectedDoc?.proposal_id}
+        onClose={() => setShowReviewerStatus(false)}
+      />
+
 
 
     </div>
