@@ -28,6 +28,37 @@ def get_reviews(proposal_id):
         return None
 
 
+def get_review_base_proposal_user_id(proposal_id, user_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(dictionary=True)
+
+        cur.execute("""
+            SELECT 
+                pr.review_id,
+                pri.*
+            FROM proposal_reviews pr
+            LEFT JOIN proposal_review_items pri
+                ON pr.review_id = pri.review_id
+            WHERE pr.proposal_id = %s
+              AND pr.user_id = %s
+              AND pr.is_reviewed = 1
+        """, (proposal_id, user_id))
+
+        review = cur.fetchone()  #  safe
+        return review
+
+    except Exception as e:
+        print(f"Error getting proposal with reviews: {e}")
+        return None
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+            
+
 # def get_proposal_with_reviews(proposal_id):
 #     try:
 #         conn = get_db_connection()

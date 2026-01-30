@@ -90,30 +90,47 @@ def insert_cover_page_history(history_id, data):
         cursor.close()
         conn.close()
 
+import json
+
+
+import json
+
 def insert_proposal_content_history(history_id, data):
     conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
-        # Convert JSON fields
-        if 'org_and_staffing_json' in data and isinstance(data['org_and_staffing_json'], (list, dict)):
-            data['org_and_staffing_json'] = json.dumps(data['org_and_staffing_json'])
+        payload = data.copy()
 
-        if 'activity_schedule_json' in data and isinstance(data['activity_schedule_json'], (list, dict)):
-            data['activity_schedule_json'] = json.dumps(data['activity_schedule_json'])
+        # -----------------------------
+        # JSON columns (MUST be valid JSON)
+        # -----------------------------
+        json_fields = [
+            "org_and_staffing_json",
+            "activity_schedule_json",
+            "budget_breakdown_json",
+            "expected_output_6ps",
+            "methodology"  # 🔥 FIX HERE
+        ]
 
-        if 'budget_breakdown_json' in data and isinstance(data['budget_breakdown_json'], (list, dict)):
-            data['budget_breakdown_json'] = json.dumps(data['budget_breakdown_json'])
+        for field in json_fields:
+            if field in payload and payload[field] is not None:
+                # If already dict/list → dump
+                if isinstance(payload[field], (dict, list)):
+                    payload[field] = json.dumps(payload[field])
+                # If plain string → wrap as JSON string
+                elif isinstance(payload[field], str):
+                    payload[field] = json.dumps(payload[field])
 
-        if 'expected_output_6ps' in data and isinstance(data['expected_output_6ps'], (list, dict)):
-            data['expected_output_6ps'] = json.dumps(data['expected_output_6ps'])
+        # -----------------------------
+        # List fields
+        # -----------------------------
+        list_fields = ["members", "collaborating_agencies"]
 
-        # Convert list fields
-        if 'members' in data and isinstance(data['members'], list):
-            data['members'] = json.dumps(data['members'])
-
-        if 'collaborating_agencies' in data and isinstance(data['collaborating_agencies'], list):
-            data['collaborating_agencies'] = json.dumps(data['collaborating_agencies'])
+        for field in list_fields:
+            if field in payload and payload[field] is not None:
+                if isinstance(payload[field], list):
+                    payload[field] = json.dumps(payload[field])
 
         cursor.execute("""
             INSERT INTO proposal_content_history (
@@ -177,8 +194,8 @@ def insert_proposal_content_history(history_id, data):
                 %(trainees_count)s
             )
         """, {
-            **data,
-            "history_id": history_id,
+            **payload,
+            "history_id": history_id
         })
 
         conn.commit()
@@ -186,9 +203,11 @@ def insert_proposal_content_history(history_id, data):
 
     except Exception as e:
         conn.rollback()
-        raise e
+        print("insert_proposal_content_history error:", e)
+        raise
 
     finally:
         cursor.close()
         conn.close()
+
 

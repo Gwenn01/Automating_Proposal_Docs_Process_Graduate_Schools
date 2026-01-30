@@ -1,9 +1,10 @@
 from database.connection import get_db_connection
 
 def insert_review_history(history_id, user_id, review_round):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
         cursor.execute(
             """
             INSERT INTO proposal_review_history (history_id, user_id, review_round)
@@ -11,12 +12,21 @@ def insert_review_history(history_id, user_id, review_round):
             """,
             (history_id, user_id, review_round)
         )
+
         conn.commit()
+
+        # Get the newly inserted ID
+        review_history_id = cursor.lastrowid
+        return review_history_id
+
+    except Exception as e:
+        conn.rollback()
+        print(f" Error inserting review history: {e}")
+        return None
+
+    finally:
         cursor.close()
         conn.close()
-    except  Exception as e:
-        print(f"Error inserting review history: {e}")
-        return False
     
 def insert_review_items_history(review_history_id, review_item):
     conn = get_db_connection()
@@ -43,38 +53,37 @@ def insert_review_items_history(review_history_id, review_item):
                 work_financial_plan_feedback,
                 budget_summary_feedback,
                 attachment_availability_json
-            ) VALUES (
-                %(review_history_id)s,
-                %(proposal_type)s,
-                %(source_of_fund)s,
-                %(cover_letter_feedback)s,
-                %(form1_proposal_feedback)s,
-                %(project_profile_feedback)s,
-                %(rationale_feedback)s,
-                %(significance_feedback)s,
-                %(general_objectives_feedback)s,
-                %(specific_objectives_feedback)s,
-                %(methodology_feedback)s,
-                %(expected_output_feedback)s,
-                %(potential_impact_feedback)s,
-                %(sustainability_plan_feedback)s,
-                %(org_staffing_feedback)s,
-                %(work_financial_plan_feedback)s,
-                %(budget_summary_feedback)s,
-                %(attachment_availability_json)s
-            )
-        """, {
-            **review_item,
-            "review_history_id": review_history_id
-        })
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            review_history_id,
+            review_item.get("proposal_type"),
+            review_item.get("source_of_fund"),
+            review_item.get("cover_letter_feedback"),
+            review_item.get("form1_proposal_feedback"),
+            review_item.get("project_profile_feedback"),
+            review_item.get("rationale_feedback"),
+            review_item.get("significance_feedback"),
+            review_item.get("general_objectives_feedback"),
+            review_item.get("specific_objectives_feedback"),
+            review_item.get("methodology_feedback"),
+            review_item.get("expected_output_feedback"),
+            review_item.get("potential_impact_feedback"),
+            review_item.get("sustainability_plan_feedback"),
+            review_item.get("org_staffing_feedback"),
+            review_item.get("work_financial_plan_feedback"),
+            review_item.get("budget_summary_feedback"),
+            review_item.get("attachment_availability_json")
+        ))
 
         conn.commit()
         return True
 
     except Exception as e:
         conn.rollback()
-        raise e
+        print("insert_review_items_history error:", e)
+        raise
 
     finally:
         cursor.close()
         conn.close()
+

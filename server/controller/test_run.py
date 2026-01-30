@@ -32,6 +32,10 @@ from model.general.get_proposal import (
 )
 from controller.mapper.reviewer_get_docs_mapper import get_review_per_docs_mapper
 from model.general.get_assigned_reviewer import get_assigned_reviewer
+from controller.implementor_controller import revise_proposals_controller
+from model.reviewer.get_reviewer import get_reviewer_id
+from model.reviewer.insert_review_history import insert_review_history, insert_review_items_history
+from model.general.get_reviews import get_review_base_proposal_user_id
 
 def run_tests_controller():
     # data = fetch_user_proposals(7)
@@ -64,6 +68,16 @@ def run_tests_controller():
     # print(data_docs)
     
     #print(get_assigned_reviewer(2))     
-    print(fetch_proposal_cover_page(1))
-    
+    #print(fetch_proposal_cover_page(1))
+    # data = {
+    #     "proposal_id": 2,
+    #     "user_id": 7
+    # }
+    # revise_proposals_controller(data)
+    # reviewer_id = get_reviewer_id(2)
+    # print(reviewer_id)
+    # for reviewer in reviewer_id:
+    #     review_history_id = insert_review_history(history_id, reviewer["user_id"], version_no)
+    #     print(review_history_id)
+    #print(get_review_base_proposal_user_id(2, 1))
     print("Running test controller..")

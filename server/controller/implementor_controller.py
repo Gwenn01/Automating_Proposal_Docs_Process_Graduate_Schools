@@ -11,7 +11,11 @@ from model.implementor.insert_history import (
 )
 from model.general.get_proposal import (
     fetch_proposal_cover_page,
-    fetch_proposal_content
+    fetch_proposal_content,
+)
+from model.general.get_reviews import (
+    get_reviews,
+    get_review_base_proposal_user_id
 )
 from model.reviewer.insert_review_history import (
     insert_review_history,
@@ -79,12 +83,12 @@ def update_proposal_content(proposal_id, data):
     }), 200
     
     
-def revise_proposals_controller():
+def revise_proposals_controller(data):
     try:
         ...
         # get the dat from frontend
-        data = request.get_json(force=True)  
-        proposal_id = data.get("proposal_data")
+        #data = request.get_json(force=True)
+        proposal_id = data.get("proposal_id")
         user_id = data.get("user_id")
         #get the version
         version_no = put_version_count(proposal_id)
@@ -97,14 +101,20 @@ def revise_proposals_controller():
         success_cover = insert_cover_page_history(history_id, proposal_cover_data[0])
         success_content= insert_proposal_content_history(history_id, proposal_content_data[0])
         
-        if not success_cover and not success_content:
-            return jsonify({
-                "message": "Proposal insert history failed"
-            }), 500
+        # if not success_cover and not success_content:
+        #     return jsonify({
+        #         "message": "Proposal insert history failed"
+        #     }), 500
         # insert the review data
         reviewer_id = get_reviewer_id(proposal_id)
         for reviewer in reviewer_id:
             review_history_id = insert_review_history(history_id, reviewer["user_id"], version_no)
+            review_item = get_review_base_proposal_user_id(proposal_id, reviewer["user_id"])
+            if review_item:
+                insert_review_items_history(review_history_id, review_item)
+        
+            
         
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        # return jsonify({"error": str(e)}), 500
+        return "error"

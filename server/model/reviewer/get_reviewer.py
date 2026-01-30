@@ -7,8 +7,7 @@ def get_reviewer_id(proposal_id):
 
         query = """
             SELECT 
-                pr.user_id,
-                u.fullname,
+                pr.user_id
             FROM proposal_reviews pr
             WHERE pr.proposal_id = %s
         """
