@@ -70,7 +70,8 @@ def update_proposal_cover_page(proposal_id, data):
         }), 400
 
     # service call
-    insert_proposal_cover_page(proposal_id, data)
+    # print(data)
+    insert_proposal_cover_page(data["proposal_id"], data)
 
     return jsonify({
         "message": "Proposal cover page updated successfully"
@@ -84,9 +85,9 @@ def update_proposal_content(proposal_id, data):
             "message": "Validation failed",
             "errors": errors
         }), 400
-
+    #print(data)
     # service call
-    insert_proposal_content(proposal_id, data)
+    insert_proposal_content(data["proposal_id"], data)
 
     return jsonify({
         "message": "Proposal content updated successfully"
@@ -146,14 +147,14 @@ def handle_update_status(proposal_id):
         return False
     
     
-def handle_updating_proposals(cover_id, content_id, data):
+def handle_updating_proposals(proposal_id, cover_id, content_id, data):
     try:
         ...
-        success_cover = update_proposal_cover_page(cover_id, data["cover"])
+        success_cover = update_proposal_cover_page(cover_id, proposal_id, data["cover"])
         if success_cover:
             print("Cover page updated successfully")
                 
-        success_content = update_proposal_content(content_id, data["content"])
+        success_content = update_proposal_content(content_id, proposal_id, data["content"])
         if success_content:
             print("Content updated successfully")
         
@@ -182,7 +183,7 @@ def revise_proposals_controller():
         #     }), 500
         
         #after inserting the data update the current data no
-        if handle_updating_proposals(cover_id, content_id, data):
+        if handle_updating_proposals(proposal_id, cover_id, content_id, data):
             return jsonify({"message": "Proposal revised successfully"}), 200
         else:
             return jsonify({"message": "Proposal revision failed"}), 500

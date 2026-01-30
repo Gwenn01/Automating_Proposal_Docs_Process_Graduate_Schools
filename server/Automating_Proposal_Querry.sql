@@ -472,7 +472,7 @@ SELECT * FROM proposal_content_history;
 SELECT * FROM proposal_review_history;
 SELECT * FROM proposal_review_items_history;
 
-DELETE FROM proposals_docs WHERE proposal_id > 0;
+DELETE FROM proposal_cover_page WHERE cover_id = 14;
 
 UPDATE proposal_cover_page
 SET proposal_id = 1
