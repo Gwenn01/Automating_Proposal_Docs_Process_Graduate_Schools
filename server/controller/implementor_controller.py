@@ -92,15 +92,10 @@ def update_proposal_content(proposal_id, data):
         "message": "Proposal content updated successfully"
     }), 200
     
-    
-def revise_proposals_controller():
+# for revision of the proposal ==================================================================================================
+def handle_insertion_history(proposal_id, user_id):
     try:
-        ...
-        # get the dat from frontend
-        data = request.get_json(force=True)
-        proposal_id = data.get("proposal_id")
-        user_id = data.get("user_id")
-        #get the version
+       #get the version
         version_no = put_version_count(proposal_id)
         #insert the proposal history
         history_id = insert_proposal_history(proposal_id, user_id, version_no)
@@ -111,10 +106,6 @@ def revise_proposals_controller():
         success_cover = insert_cover_page_history(history_id, proposal_cover_data[0])
         success_content= insert_proposal_content_history(history_id, proposal_content_data[0])
         
-        if not success_cover and not success_content:
-            return jsonify({
-                "message": "Proposal insert history failed"
-            }), 500
         #insert the review data
         reviewer_id = get_reviewer_id(proposal_id)
         for reviewer in reviewer_id:
@@ -122,25 +113,79 @@ def revise_proposals_controller():
             review_item = get_review_base_proposal_user_id(proposal_id, reviewer["user_id"])
             if review_item:
                 insert_review_items_history(review_history_id, review_item)
-        #after inserting the data update the current data now
-        success_cover = update_proposal_cover_page(proposal_id, data["cover"])
-        if success_cover:
-            print("Cover page updated successfully")
-                
-        success_content = update_proposal_content(proposal_id, data["content"])
-        if success_content:
-            print("Content updated successfully")
         
-        #clean the reviewed 
+        
+        if success_cover and success_content:
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(e)
+        return False
+    
+
+def handle_clean_reviews(proposal_id):
+    try:
+     #clean the reviewed 
         review_id = update_reviews(proposal_id)
         for r in review_id:
             update_is_reviewed(r)
             update_review_item(r)
-        
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+
+def handle_update_status(proposal_id):
+    try:
         updated_reviewed_count_zero(proposal_id)
         update_proposal_status(proposal_id)
+    except  Exception as e:
+        print(e)
+        return False
+    
+    
+def handle_updating_proposals(cover_id, content_id, data):
+    try:
+        ...
+        success_cover = update_proposal_cover_page(cover_id, data["cover"])
+        if success_cover:
+            print("Cover page updated successfully")
+                
+        success_content = update_proposal_content(content_id, data["content"])
+        if success_content:
+            print("Content updated successfully")
         
-        return jsonify({"message": "Proposal revised successfully"}), 200
+        if success_cover and success_content:
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(e)
+        return False
+    
+def revise_proposals_controller():
+    try:
+        ...
+        # get the dat from frontend
+        data = request.get_json(force=True)
+        proposal_id = data.get("proposal_id")
+        user_id = data.get("user_id")
+        content_id = data.get("content_id")
+        cover_id = data.get("cover_id")
+      
+        
+        # if not handle_insertion_history(proposal_id, user_id):
+        #     return jsonify({
+        #         "message": "Proposal insert history failed"
+        #     }), 500
+        
+        #after inserting the data update the current data no
+        if handle_updating_proposals(cover_id, content_id, data):
+            return jsonify({"message": "Proposal revised successfully"}), 200
+        else:
+            return jsonify({"message": "Proposal revision failed"}), 500
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -1,6 +1,7 @@
 from database.connection import get_db_connection
 from flask import jsonify, request
 import json
+from utils.serialize_data import serialize_proposal_content
 
 def insert_proposal(data):
     conn = get_db_connection()
@@ -34,6 +35,7 @@ def insert_proposal_cover_page(proposal_id, data):
     cursor = conn.cursor()
 
     try:
+        data = serialize_proposal_content(data)
         cursor.execute("""
             INSERT INTO proposal_cover_page (
                 proposal_id,
@@ -88,7 +90,7 @@ def insert_proposal_cover_page(proposal_id, data):
         """, {**data, "proposal_id": proposal_id})
 
         conn.commit()
-        return True   # ✅ just indicate success
+        return True   # just indicate success
 
     except Exception as e:
         conn.rollback()
@@ -104,25 +106,8 @@ def insert_proposal_content(proposal_id, data):
     cursor = conn.cursor()
 
     try:
-        # Convert JSON fields from objects/arrays to strings for MySQL
-        if 'org_and_staffing_json' in data and isinstance(data['org_and_staffing_json'], (list, dict)):
-            data['org_and_staffing_json'] = json.dumps(data['org_and_staffing_json'])
+     # Convert JSON fields from objects/arrays to strings for MySQL
         
-        if 'activity_schedule_json' in data and isinstance(data['activity_schedule_json'], (list, dict)):
-            data['activity_schedule_json'] = json.dumps(data['activity_schedule_json'])
-        
-        if 'budget_breakdown_json' in data and isinstance(data['budget_breakdown_json'], (list, dict)):
-            data['budget_breakdown_json'] = json.dumps(data['budget_breakdown_json'])
-        
-        if 'expected_output_6ps' in data and isinstance(data['expected_output_6ps'], (list, dict)):
-            data['expected_output_6ps'] = json.dumps(data['expected_output_6ps'])
-        
-        # Convert list fields to JSON strings if needed
-        if 'members' in data and isinstance(data['members'], list):
-            data['members'] = json.dumps(data['members'])
-        
-        if 'collaborating_agencies' in data and isinstance(data['collaborating_agencies'], list):
-            data['collaborating_agencies'] = json.dumps(data['collaborating_agencies'])
 
         cursor.execute("""
             INSERT INTO proposal_content (

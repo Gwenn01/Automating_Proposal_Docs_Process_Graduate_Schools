@@ -1,5 +1,6 @@
 from database.connection import get_db_connection
 from flask import json
+from utils.serialize_data import serialize_proposal_content
 
 # def put_proposals(proposal_id):
 #     try:
@@ -8,7 +9,7 @@ from flask import json
 #         print(e)
 #         return None
     
-def update_proposal_cover_page(proposal_id, data):
+def update_proposal_cover_page(cover_id, proposal_id, data):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -36,9 +37,11 @@ def update_proposal_cover_page(proposal_id, data):
                 partner_agency_name = %(partner_agency_name)s,
                 trainees_words = %(trainees_words)s,
                 trainees_num = %(trainees_num)s
-            WHERE proposal_id = %(proposal_id)s
+            WHERE cover_id = %(cover_id)s
+            AND proposal_id = %(proposal_id)s
         """, {
             **data,
+            "cover_id": cover_id,
             "proposal_id": proposal_id
         })
 
@@ -54,30 +57,12 @@ def update_proposal_cover_page(proposal_id, data):
         conn.close()
 
     
-def update_proposal_content(proposal_id, data):
+def update_proposal_content(content_id, proposal_id, data):
     conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
-        # Convert JSON / list fields
-        if 'org_and_staffing_json' in data and isinstance(data['org_and_staffing_json'], (list, dict)):
-            data['org_and_staffing_json'] = json.dumps(data['org_and_staffing_json'])
-
-        if 'activity_schedule_json' in data and isinstance(data['activity_schedule_json'], (list, dict)):
-            data['activity_schedule_json'] = json.dumps(data['activity_schedule_json'])
-
-        if 'budget_breakdown_json' in data and isinstance(data['budget_breakdown_json'], (list, dict)):
-            data['budget_breakdown_json'] = json.dumps(data['budget_breakdown_json'])
-
-        if 'expected_output_6ps' in data and isinstance(data['expected_output_6ps'], (list, dict)):
-            data['expected_output_6ps'] = json.dumps(data['expected_output_6ps'])
-
-        if 'members' in data and isinstance(data['members'], list):
-            data['members'] = json.dumps(data['members'])
-
-        if 'collaborating_agencies' in data and isinstance(data['collaborating_agencies'], list):
-            data['collaborating_agencies'] = json.dumps(data['collaborating_agencies'])
-
+        data = serialize_proposal_content(data)
         # UPDATE QUERY (FULL)
         cursor.execute("""
             UPDATE proposal_content
@@ -106,9 +91,11 @@ def update_proposal_content(proposal_id, data):
                 org_and_staffing_json = %(org_and_staffing_json)s,
                 activity_schedule_json = %(activity_schedule_json)s,
                 budget_breakdown_json = %(budget_breakdown_json)s
-            WHERE proposal_id = %(proposal_id)s
+            WHERE content_id = %(content_id)s
+            AND proposal_id = %(proposal_id)s
         """, {
             **data,
+            "content_id": content_id,
             "proposal_id": proposal_id
         })
 

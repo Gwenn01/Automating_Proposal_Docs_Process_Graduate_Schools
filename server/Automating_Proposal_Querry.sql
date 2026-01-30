@@ -472,6 +472,12 @@ SELECT * FROM proposal_content_history;
 SELECT * FROM proposal_review_history;
 SELECT * FROM proposal_review_items_history;
 
+DELETE FROM proposals_docs WHERE proposal_id > 0;
+
+UPDATE proposal_cover_page
+SET proposal_id = 1
+WHERE cover_id = 6;
+
 DELETE FROM proposal_review_items WHERE review_item_id > 0;
 UPDATE proposals_docs SET status = 'under_review' WHERE proposal_id = 2;
 ALTER TABLE proposals_docs
@@ -538,5 +544,195 @@ UPDATE proposals_docs
 SET user_id = 7
 WHERE proposal_id = 1;
 
+UPDATE proposal_content
+SET
+    proposal_id = 2,
+    program_title = 'Resolution No. 1436, s. 2025',
+    project_title = 'Integrated Coastal Resource Management and Livelihood Project',
+    activity_title = 'Mangrove Rehabilitation and Crab Farming Workshop',
+    sdg_alignment = 'Goal 1: No Poverty; Goal 13: Climate Action; Goal 14: Life Below Water',
+    extension_agenda = 'Environmental Sustainability and Economic Empowerment',
+    project_leader = 'Juan Dela Cruz, Ph.D.',
+    members = 'Maria Santos, MSc (Bio); Engr. Pedro Reyes; Ana Lim (Admin)',
+    college_campus_program = 'College of Agriculture and Forestry - Iba Campus',
+    collaborating_agencies = 'Department of Environment and Natural Resources (DENR) - Zambales; LGU Iba',
+    community_location = 'Barangay Sto. Rosario, Iba, Zambales',
+    target_sector = 'Registered Fisherfolk Association of Iba',
+    number_of_beneficiaries = 50,
+    implementation_period = 'August 2025 - August 2027 (2 Years)',
+    total_budget_requested = 150000.00,
+    rationale = 'Based on the needs assessment conducted in July 2025, the local fisherfolk reported a 30% decline in daily catch due to mangrove degradation. This project addresses both environmental restoration and alternative livelihood needs.',
+    significance = 'Restoring the mangrove area provides a natural nursery for fish, directly improving catch rates. Simultaneously, the crab farming component offers an immediate alternative income source during the lean season.',
+    general_objectives = 'To restore 2 hectares of mangrove forest and establish a sustainable mud crab farming livelihood program for 50 fisherfolk families.',
+    specific_objectives = '1. Plant 5,000 mangrove seedlings by Q4 2025. 2. Train 50 beneficiaries in mud crab fattening techniques. 3. Establish a community-based monitoring team.',
+    methodology = 'Phase 1: Community Mobilization and Site Assessment. Phase 2: Capacity Building (Training Workshop). Phase 3: Implementation (Planting and Stocking). Phase 4: Monitoring and Evaluation.',
+    expected_output_6ps = '{"publications": "1 Training Manual on Mud Crab Farming", "patents": "N/A", "products": "2 Hectares Reforested Mangrove", "people_services": "50 Trained Fisherfolk", "places_partnerships": "MOA with LGU Iba", "policy": "Barangay Resolution on Mangrove Protection"}',
+    sustainability_plan = 'A ''Green Fund'' will be established where 10% of the crab farming income will be reinvested into mangrove maintenance and future seedling procurement.',
+    org_and_staffing_json = '[{"activity":"Project Management","person":"Juan Dela Cruz","tor":"Overall supervision and reporting"},{"activity":"Technical Training","person":"Maria Santos","tor":"Module development and lecture"},{"activity":"Logistics","person":"Ana Lim","tor":"Procurement of supplies and food"}]',
+    activity_schedule_json = '[{"time":"07:30-08:00 AM","activity":"Registration"},{"time":"08:00-08:30 AM","activity":"Opening Program"},{"time":"09:00-12:00 PM","activity":"Lecture: Mangrove Ecology"},{"time":"01:00-04:00 PM","activity":"Workshop: Crab Fattening Techniques"}]',
+    budget_breakdown_json = '{"meals":{"am_snacks":3750,"lunch":7500,"pm_snacks":3750},"supplies":{"seedlings":50000,"crab_crablets":30000,"nets_and_ropes":15000},"transportation":5000,"total_requested":115000}',
+    prmsu_participants_count = 5,
+    partner_agency_participants_count = 3,
+    trainees_count = 50
+WHERE content_id = 2;
 
+UPDATE proposal_content AS target
+JOIN proposal_content AS source
+  ON source.proposal_id = 1
+SET
+  target.board_resolution_title = source.board_resolution_title,
+  target.board_resolution_no = source.board_resolution_no,
+  target.project_title = source.project_title,
+  target.activity_title = source.activity_title,
+  target.sdg_goals = source.sdg_goals,
+  target.project_theme = source.project_theme,
+  target.project_leader = source.project_leader,
+  target.project_staff = source.project_staff,
+  target.college = source.college,
+  target.partner_agencies = source.partner_agencies,
+  target.project_location = source.project_location,
+  target.beneficiaries = source.beneficiaries,
+  target.no_of_beneficiaries = source.no_of_beneficiaries,
+  target.project_duration = source.project_duration,
+  target.total_budget = source.total_budget,
+  target.rationale = source.rationale,
+  target.significance = source.significance,
+  target.general_objective = source.general_objective,
+  target.specific_objectives = source.specific_objectives,
+  target.methodology = source.methodology,
+  target.sustainability_plan = source.sustainability_plan,
+  target.implementation_matrix = source.implementation_matrix,
+  target.activity_schedule = source.activity_schedule,
+  target.budget_breakdown = source.budget_breakdown,
+  target.expected_outputs = source.expected_outputs
+WHERE target.proposal_id = 2;
+
+
+DESCRIBE proposal_content;
+
+UPDATE proposal_content AS target
+JOIN proposal_content AS source
+  ON source.proposal_id = 1
+SET
+  target.program_title           = source.program_title,
+  target.project_title           = source.project_title,
+  target.activity_title          = source.activity_title,
+  target.sdg_alignment           = source.sdg_alignment,
+  target.extension_agenda        = source.extension_agenda,
+  target.project_leader          = source.project_leader,
+  target.members                 = source.members,
+  target.college_campus_program  = source.college_campus_program,
+  target.collaborating_agencies  = source.collaborating_agencies,
+  target.community_location      = source.community_location,
+  target.target_sector           = source.target_sector,
+  target.number_of_beneficiaries = source.number_of_beneficiaries,
+  target.implementation_period   = source.implementation_period,
+  target.total_budget_requested  = source.total_budget_requested,
+  target.rationale               = source.rationale,
+  target.significance            = source.significance,
+  target.general_objectives      = source.general_objectives,
+  target.specific_objectives     = source.specific_objectives,
+  target.methodology             = source.methodology,
+  target.sustainability_plan     = source.sustainability_plan,
+  target.org_and_staffing_json   = source.org_and_staffing_json,
+  target.activity_schedule_json  = source.activity_schedule_json,
+  target.budget_breakdown_json   = source.budget_breakdown_json,
+  target.prmsu_participants_count = source.prmsu_participants_count,
+  target.partner_agency_participation = source.partner_agency_participation,
+  target.trainees_count          = source.trainees_count,
+  target.expected_output_6ps     = source.expected_output_6ps
+WHERE target.proposal_id = 2;
+
+SELECT proposal_id, project_title, activity_title
+FROM proposal_content
+WHERE proposal_id IN (1, 2);
+UPDATE proposal_content AS target
+JOIN proposal_content AS source
+  ON source.proposal_id = 1
+SET
+  target.activity_title = source.activity_title
+WHERE target.proposal_id = 2;
+
+UPDATE proposal_content
+SET
+  members = JSON_ARRAY(
+    'Maria Santos',
+    'MSc (Biology)',
+    'Engr. Pedro Reyes',
+    'Ana Lim (Admin)'
+  ),
+  collaborating_agencies = JSON_ARRAY(
+    'DENR - Zambales',
+    'LGU Iba'
+  )
+WHERE proposal_id = 2;
+
+UPDATE proposal_content
+SET
+  program_title = 'Resolution No. 1452, s. 2025',
+  project_title = 'Sustainable Aquaculture and Coastal Resilience Program',
+  activity_title = 'Seaweed Farming and Coastal Cleanup Training',
+
+  sdg_alignment = 'Goal 1: No Poverty; Goal 8: Decent Work; Goal 14: Life Below Water',
+  extension_agenda = 'Coastal Sustainability and Livelihood Development',
+
+  project_leader = 'Dr. Elena Ramos',
+  members = 'Carlos Mendoza; Liza Perez; Engr. Ramon Cruz',
+
+  college_campus_program = 'College of Fisheries - Masinloc Campus',
+  collaborating_agencies = 'BFAR Region III; LGU Masinloc',
+
+  community_location = 'Barangay San Lorenzo, Masinloc, Zambales',
+  target_sector = 'Small-scale Fisherfolk and Women Associations',
+
+  number_of_beneficiaries = 40,
+  implementation_period = 'September 2025 - September 2026',
+  total_budget_requested = 120000.00,
+
+  rationale = 'The community identified declining fish stocks and improper waste disposal as major challenges. Seaweed farming was identified as a viable alternative livelihood.',
+  significance = 'The project provides supplemental income while promoting environmental protection and coastal cleanliness.',
+
+  general_objectives = 'To establish a sustainable seaweed farming livelihood and improve coastal environmental practices.',
+  specific_objectives = '1. Train 40 beneficiaries on seaweed farming. 2. Establish pilot seaweed farms. 3. Conduct quarterly coastal cleanups.',
+
+  methodology = 'Community orientation, technical training, pilot implementation, and continuous monitoring.',
+
+  sustainability_plan = 'Beneficiaries will form a cooperative and allocate 10% of profits for farm expansion and maintenance.',
+
+  org_and_staffing_json = '[
+    {"activity":"Project Management","person":"Dr. Elena Ramos","tor":"Overall coordination"},
+    {"activity":"Technical Training","person":"Carlos Mendoza","tor":"Seaweed farming instruction"},
+    {"activity":"Community Liaison","person":"Liza Perez","tor":"Beneficiary coordination"}
+  ]',
+
+  activity_schedule_json = '[
+    {"time":"08:00-09:00 AM","activity":"Orientation"},
+    {"time":"09:00-12:00 PM","activity":"Lecture: Seaweed Farming"},
+    {"time":"01:00-04:00 PM","activity":"Hands-on Demonstration"}
+  ]',
+
+  budget_breakdown_json = '{
+    "meals":{"snacks":6000,"lunch":12000},
+    "supplies":{"seaweed_lines":35000,"seedlings":25000},
+    "transportation":7000,
+    "total_requested":120000
+  }',
+
+  prmsu_participants_count = 4,
+  partner_agency_participants_count = 2,
+  trainees_count = 40,
+
+  expected_output_6ps = '{
+    "publications":"Training Guide on Seaweed Farming",
+    "patents":"N/A",
+    "products":"Pilot Seaweed Farms",
+    "people_services":"40 Trained Beneficiaries",
+    "places_partnerships":"MOA with LGU Masinloc",
+    "policy":"Barangay Coastal Protection Resolution"
+  }'
+
+WHERE proposal_id = 2;
+SELECT proposal_id
+FROM proposals_docs
+WHERE proposal_id = 4;
 

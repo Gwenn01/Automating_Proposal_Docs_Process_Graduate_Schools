@@ -91,119 +91,62 @@ def run_tests_controller():
     #     print(review_history_id)
     #print(get_review_base_proposal_user_id(2, 1))
     
-    # data =  {
-    #     "proposal_id": 2,
-    #     "user_id": 7,
-    #     "cover": {
-    #         "submission_date": "2025-01-20",
-    #         "board_resolution_title": "Board Resolution Approving Project",
-    #         "board_resolution_no": "Resolution No. 1436, S. 2025",
-    #         "approved_budget_words": "One Million Pesos",
-    #         "approved_budget_amount": 1000000,
-    #         "duration_words": "One Year",
-    #         "duration_years": 1,
-    #         "date_from_to": "Jan 2025 – Dec 2025",
-    #         "activity_title": "Community Development Project",
-    #         "activity_date": "2025-02-15",
-    #         "activity_venue": "Barangay Hall",
-    #         "activity_value_statement": "Promotes sustainable development",
-    #         "requested_activity_budget": 250000,
-    #         "prmsu_participants_words": "Twenty Participants",
-    #         "prmsu_participants_num": 20,
-    #         "partner_agency_participants_words": "Ten Participants",
-    #         "partner_agency_participants_num": 10,
-    #         "partner_agency_name": "LGU Zambales",
-    #         "trainees_words": "Thirty Trainees",
-    #         "trainees_num": 30
-    #     },
-    #     "content": {
-    #         "program_title": "Community Extension Program",
-    #         "project_title": "Barangay Livelihood Development",
-    #         "activity_title": "Skills Training Workshop",
+    data =  {
+    "proposal_id": 1,
+    "user_id": 7,
+    "cover": {
+        "submission_date": "2026-07-15",
+        "board_resolution_title": "eqwewBoard Resolution Approving Final Revision",
+        "board_resolution_no": "ewqeResolution No. 1623, S. 2026",
+        "approved_budget_words": "Sewqeix Hundred Thousand Pesos",
+        "approved_budget_amount": 600000.00,
+        "duration_words": "Eight Months",
+        "duration_years": 0.67,
+        "date_from_to": "July 2026 – February 2027",
+        "activity_title": "Advanced Youth Skills Development Program",
+        "activity_date": "2026-08-10",
+        "activity_venue": "PRMSU Engineering Laboratory",
+        "activity_value_statement": "Strengthening technical competencies for workforce readiness",
+        "requested_activity_budget": 220000,
+        "prmsu_participants_words": "Twenty Participants",
+        "prmsu_participants_num": 20,
+        "partner_agency_participants_words": "Eight Participants",
+        "partner_agency_participants_num": 8,
+        "partner_agency_name": "TESDA Regional Office III",
+        "trainees_words": "Fifty Trainees",
+        "trainees_num": 50
+    },
+    "content": {
+        "program_title": "Aewqeqdvanced Community Skills Development Program",
+        "project_title": "Youth Workforce Readiness Initiative",
+        "activity_title": "Advanced Electrical Installation and Metal Fabrication Training",
+        "sdg_alignment": "Goal 4: Quality Education; Goal 8: Decent Work and Economic Growth",
+        "extension_agenda": "Technical Skills Advancement and Employment Support",
+        "project_leader": "Engr. Maria L. Fernandez",
+        "members": "John Dela Rosa; Patrick Lim; Sofia Mendoza",
+        "college_campus_program": "College of Engineering - Iba Campus",
+        "collaborating_agencies": "TESDA Region III; Provincial LGU Zambales",
+        "community_location": "Barangay Sta. Rita, Iba, Zambales",
+        "target_sector": "Unemployed and Underemployed Youth",
+        "number_of_beneficiaries": 50,
+        "implementation_period": "July 2026 – February 2027",
+        "total_budget_requested": 220000.00,
+        "rationale": "A follow-up assessment revealed the need for higher-level technical competencies among previously trained youth to improve job placement and retention.",
+        "significance": "The project enhances workforce readiness, bridges skills gaps, and contributes to local industry demand for qualified technicians.",
+        "general_objectives": "To equip youth with advanced technical skills for immediate employment or entrepreneurship.",
+        "specific_objectives": "1. Train 50 youth in advanced electrical and fabrication skills. 2. Conduct national competency assessment. 3. Link graduates to partner industries.",
+        "methodology": "Advanced lectures, intensive hands-on training, supervised practicum, competency assessment, and employment facilitation.",
+        "expected_output_6ps": "{\"publications\": \"Advanced Training Manual\", \"patents\": \"N/A\", \"products\": \"50 nationally assessed trainees\", \"people_services\": \"Advanced technical training\", \"places_partnerships\": \"Expanded TESDA–Industry MOAs\", \"policy\": \"LGU workforce development endorsement\"}",
+        "social_impact": "Increased confidence, discipline, and community engagement among trained youth.",
+        "economic_impact": "Higher employability and increased earning potential for beneficiaries.",
+        "sustainability_plan": "Institutionalization of annual advanced training programs supported by LGU, TESDA, and industry partners.",
+        "org_and_staffing_json": "[{\"activity\": \"Overall Coordination\", \"person\": \"Engr. Maria Fernandez\", \"tor\": \"Project oversight and reporting\"}, {\"activity\": \"Skills Training\", \"person\": \"TESDA Master Trainer\", \"tor\": \"Advanced technical instruction and assessment\"}, {\"activity\": \"Industry Linkage\", \"person\": \"Patrick Lim\", \"tor\": \"Employment coordination and partnerships\"}]",
+        "activity_schedule_json": "[{\"time\": \"08:00-09:00 AM\", \"activity\": \"Program Orientation\"}, {\"time\": \"09:00-12:00 PM\", \"activity\": \"Advanced Technical Session\"}, {\"time\": \"01:00-04:30 PM\", \"activity\": \"Workshop and Practicum\"}]",
+        "budget_breakdown_json": "{\"meals\": {\"snacks\": 4000, \"lunch\": 8000}, \"supplies\": {\"equipment\": 60000, \"materials\": 35000}, \"transportation\": 5000, \"total_requested\": 112000}",
+        "prmsu_participants_count": 6,
+        "partner_agency_participants_count": 3,
+        "trainees_count": 50
+    }
+}
 
-    #         "sdg_alignment": "SDG 1: No Poverty",
-    #         "extension_agenda": "Community Empowerment",
-    #         "project_leader": "Dr. Juan Dela Cruz",
-
-    #         "members": [
-    #             "Maria Santos",
-    #             "Pedro Reyes",
-    #             "Ana Lopez"
-    #         ],
-
-    #         "college_campus_program": "College of Engineering",
-    #         "collaborating_agencies": [
-    #             "Barangay Council",
-    #             "TESDA",
-    #             "DOLE"
-    #         ],
-
-    #         "community_location": "Barangay San Isidro, Zambales",
-    #         "target_sector": "Out-of-school youth",
-    #         "number_of_beneficiaries": 50,
-
-    #         "implementation_period": "January–March 2026",
-    #         "total_budget_requested": 250000.00,
-
-    #         "rationale": "This project aims to provide livelihood skills to unemployed residents.",
-    #         "significance": "Improves income opportunities and community self-reliance.",
-
-    #         "general_objectives": "To enhance employability through skills training.",
-    #         "specific_objectives": "To train at least 50 participants in technical skills.",
-
-    #         "methodology": "Lectures, hands-on workshops, and mentoring sessions.",
-
-    #         "expected_output_6ps": {
-    #             "people": "Skilled participants",
-    #             "prosperity": "Improved income",
-    #             "partnership": "LGU and University collaboration"
-    #         },
-
-    #         "sustainability_plan": "Continuous training with LGU support.",
-
-    #         "org_and_staffing_json": {
-    #             "project_head": "Dr. Juan Dela Cruz",
-    #             "trainers": ["Trainer A", "Trainer B"],
-    #             "staff": ["Staff 1", "Staff 2"]
-    #         },
-
-    #         "activity_schedule_json": [
-    #             {
-    #                 "date": "2026-01-10",
-    #                 "activity": "Orientation"
-    #             },
-    #             {
-    #                 "date": "2026-02-05",
-    #                 "activity": "Hands-on Training"
-    #             }
-    #         ],
-
-    #         "budget_breakdown_json": {
-    #             "materials": 100000,
-    #             "honorarium": 80000,
-    #             "meals": 50000,
-    #             "miscellaneous": 20000
-    #         }
-    #     },
-    #     "reviews": {
-    #         "review_round": "2st",
-    #         "proposal_type": "",
-    #         "source_of_fund": "",
-
-    #         "cover_letter_feedback": "",
-    #         "form1_proposal_feedback": "",
-    #         "project_profile_feedback": "",
-    #         "rationale_feedback": "",
-    #         "significance_feedback": "",
-    #         "general_objectives_feedback": "",
-    #         "specific_objectives_feedback": "",
-    #         "methodology_feedback": "",
-    #         "expected_output_feedback": "",
-    #         "potential_impact_feedback": "",
-    #         "sustainability_plan_feedback": "",
-    #         "org_staffing_feedback": "",
-    #         "work_financial_plan_feedback": "",
-    #         "budget_summary_feedback": ""
-    #     }
-    # }
     print("Running test controller..")

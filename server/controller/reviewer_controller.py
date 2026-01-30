@@ -60,15 +60,22 @@ def get_reviewer_per_docs_controller():
     
 def update_review_items_controller():
     try:
-        data = request.get_json(force=True)  
-        review_id = data.get('review_id')
+        data = request.get_json(force=True)
 
-        if not data:
-            return {"error": "review data are required"}, 400
+        review_id = data.get("review_id")
+        proposal_id = data.get("proposal_id")
+        reviews = data.get("reviews")
 
-        success = put_review_item(review_id, data["reviews"])
+        if not review_id or not proposal_id or not reviews:
+            return {"error": "Invalid payload"}, 400
+
+        success = put_review_item(review_id, reviews)
+
         if not success:
-            return {"error": "Failed to update review"}, 500
+            return {"error": "No rows updated. Check review_id/proposal_id"}, 404
+
+        updated_reviewed_count(proposal_id)
+        update_is_reviewed(review_id)
 
         return jsonify({"message": "Review updated successfully"}), 200
 

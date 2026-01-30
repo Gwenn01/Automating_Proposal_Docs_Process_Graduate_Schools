@@ -30,11 +30,11 @@ def put_review_item(review_id, data):
 
         cursor.execute(query, {
             **data,
-            "review_id": review_id
+            "review_id": review_id,
         })
 
         conn.commit()
-        return cursor.rowcount == 1
+        return cursor.rowcount > 0  # IMPORTANT
 
     except Exception as e:
         conn.rollback()

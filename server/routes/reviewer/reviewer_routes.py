@@ -23,7 +23,8 @@ def get_reviewer_per_docs():
 @reviewer_db.route('/update-review-items', methods=['POST'])
 def update_review_items():
     {
-        "review_id": 1,
+        "proposal_id": 1,
+        "review_id": 48,
         "reviews": {
             "review_round": "2nd",
             "proposal_type": "Project",
