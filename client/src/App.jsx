@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
 import LandingPage from "./pages/LandingPage";
+import AboutPage from "./pages/AboutPage";
 
 function App() {
   return (
@@ -16,6 +17,15 @@ function App() {
           element={
             <PublicRoute>
               <LandingPage />
+            </PublicRoute>
+          }
+        />
+
+        <Route 
+          path="/about"
+          element={
+            <PublicRoute>
+              <AboutPage />
             </PublicRoute>
           }
         />

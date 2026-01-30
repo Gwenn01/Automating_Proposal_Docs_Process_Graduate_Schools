@@ -1,131 +1,148 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom'; // Added for routing
+import { Menu, X, ArrowRight, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const location = useLocation(); // To detect active route
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const navLinks = [
+    { name: 'Home', href: '/' },
+    { name: 'About', href: '/about' },
+    { name: 'Features', href: '/#features' },
+    { name: 'Guidelines', href: '/#guidelines' }
+  ];
+
+  // Helper to check if a link is active
+  const isActive = (path) => location.pathname === path;
+
   return (
     <nav 
-      className={`fixed w-full z-50 transition-all duration-500 ease-in-out ${
+      className={`fixed w-full z-[100] transition-all duration-700 ease-in-out ${
         isScrolled 
-          ? 'bg-white/80 backdrop-blur-xl py-3 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)]' 
-          : 'bg-transparent py-6'
+          ? 'bg-white/80 backdrop-blur-2xl py-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-b border-slate-100' 
+          : 'bg-transparent py-8'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-8 flex justify-between items-center">
         
-        {/* Branding Section */}
-        <div className="flex items-center gap-4 group cursor-pointer">
-          <div className="relative">
+        {/* Branding */}
+        <Link to="/" className="flex items-center gap-5 group cursor-pointer relative">
+          <div className="relative overflow-hidden rounded-xl">
             <img 
               src="prmsuLogoTransparent.png" 
               alt="PRMSU Logo" 
-              className="w-11 h-11 object-contain drop-shadow-md transition-transform duration-500 group-hover:rotate-[360deg]"
+              className="w-12 h-12 object-contain filter drop-shadow-sm transition-all duration-700 group-hover:scale-110 group-hover:rotate-[15deg]"
             />
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
           </div>
           
-          <div className="flex flex-col border-l-2 border-emerald-100/50 pl-4">
-            <h1 className="text-xl font-black tracking-tight flex items-baseline gap-1">
-              <span className="text-[#064e3b]">G.A.D</span> 
-              <span className="text-emerald-600 font-semibold italic text-lg">Portal</span>
+          <div className="flex flex-col border-l border-slate-200/60 pl-5">
+            <h1 className="text-2xl font-black tracking-tight leading-none uppercase">
+              <span className="text-slate-900">PRMSU</span> 
+              <span className="text-emerald-500 font-light ml-1 lowercase italic font-serif tracking-normal">research</span>
             </h1>
-            <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-black leading-none mt-1">
-              Extension Office
+            <span className="text-[9px] uppercase tracking-[0.4em] text-slate-400 font-black mt-1.5 transition-colors group-hover:text-emerald-600">
+              Extension & Innovation
             </span>
           </div>
-        </div>
+        </Link>
 
-        {/* Navigation - Premium Floating Pill */}
-        <div className="hidden md:flex items-center bg-white/70 backdrop-blur-xl px-1.5 py-1.5 rounded-full border border-white/80 shadow-[0_8px_32px_rgba(0,0,0,0.06)] ring-1 ring-emerald-900/5">
-        {[
-            { name: 'Home', href: '#home' },
-            { name: 'About', href: '#about' },
-            { name: 'Features', href: '#features' },
-            { name: 'Guidelines', href: '#guidelines' }
-        ].map((link) => (
-            <a 
-            key={link.name}
-            href={link.href} 
-            className="relative px-6 py-2 rounded-full text-[13px] font-black text-slate-500 hover:text-[#064e3b] transition-all duration-300 tracking-wide group"
+        {/* Navigation: Real Routes */}
+        <div className="hidden lg:flex items-center gap-1 p-1.5 bg-slate-900/5 backdrop-blur-md rounded-2xl border border-white/40 shadow-inner">
+          {navLinks.map((link) => (
+            <Link 
+              key={link.name}
+              to={link.href} 
+              className={`relative px-6 py-2.5 rounded-xl text-[11px] font-black transition-all duration-500 group ${
+                isActive(link.href) ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-900'
+              }`}
             >
-            {/* Text Layer */}
-            <span className="relative z-10 transition-colors duration-300 group-hover:text-[#064e3b]">
+              <span className="relative z-10 tracking-[0.2em] uppercase">
                 {link.name}
-            </span>
-
-            {/* Premium Hover Background (Floating Effect) */}
-            <div className="absolute inset-0 w-full h-full bg-emerald-50/80 rounded-full scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 ease-out -z-0"></div>
-            
-            {/* Subtle Bottom Indicator Dot */}
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#064e3b] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-            </a>
-        ))}
+              </span>
+              
+              {/* Active / Hover Indicator */}
+              <div className={`absolute inset-0 bg-white rounded-xl shadow-sm transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+                isActive(link.href) ? 'scale-100 opacity-100' : 'scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100'
+              }`} />
+            </Link>
+          ))}
         </div>
 
-        {/* Action Button - High Contrast */}
-        <div className="hidden md:block">
-          <button className="group bg-[#064e3b] text-white pl-7 pr-3 py-2.5 rounded-full font-bold text-sm flex items-center gap-4 hover:bg-[#022c22] transition-all duration-300 shadow-lg shadow-emerald-900/20 active:scale-95 border border-white/10">
-            Portal Login
-            <div className="bg-emerald-500/20 p-1.5 rounded-full group-hover:bg-emerald-500 transition-colors duration-300">
-              <ArrowRight size={16} className="text-emerald-400 group-hover:text-white transition-transform group-hover:translate-x-0.5" />
-            </div>
+        {/* Actions */}
+        <div className="hidden md:flex items-center gap-8">
+          <Link to="/support" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors">
+            Support
+          </Link>
+          <button onClick={() => navigate("/auth")} className="group relative overflow-hidden bg-slate-950 text-white px-8 py-4 rounded-2xl font-black text-[11px] tracking-[0.15em] uppercase flex items-center gap-3 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/20 active:scale-95">
+            <div className="absolute inset-0 bg-emerald-500 translate-y-[101%] group-hover:translate-y-0 transition-transform duration-500 ease-out" />
+            <span className="relative z-10 flex items-center gap-2">
+              Portal Login
+              <ArrowRight size={14} className="transition-transform duration-500 group-hover:translate-x-1" />
+            </span>
           </button>
         </div>
 
-        {/* Mobile Menu Toggle */}
-        <div className="md:hidden">
+        {/* Mobile Toggle */}
+        <div className="lg:hidden">
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)} 
-            className="p-2.5 text-[#064e3b] bg-white rounded-xl shadow-sm border border-emerald-50 transition-all active:scale-90"
+            className="p-3 text-slate-900 bg-slate-50 rounded-2xl transition-all"
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      <div className={`fixed inset-0 bg-black/20 backdrop-blur-md transition-opacity duration-500 md:hidden ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMenuOpen(false)} />
-      
       {/* Mobile Sidebar */}
-      <div className={`fixed right-0 top-0 h-screen bg-white w-72 shadow-2xl transform transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] md:hidden z-[60] ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="p-8 flex flex-col h-full">
-           <div className="flex items-center gap-4 mb-12">
-              <img src="prmsuLogoTransparent.png" alt="Logo" className="w-10 h-10 object-contain" />
-              <div className="flex flex-col">
-                <span className="font-black text-[#064e3b] text-lg">G.A.D</span>
-                <span className="text-[8px] font-bold tracking-widest text-slate-400 uppercase">Extension</span>
-              </div>
-           </div>
-          
-          <nav className="flex flex-col gap-4 flex-grow">
-            {['Home', 'About', 'Features', 'Guidelines'].map((item) => (
-              <a 
-                key={item}
-                href={`#${item.toLowerCase()}`} 
-                className="text-xl font-bold text-slate-700 hover:text-emerald-600 hover:translate-x-2 transition-all"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item}
-              </a>
-            ))}
-          </nav>
-          
-          <button className="w-full bg-[#064e3b] text-white py-4 rounded-2xl font-black text-sm tracking-widest uppercase shadow-xl shadow-emerald-900/10 active:scale-95 transition-all">
-            Portal Login
-          </button>
+      <div className={`fixed inset-0 bg-slate-900/60 backdrop-blur-xl transition-all duration-700 lg:hidden ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`absolute right-0 top-0 h-screen w-full sm:w-[450px] bg-white p-12 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="flex flex-col h-full">
+            <div className="flex justify-between items-center mb-20">
+               <div className="w-14 h-14 bg-slate-950 rounded-2xl flex items-center justify-center text-emerald-400">
+                  <User size={28} />
+               </div>
+               <button onClick={() => setIsMenuOpen(false)} className="p-4 hover:bg-slate-50 rounded-full transition-colors">
+                 <X size={28} />
+               </button>
+            </div>
+
+            <nav className="flex flex-col gap-6 flex-grow">
+              {navLinks.map((item, idx) => (
+                <Link 
+                  key={item.name}
+                  to={item.href} 
+                  style={{ transitionDelay: `${idx * 100}ms` }}
+                  className={`text-5xl font-black tracking-tighter uppercase transition-all duration-700 ${
+                    isActive(item.href) ? 'text-emerald-500' : 'text-slate-900 hover:text-emerald-500'
+                  } ${isMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'}`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+            
+            <div className="pt-10 border-t border-slate-100">
+               <button className="w-full bg-slate-950 text-white py-6 rounded-[2rem] font-black text-xs tracking-[0.3em] uppercase shadow-2xl shadow-emerald-900/20 active:scale-95 transition-all">
+                Access Portal
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
   );
 };
 
-export default Navbar;
+export default Navbar;  
