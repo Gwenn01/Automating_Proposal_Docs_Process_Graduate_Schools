@@ -79,6 +79,100 @@ const CustomLegend = ({ payload, currentIndex }) => {
   );
 };
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload || !payload.length) return null;
+
+  const STATUS_ORDER = [
+    { key: "ForReview", label: "For Review", color: "#3b82f6" },
+    { key: "UnderReview", label: "Under Review", color: "#6366f1" },
+    { key: "Revisions", label: "For Revisions", color: "#f59e0b" },
+    { key: "ForApproval", label: "For Approval", color: "#a855f7" },
+    { key: "Approved", label: "Approved", color: "#10b981" },
+    { key: "Rejected", label: "Rejected", color: "#f43f5e" },
+  ];
+
+  const data = payload[0]?.payload || {};
+  const total = STATUS_ORDER.reduce((acc, status) => acc + (data[status.key] ?? 0), 0);
+
+  return (
+    <div className="relative overflow-hidden bg-white/70 backdrop-blur-md rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.08),0_1px_1px_rgba(255,255,255,0.8)_inset] border border-white/40 min-w-[220px] p-0 transition-all duration-300">
+      
+      {/* Label/Title Section */}
+      <div className="px-5 py-4 border-b border-slate-200/40 bg-white/30">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 mb-0.5">
+              Insights
+            </p>
+            <h4 className="text-sm font-black text-slate-800 tracking-tight">
+              {label}
+            </h4>
+          </div>
+          <div className="text-right">
+            <p className="text-[14px] font-black text-slate-900 leading-none tracking-tighter tabular-nums">
+              {total}
+            </p>
+            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+              Total
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Body Section */}
+      <div className="p-4 space-y-2.5">
+        {STATUS_ORDER.map((status) => {
+          const value = data[status.key] ?? 0;
+          const hasValue = value > 0;
+
+          return (
+            <div
+              key={status.key}
+              className={`flex items-center justify-between gap-6 transition-all duration-300 ${
+                hasValue ? "opacity-100 translate-x-0" : "opacity-20 -translate-x-1"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {/* Minimalist Pill Indicator */}
+                <div 
+                  className="w-1.5 h-3.5 rounded-full transition-all duration-500"
+                  style={{ 
+                    backgroundColor: status.color,
+                    boxShadow: hasValue ? `0 0 10px ${status.color}40` : 'none'
+                  }}
+                />
+                <span className="text-[11px] font-bold text-slate-600 tracking-tight">
+                  {status.label}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {/* Refined Mini-Bar */}
+                <div className="w-10 h-1 bg-slate-200/50 rounded-full overflow-hidden hidden sm:block">
+                  <div 
+                    className="h-full rounded-full transition-all duration-1000 ease-out"
+                    style={{ 
+                      width: `${total > 0 ? (value / total) * 100 : 0}%`,
+                      backgroundColor: status.color
+                    }}
+                  />
+                </div>
+                <span className="text-xs font-black text-slate-800 tabular-nums w-4 text-right">
+                  {value}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Interactive Shine Flare */}
+      <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-white/40 to-transparent rounded-full rotate-45 pointer-events-none" />
+    </div>
+  );
+};
+
+
 const Overview = () => {
   const [activeIndex, setActiveIndex] = useState(null);
   const [currentStatusIndex, setCurrentStatusIndex] = useState(0);
@@ -147,7 +241,7 @@ const Overview = () => {
         setTimeout(() => {
           setIsAnimating(false);
         }, 50); 
-      }, 1000); 
+      }, 500); 
       
     }, 5000); 
 
@@ -349,54 +443,259 @@ const Overview = () => {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {/* User Distribution */}
-        <div className="bg-white p-8 rounded-[32px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col md:flex-row items-center gap-10 min-h-[480px]">
-          <div className="w-full md:w-1/2 flex flex-col">
-            <div className="mb-2">
-              <h3 className="text-2xl font-black text-slate-800 tracking-tight">User Distribution</h3>
-              <p className="text-sm text-slate-400 font-medium">Active platform roles</p>
-            </div>
-            <div className="h-[280px] relative mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie activeIndex={activeIndex} activeShape={renderActiveShape} data={pieData} cx="50%" cy="50%" innerRadius={80} outerRadius={105} paddingAngle={5} dataKey="value" onMouseEnter={(_, index) => setActiveIndex(index)} onMouseLeave={() => setActiveIndex(null)} stroke="none">
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index]} style={{ filter: activeIndex === index ? `drop-shadow(0 0 12px ${PIE_COLORS[index]}40)` : 'none' }} className="outline-none transition-all duration-500" />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-                <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] block mb-1">
-                  {activeIndex !== null ? pieData[activeIndex].name : "Total"}
-                </span>
-                <h4 className="text-4xl font-black text-slate-800 tracking-tighter">
-                  {activeIndex !== null ? pieData[activeIndex].value : totalUserCount}
-                </h4>
+        {/* Premium User Distribution Container */}
+        <div className="relative group bg-white p-8 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100/80 flex flex-col transition-all duration-500 hover:shadow-[0_30px_60px_rgba(0,0,0,0.04)] overflow-hidden h-full">
+          
+          {/* Modern Mesh Gradient Background (Subtle) - Matching the Bar Chart */}
+          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-br from-indigo-50 to-transparent opacity-50 rounded-full blur-3xl -z-10" />
+
+          {/* Header Section */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+                  User Distribution
+                </h3>
               </div>
+              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.15em]">
+                Active platform roles & access levels
+              </p>
             </div>
           </div>
 
-          <div className="w-full md:w-1/2 flex flex-col gap-4">
-            {pieData.map((entry, index) => {
-              const isActive = activeIndex === index;
-              return (
-                <div key={entry.name} onMouseEnter={() => setActiveIndex(index)} onMouseLeave={() => setActiveIndex(null)} className={`p-5 rounded-[24px] border transition-all duration-300 cursor-pointer relative overflow-hidden ${isActive ? 'bg-slate-900 border-slate-900 shadow-lg -translate-x-2' : 'bg-slate-50 border-slate-100'}`}>
-                  <div className="flex justify-between items-center relative z-10">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-1.5 h-8 rounded-full transition-all duration-500 ${isActive ? 'bg-white' : ''}`} style={{ backgroundColor: !isActive ? PIE_COLORS[index] : undefined }} />
-                      <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{entry.name}</p>
-                        <p className={`text-xl font-black ${isActive ? 'text-white' : 'text-slate-800'}`}>{entry.value}</p>
-                      </div>
-                    </div>
-                    <div className={`px-3 py-1 rounded-full text-[10px] font-black ${isActive ? 'bg-white/10 text-white' : 'bg-white text-slate-500 border border-slate-100'}`}>
-                      {totalUserCount > 0 ? ((entry.value / totalUserCount) * 100).toFixed(1) : 0}%
-                    </div>
+          {/* Main Content Area - Split Layout */}
+          <div className="flex-1 flex flex-col lg:flex-row items-center gap-12 min-h-[380px]">
+            
+            {/* Left: Enhanced Pie Chart with Glass-Glow Effect */}
+            <div className="w-full lg:w-1/2 h-[320px] relative group/pie">
+              
+             {/* Layer 1: Deep Ambient Glow (The "Aura") */}
+              <div 
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[100px] transition-all duration-1000 ease-in-out"
+                style={{ 
+                  backgroundColor: activeIndex !== null ? `${PIE_COLORS[activeIndex % PIE_COLORS.length]}30` : 'rgba(226, 232, 240, 0.2)',
+                  opacity: activeIndex !== null ? 0.6 : 0.3
+                }}
+              />
+
+              {/* Layer 2: Core Soft Light (The "Backlight") */}
+              <div 
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full blur-[40px] opacity-40 transition-all duration-700"
+                style={{ backgroundColor: activeIndex !== null ? PIE_COLORS[activeIndex % PIE_COLORS.length] : '#f1f5f9' }}
+              />
+
+              <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <defs>
+                  {/* High-End Metallic/Glass Gradients */}
+                  {PIE_COLORS.map((color, i) => (
+                    <linearGradient key={`grad-${i}`} id={`grad-${i}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor={color} stopOpacity={1} />
+                      <stop offset="100%" stopColor={color} stopOpacity={0.6} />
+                    </linearGradient>
+                  ))}
+
+                  {/* Selective "Light Beam" Filter - instead of scale, we use light */}
+                  <filter id="activeIlluminate" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="6" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+
+                  {/* Subtle Inner Bevel for a 3D glass effect */}
+                  <filter id="glassBevel">
+                    <feInnerShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.3" />
+                  </filter>
+                </defs>
+
+                <Pie
+                  activeIndex={activeIndex}
+                  activeShape={renderActiveShape} 
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70} 
+                  outerRadius={90}
+                  paddingAngle={8}  
+                  dataKey="value"
+                  onMouseEnter={(_, index) => setActiveIndex(index)}
+                  onMouseLeave={() => setActiveIndex(null)}
+                  stroke="none"
+                  animationBegin={0}
+                  animationDuration={1200}
+                  animationEasing="ease-out"
+                >
+                  {pieData.map((entry, index) => {
+                    const isActive = activeIndex === index;
+                    const color = PIE_COLORS[index % PIE_COLORS.length];
+                    
+                    return (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={`url(#grad-${index % PIE_COLORS.length})`}
+                        className="outline-none transition-all duration-500 cursor-pointer"
+                        style={{
+                          filter: isActive ? 'url(#activeIlluminate)' : 'none',
+                          stroke: isActive ? color : 'none',
+                          strokeWidth: isActive ? 2 : 0,
+                          strokeOpacity: 0.5,
+                          strokeLinejoin: 'round',
+                          opacity: activeIndex === null ? 1 : (isActive ? 1 : 0.15),
+                          transform: isActive ? 'translateY(-2px)' : 'translateY(0)',
+                          transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                        }}
+                      />
+                    );
+                  })}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+              
+              {/* Center Display - Ultra-Premium Glass Orb */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
+                {/* Outer Glow Ring - Subtle pulse that matches active color */}
+                <div 
+                  className="absolute inset-0 rounded-full blur-2xl opacity-20 transition-all duration-700 scale-150"
+                  style={{ backgroundColor: activeIndex !== null ? PIE_COLORS[activeIndex % PIE_COLORS.length] : 'transparent' }}
+                />
+
+                <div className="relative w-36 h-36 flex items-center justify-center">
+                  {/* Decorative Rotating Ring (SVG) */}
+                  <svg className="absolute inset-0 w-full h-full animate-[spin_10s_linear_infinite] opacity-20">
+                    <circle 
+                      cx="72" cy="72" r="70" 
+                      stroke="url(#orbGradient)" 
+                      strokeWidth="1" 
+                      fill="none" 
+                      strokeDasharray="4 8"
+                    />
+                    <defs>
+                      <linearGradient id="orbGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#94a3b8" />
+                        <stop offset="100%" stopColor="transparent" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+
+                  {/* The Main Glass Vessel */}
+                  <div className="relative bg-white/30 backdrop-blur-xl w-32 h-32 rounded-full flex flex-col items-center justify-center border border-white/80 shadow-[0_10px_30px_rgba(0,0,0,0.05),inset_0_4px_12px_rgba(255,255,255,0.8)] overflow-hidden">
+                    
+                    {/* Dynamic Shine Flare */}
+                    <div className="absolute -top-1/4 -left-1/4 w-full h-full bg-gradient-to-br from-white/60 to-transparent rounded-full rotate-45 pointer-events-none" />
+
+                    {/* Content Label */}
+                    <span className={`text-[9px] font-black uppercase tracking-[0.25em] mb-1 transition-all duration-500 transform ${activeIndex !== null ? 'text-slate-500 translate-y-0' : 'text-slate-400 -translate-y-1'}`}>
+                      {activeIndex !== null ? pieData[activeIndex].name : "Platform"}
+                    </span>
+
+                    {/* Main Value with subtle text-shadow for depth */}
+                    <h4 className="text-4xl font-black text-slate-800 tracking-tighter leading-none drop-shadow-sm">
+                      {activeIndex !== null ? pieData[activeIndex].value : totalUserCount}
+                    </h4>
+
+                    {/* Descriptive Suffix */}
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                      {activeIndex !== null ? 'Assigned' : 'Total Users'}
+                    </span>
+
+                    {/* Floating Indicator Bar */}
+                    <div 
+                      className={`absolute bottom-6 h-1 rounded-full transition-all duration-700 ease-out ${activeIndex !== null ? 'w-8 opacity-100' : 'w-4 opacity-0'}`}
+                      style={{ 
+                        backgroundColor: activeIndex !== null ? PIE_COLORS[activeIndex % PIE_COLORS.length] : '#e2e8f0',
+                        boxShadow: activeIndex !== null ? `0 0 10px ${PIE_COLORS[activeIndex % PIE_COLORS.length]}80` : 'none'
+                      }} 
+                    />
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            </div>
+
+            <div className="w-full lg:w-1/2 flex flex-col gap-3">
+              {pieData.map((entry, index) => {
+                const color = PIE_COLORS[index % PIE_COLORS.length];
+                const percentage = ((entry.value / totalUserCount) * 100).toFixed(1);
+
+                return (
+                  <div 
+                    key={entry.name}
+                    className="group/legend-card relative p-4 rounded-[24px] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer overflow-hidden border bg-white border-slate-100 hover:bg-slate-900 hover:border-slate-800 hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:-translate-x-4 hover:scale-[1.02]"
+                  >
+                    {/* Layer 1: Background Fill Metric (Glass Progress Bar) */}
+                    <div 
+                      className="absolute inset-y-0 left-0 opacity-[0.04] transition-all duration-1000 ease-out pointer-events-none group-hover/legend-card:opacity-[0.08] group-hover/legend-card:w-full"
+                      style={{ 
+                        width: `${percentage}%`, 
+                        backgroundColor: color,
+                      }}
+                    />
+
+                    {/* Layer 2: Decorative Glow (Visible on Hover) */}
+                    <div 
+                      className="absolute -left-20 top-0 w-40 h-full blur-[40px] opacity-0 pointer-events-none transition-all duration-500 group-hover/legend-card:opacity-20"
+                      style={{ backgroundColor: color }}
+                    />
+
+                    <div className="flex justify-between items-center relative z-10">
+                      <div className="flex items-center gap-5">
+                        {/* Advanced Indicator Dot */}
+                        <div className="relative flex items-center justify-center">
+                          <div 
+                            className="w-1.5 h-6 rounded-full transition-all duration-500 group-hover/legend-card:scale-y-125"
+                            style={{ 
+                              backgroundColor: color, 
+                            }}
+                          />
+                          <div className="absolute w-4 h-4 rounded-full animate-ping opacity-0 group-hover/legend-card:opacity-20" style={{ backgroundColor: color }} />
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <p className="text-[10px] font-black uppercase tracking-[0.25em] transition-colors text-slate-400 group-hover/legend-card:text-slate-500">
+                              {entry.name}
+                            </p>
+                            <div className="w-1 h-1 rounded-full opacity-0 group-hover/legend-card:opacity-100 animate-pulse" style={{ backgroundColor: color }} />
+                          </div>
+                          
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-2xl font-black tracking-tighter transition-colors duration-500 text-slate-800 group-hover/legend-card:text-white">
+                              {entry.value.toLocaleString()}
+                            </span>
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-300 group-hover/legend-card:text-slate-600">
+                              Units
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Action/Metric Area */}
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="px-3 py-1 rounded-full text-[11px] font-black transition-all duration-500 shadow-sm border bg-slate-50 text-slate-700 border-slate-100 group-hover/legend-card:bg-white/10 group-hover/legend-card:text-white group-hover/legend-card:border-white/10 group-hover/legend-card:backdrop-blur-md group-hover/legend-card:translate-x-1">
+                          {percentage}%
+                        </div>
+                        
+                        <div className="text-[8px] font-bold tracking-tighter transition-opacity duration-500 opacity-0 group-hover/legend-card:opacity-100 group-hover/legend-card:text-slate-500 uppercase">
+                          Stable Growth
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Bottom Info Bar - Exact Match to Bar Chart Footer */}
+          <div className="mt-8 pt-6 border-t border-slate-50 flex justify-between items-center">
+            <div className="flex gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-slate-200" />
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Global Distribution</span>
+              </div>
+            </div>
+            <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">
+              Last Updated: Just Now
+            </span>
           </div>
         </div>
 
@@ -466,14 +765,9 @@ const Overview = () => {
                   tick={{ fontSize: 10, fill: '#cbd5e1', fontWeight: 700 }} 
                 />
 
-                <Tooltip 
+                <Tooltip
                   cursor={{ fill: '#f8fafc', radius: 12 }}
-                  contentStyle={{ 
-                    borderRadius: '16px', 
-                    border: 'none', 
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
-                    padding: '12px' 
-                  }}
+                  content={<CustomTooltip />}
                 />
                 
                 {/* Bars: Ang active status (currentIndex) ay full color, ang iba ay low opacity */}
