@@ -25,8 +25,8 @@ from model.reviewer.get_reviewer import get_reviewer_id
 from model.implementor.put_version_count import put_version_count
 
 from model.implementor.put_proposals import (
-    update_proposal_cover_page,
-    update_proposal_content,
+    update_proposal_cover_page_db,
+    update_proposal_content_db,
     update_reviews,
     update_review_item,
     updated_reviewed_count_zero,
@@ -71,7 +71,7 @@ def update_proposal_cover_page(proposal_id, data):
 
     # service call
     # print(data)
-    insert_proposal_cover_page(data["proposal_id"], data)
+    insert_proposal_cover_page(proposal_id, data)
 
     return jsonify({
         "message": "Proposal cover page updated successfully"
@@ -87,13 +87,13 @@ def update_proposal_content(proposal_id, data):
         }), 400
     #print(data)
     # service call
-    insert_proposal_content(data["proposal_id"], data)
+    insert_proposal_content(proposal_id, data)
 
     return jsonify({
         "message": "Proposal content updated successfully"
     }), 200
     
-# for revision of the proposal ==================================================================================================
+# FOR REVISION PROPOSAL CONTROLLER ONLY ==================================================================================================
 def handle_insertion_history(proposal_id, user_id):
     try:
        #get the version
@@ -128,6 +128,7 @@ def handle_insertion_history(proposal_id, user_id):
 def handle_clean_reviews(proposal_id):
     try:
      #clean the reviewed 
+        #get the reviewer id so that we can clean the review item
         review_id = update_reviews(proposal_id)
         for r in review_id:
             update_is_reviewed(r)
@@ -150,11 +151,11 @@ def handle_update_status(proposal_id):
 def handle_updating_proposals(proposal_id, cover_id, content_id, data):
     try:
         ...
-        success_cover = update_proposal_cover_page(cover_id, proposal_id, data["cover"])
+        success_cover = update_proposal_cover_page_db(cover_id, proposal_id, data["cover"])
         if success_cover:
             print("Cover page updated successfully")
                 
-        success_content = update_proposal_content(content_id, proposal_id, data["content"])
+        success_content = update_proposal_content_db(content_id, proposal_id, data["content"])
         if success_content:
             print("Content updated successfully")
         
@@ -177,13 +178,15 @@ def revise_proposals_controller():
         cover_id = data.get("cover_id")
       
         
-        # if not handle_insertion_history(proposal_id, user_id):
-        #     return jsonify({
-        #         "message": "Proposal insert history failed"
-        #     }), 500
+        if not handle_insertion_history(proposal_id, user_id):
+            return jsonify({
+                "message": "Proposal insert history failed"
+            }), 500
         
-        #after inserting the data update the current data no
+        #after inserting the data update the proposal and other status
         if handle_updating_proposals(proposal_id, cover_id, content_id, data):
+            handle_clean_reviews(proposal_id)
+            handle_update_status(proposal_id)
             return jsonify({"message": "Proposal revised successfully"}), 200
         else:
             return jsonify({"message": "Proposal revision failed"}), 500

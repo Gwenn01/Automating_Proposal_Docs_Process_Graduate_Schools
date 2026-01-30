@@ -9,7 +9,7 @@ from utils.serialize_data import serialize_json_fields
 #         print(e)
 #         return None
     
-def update_proposal_cover_page(cover_id, proposal_id, data):
+def update_proposal_cover_page_db(cover_id, proposal_id, data):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -57,7 +57,7 @@ def update_proposal_cover_page(cover_id, proposal_id, data):
         conn.close()
 
     
-def update_proposal_content(content_id, proposal_id, data):
+def update_proposal_content_db(content_id, proposal_id, data):
     conn = get_db_connection()
     cursor = conn.cursor()
 
