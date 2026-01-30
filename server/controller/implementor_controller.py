@@ -23,6 +23,16 @@ from model.reviewer.insert_review_history import (
 )
 from model.reviewer.get_reviewer import get_reviewer_id
 from model.implementor.put_version_count import put_version_count
+
+from model.implementor.put_proposals import (
+    update_proposal_cover_page,
+    update_proposal_content,
+    update_reviews,
+    update_review_item,
+    updated_reviewed_count_zero,
+    update_is_reviewed,
+    update_proposal_status
+)
 from middleware.proposal_validator import validate_proposal_data, validate_proposal_cover_page_data, validate_proposal_content_data
 
 # creating or inserting proposal into database
@@ -112,9 +122,16 @@ def revise_proposals_controller():
             review_item = get_review_base_proposal_user_id(proposal_id, reviewer["user_id"])
             if review_item:
                 insert_review_items_history(review_history_id, review_item)
-        
+        #after inserting the data update the current data now
+        success_cover = update_proposal_cover_page(proposal_id, data["cover"])
+        if success_cover:
+            print("Cover page updated successfully")
+                
+        success_content = update_proposal_content(proposal_id, data["content"])
+        if success_content:
+            print("Content updated successfully")
+                
             
         
     except Exception as e:
-        # return jsonify({"error": str(e)}), 500
-        return "error"
+        return jsonify({"error": str(e)}), 500

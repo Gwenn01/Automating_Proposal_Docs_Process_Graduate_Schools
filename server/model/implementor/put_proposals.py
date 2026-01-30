@@ -43,7 +43,7 @@ def update_proposal_cover_page(proposal_id, data):
         })
 
         conn.commit()
-        return True
+        return cursor.rowcount >= 1
 
     except Exception as e:
         conn.rollback()
@@ -105,7 +105,7 @@ def update_proposal_content(proposal_id, data):
                 sustainability_plan = %(sustainability_plan)s,
                 org_and_staffing_json = %(org_and_staffing_json)s,
                 activity_schedule_json = %(activity_schedule_json)s,
-                budget_breakdown_json = %(budget_breakdown_json)s,
+                budget_breakdown_json = %(budget_breakdown_json)s
             WHERE proposal_id = %(proposal_id)s
         """, {
             **data,
@@ -113,7 +113,7 @@ def update_proposal_content(proposal_id, data):
         })
 
         conn.commit()
-        return True
+        return cursor.rowcount >= 1
 
     except Exception as e:
         conn.rollback()
@@ -206,7 +206,7 @@ def update_review_item(review_id, data):
 
         cursor.execute(query, values)
         conn.commit()
-        return cursor.rowcount > 0  #  true if updated
+        return cursor.rowcount >= 0  #  true if updated
 
     except Exception as e:
         conn.rollback()
@@ -233,7 +233,7 @@ def updated_reviewed_count_zero(proposal_id):
         cursor.close()
         db.close()
         
-        return True
+        return cursor.rowcount >= 0  
     except Exception as e:
         print(e)
         return False
@@ -254,7 +254,28 @@ def update_is_reviewed(review_id):
         cursor.close()
         db.close()
 
-        return cursor.rowcount == 1
+        return cursor.rowcount >= 1
+    except Exception as e:
+        print(e)
+        return False
+    
+def update_proposal_status(proposal_id):
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        query = """
+            UPDATE proposals_docs SET status = 'update_is_reviewed' WHERE proposal_id = %s
+        """
+        values = (proposal_id,)
+
+        cursor.execute(query, values)
+        db.commit()
+
+        cursor.close()
+        db.close()
+
+        return cursor.rowcount >= 1
     except Exception as e:
         print(e)
         return False
