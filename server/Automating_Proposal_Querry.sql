@@ -479,7 +479,7 @@ ADD COLUMN last_edited_at DATETIME NULL after reviewed_count,
 ADD COLUMN edit_version_count INT DEFAULT 0 after reviewed_count;
 
 UPDATE proposals_docs SET edit_version_count = 0 where proposal_id = 2;
-UPDATE proposals_docs SET reviewer_count = 2 WHERE proposal_id = 1;
+UPDATE proposals_docs SET reviewed_count = 1 WHERE proposal_id = 2;
 
 DELETE from proposal_cover_page_history WHERE cover_history_id > 0;
 DELETE from proposal_history WHERE history_id > 0;
@@ -487,7 +487,7 @@ DELETE FROM proposal_content_history WHERE content_history_id > 0;
 DELETE FROM proposal_review_history WHERE review_history_id > 0;
 DELETE FROM proposal_review_items_history WHERE review_item_history_id > 0;
 
-DELETE FROM proposal_review_items WHERE review_item_id  = 12;
+DELETE FROM proposal_review_items WHERE review_item_id  = 14;
 UPDATE proposals_docs SET status = "for_approval" WHERE proposal_id = 1;
 UPDATE proposal_reviews SET is_reviewed = 1 WHERE review_id = 31;
 

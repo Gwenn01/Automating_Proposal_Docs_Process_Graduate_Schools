@@ -1,6 +1,6 @@
 from flask import jsonify, request
 from model.reviewer.get_docs_for_reviewer import get_docs_for_reviewers
-from model.reviewer.insert_reviewer_item import insert_review_item, updated_reviewed_count
+from model.reviewer.insert_reviewer_item import insert_review_item, updated_reviewed_count, update_is_reviewed
 from model.reviewer.get_reviewer import get_reviewer_per_docs
 from controller.mapper.reviewer_get_docs_mapper import get_docs_mapper
 
@@ -30,7 +30,8 @@ def put_reviews_item_docs_controller():
 
         success = insert_review_item(review_id, data)
         is_updated = updated_reviewed_count(proposal_id)
-        if not success or not is_updated:
+        is_reviewed = update_is_reviewed(review_id)
+        if not success or not is_updated or not is_reviewed:
             return {"error": "Failed to insert review"}, 500
 
         return jsonify({"message": "Review inserted successfully"}), 200

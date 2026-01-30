@@ -83,11 +83,11 @@ def update_proposal_content(proposal_id, data):
     }), 200
     
     
-def revise_proposals_controller(data):
+def revise_proposals_controller():
     try:
         ...
         # get the dat from frontend
-        #data = request.get_json(force=True)
+        data = request.get_json(force=True)
         proposal_id = data.get("proposal_id")
         user_id = data.get("user_id")
         #get the version
@@ -101,11 +101,11 @@ def revise_proposals_controller(data):
         success_cover = insert_cover_page_history(history_id, proposal_cover_data[0])
         success_content= insert_proposal_content_history(history_id, proposal_content_data[0])
         
-        # if not success_cover and not success_content:
-        #     return jsonify({
-        #         "message": "Proposal insert history failed"
-        #     }), 500
-        # insert the review data
+        if not success_cover and not success_content:
+            return jsonify({
+                "message": "Proposal insert history failed"
+            }), 500
+        #insert the review data
         reviewer_id = get_reviewer_id(proposal_id)
         for reviewer in reviewer_id:
             review_history_id = insert_review_history(history_id, reviewer["user_id"], version_no)

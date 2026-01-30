@@ -76,7 +76,28 @@ def updated_reviewed_count(proposal_id):
         cursor.close()
         db.close()
         
-        return True
+        return cursor.rowcount == 1
+    except Exception as e:
+        print(e)
+        return False
+
+def update_is_reviewed(review_id):
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        query = """
+            UPDATE proposal_reviews SET is_reviewed = 1 WHERE review_id = %s
+        """
+        values = (review_id,)
+
+        cursor.execute(query, values)
+        db.commit()
+
+        cursor.close()
+        db.close()
+
+        return cursor.rowcount == 1
     except Exception as e:
         print(e)
         return False
