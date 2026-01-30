@@ -155,58 +155,38 @@ def update_reviews(proposal_id):
         cursor.close()
         conn.close()
       
-def update_review_item(review_id, data):
+def update_review_item(review_id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
         query = """
-            UPDATE proposal_review_items
+           UPDATE proposal_review_items
             SET
-                review_round = %s,
-                proposal_type = %s,
-                source_of_fund = %s,
-                cover_letter_feedback = %s,
-                form1_proposal_feedback = %s,
-                project_profile_feedback = %s,
-                rationale_feedback = %s,
-                significance_feedback = %s,
-                general_objectives_feedback = %s,
-                specific_objectives_feedback = %s,
-                methodology_feedback = %s,
-                expected_output_feedback = %s,
-                potential_impact_feedback = %s,
-                sustainability_plan_feedback = %s,
-                org_staffing_feedback = %s,
-                work_financial_plan_feedback = %s,
-                budget_summary_feedback = %s
-            WHERE review_id = %s
+                review_round = NULL,
+                proposal_type = NULL,
+                source_of_fund = NULL,
+                cover_letter_feedback = NULL,
+                form1_proposal_feedback = NULL,
+                project_profile_feedback = NULL,
+                rationale_feedback = NULL,
+                significance_feedback = NULL,
+                general_objectives_feedback = NULL,
+                specific_objectives_feedback = NULL,
+                methodology_feedback = NULL,
+                expected_output_feedback = NULL,
+                potential_impact_feedback = NULL,
+                sustainability_plan_feedback = NULL,
+                org_staffing_feedback = NULL,
+                work_financial_plan_feedback = NULL,
+                budget_summary_feedback = NULL,
+                attachment_availability_json = NULL
+            WHERE review_id = %s;
         """
 
-        values = (
-            data.get("review_round", "1st"),
-            data.get("proposal_type"),
-            data.get("source_of_fund"),
-            data.get("cover_letter_feedback"),
-            data.get("form1_proposal_feedback"),
-            data.get("project_profile_feedback"),
-            data.get("rationale_feedback"),
-            data.get("significance_feedback"),
-            data.get("general_objectives_feedback"),
-            data.get("specific_objectives_feedback"),
-            data.get("methodology_feedback"),
-            data.get("expected_output_feedback"),
-            data.get("potential_impact_feedback"),
-            data.get("sustainability_plan_feedback"),
-            data.get("org_staffing_feedback"),
-            data.get("work_financial_plan_feedback"),
-            data.get("budget_summary_feedback"),
-            review_id
-        )
-
-        cursor.execute(query, values)
+        cursor.execute(query, (review_id,))
         conn.commit()
-        return cursor.rowcount >= 0  #  true if updated
+        return cursor.rowcount == 1
 
     except Exception as e:
         conn.rollback()
@@ -265,7 +245,7 @@ def update_proposal_status(proposal_id):
         cursor = db.cursor()
 
         query = """
-            UPDATE proposals_docs SET status = 'update_is_reviewed' WHERE proposal_id = %s
+            UPDATE proposals_docs SET status = 'for_revision' WHERE proposal_id = %s
         """
         values = (proposal_id,)
 

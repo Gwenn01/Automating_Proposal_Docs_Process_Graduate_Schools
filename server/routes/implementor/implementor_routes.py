@@ -99,25 +99,5 @@ def update_docs_implementor():
                 "miscellaneous": 20000
             }
         },
-        "reviews": {
-            "review_round": "2st",
-            "proposal_type": "Project",
-            "source_of_fund": "Resolution No. 1436, S. 2025",
-
-            "cover_letter_feedback": "",
-            "form1_proposal_feedback": "",
-            "project_profile_feedback": "",
-            "rationale_feedback": "",
-            "significance_feedback": "",
-            "general_objectives_feedback": "",
-            "specific_objectives_feedback": "",
-            "methodology_feedback": "",
-            "expected_output_feedback": "",
-            "potential_impact_feedback": "",
-            "sustainability_plan_feedback": "",
-            "org_staffing_feedback": "",
-            "work_financial_plan_feedback": "",
-            "budget_summary_feedback": ""
-        }
     }
     return revise_proposals_controller()

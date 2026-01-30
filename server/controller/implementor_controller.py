@@ -130,8 +130,17 @@ def revise_proposals_controller():
         success_content = update_proposal_content(proposal_id, data["content"])
         if success_content:
             print("Content updated successfully")
-                
-            
+        
+        #clean the reviewed 
+        review_id = update_reviews(proposal_id)
+        for r in review_id:
+            update_is_reviewed(r)
+            update_review_item(r)
+        
+        updated_reviewed_count_zero(proposal_id)
+        update_proposal_status(proposal_id)
+        
+        return jsonify({"message": "Proposal revised successfully"}), 200
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
