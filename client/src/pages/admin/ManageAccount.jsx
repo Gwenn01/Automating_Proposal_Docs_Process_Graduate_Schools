@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Edit, Trash2, Search, UserPlus, MoreHorizontal } from "lucide-react";
+import { Edit, Trash2, Search, UserPlus, CheckCircle2 } from "lucide-react";
 import EditModal from "../../components/Admin/EditModal";
 import DeleteConfirmationModal from "../../components/Admin/DeleteConfirmationModal";
 import AddAccountModal from "../../components/Admin/AddAccountModal";
 import axios from "axios";
+import ReactDOM from 'react-dom'
 
 const ManageAccount = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -16,6 +17,7 @@ const ManageAccount = () => {
   const [error, setError] = useState(null);
   const [progress, setProgress] = useState(0);
   const [loadingAction, setLoadingAction] = useState("");
+  const [toast, setToast] = useState({ show: false, visible: false, message: "", type: "success" })
 
   useEffect(() => {
     if (!loading) return;
@@ -25,11 +27,34 @@ const ManageAccount = () => {
 
     const interval = setInterval(() => {
       value += Math.random() * 10;
-      setProgress(Math.min(value, 95)); // stop at 95% visually
+      setProgress(Math.min(value, 95)); 
     }, 300);
 
     return () => clearInterval(interval);
   }, [loading]);
+
+  const showToast = (message, type = "success") => {
+    setToast({
+      show: true,
+      visible: false,
+      message,
+      type,
+    });
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setToast(prev => ({ ...prev, visible: true }));
+      });
+    });
+
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, visible: false }));
+    }, 3000);
+
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 3700);
+  };
 
   const handleEditClick = (user) => {
     setSelectedUser(user);
@@ -47,21 +72,32 @@ const ManageAccount = () => {
   };
 
   const handleUserAdded = () => {
-    setLoadingAction("add");
-    fetchUsers();
-    setLoading(true);
-  };
+    showToast("Account created successfully", "add");
+    setTimeout(() => {
+      setLoadingAction("add");
+      setLoading(true);
+      fetchUsers();
+    }, 400);
+    };
 
   const handleUserUpdated = () => {
-    setLoadingAction("edit")
-    fetchUsers();
-    setLoading(true);
+    showToast("Account updated successfully", "edit");
+
+    setTimeout(() => {
+      setLoadingAction("edit");
+      setLoading(true);
+      fetchUsers();
+    }, 400);
   };
 
   const handleUserDeleted = () => {
-    setLoading("delete")
-    fetchUsers();
-    setLoading(true);
+    showToast("Account deleted successfully", "delete");
+
+    setTimeout(() => {
+      setLoadingAction("delete");
+      setLoading(true);
+      fetchUsers();
+    }, 400);
   };
 
   const fetchUsers = async () => {
@@ -89,52 +125,108 @@ const ManageAccount = () => {
     return name.includes(query) || email.includes(query);
   });
 
-
-if (loading) {
-  return (
-    /* Ginawang absolute at tinanggal ang fixed para sa loob lang siya ng page */
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-full max-w-[450px]">
-        
-        {/* Dynamic Title */}
-        <p className="text-lg font-semibold shimmer-text mb-2 text-center">
-          {loadingAction === "add" && "Adding Account..."}
-          {loadingAction === "edit" && "Updating Account..."}
-          {loadingAction === "delete" && "Deleting Account..."}
-          {!loadingAction && "Synchronizing Records..."}
-        </p>
-
-        {/* Dynamic Subtitle */}
-        <p className="text-xs w-full text-gray-500 mb-4 text-center">
-          {loadingAction === "add" && "Saving the new user."}
-          {loadingAction === "edit" && "Saving the updated user info."}
-          {loadingAction === "delete" && "Erasing the selected user."}
-          {!loadingAction && "Preparing the latest user and reviewer data."}
-        </p>
-
-        {/* Progress Bar Style */}
-        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500 ease-out relative"
-            style={{ width: `${progress}%` }}
-          >
-            <div className="absolute inset-0 bg-white/20 animate-pulse" />
-          </div>
-        </div>
-
-        {/* Progress Percent */}
-        <p className="mt-3 text-xs text-gray-500 font-medium">
-          {Math.round(progress)}%
-        </p>
-      </div>
-    </div>
-  );
-}
-
   if (error) return <p>{error}</p>;
 
   return (
+    <>
+    {toast.show && ReactDOM.createPortal(
+      <div
+        className={`
+          fixed top-8 right-8 z-[10001] pointer-events-none
+          transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]
+          ${toast.visible
+            ? "translate-x-0 translate-y-0 opacity-100 scale-100"
+            : "translate-x-6 -translate-y-2 opacity-0 scale-95"}
+        `}
+      >
+        <div className="relative flex items-center gap-4 px-6 py-4 rounded-[28px]
+                        bg-white/70 backdrop-blur-2xl border border-white/40
+                        shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] pointer-events-auto">
+
+          {/* Dynamic Accent Color */}
+          <div className={`absolute left-2 w-1.5 h-8 rounded-full blur-[1px]
+            ${toast.type === "delete" ? "bg-red-500/60" : 
+              toast.type === "edit" ? "bg-amber-500/60" : "bg-emerald-500/60"}`} />
+
+          {/* Dynamic Icon & Background Color */}
+          <div className={`flex items-center justify-center w-11 h-11 rounded-2xl
+            ${toast.type === "delete" ? "bg-red-500/10 text-red-600 ring-4 ring-red-500/5" :
+              toast.type === "edit" ? "bg-amber-500/10 text-amber-600 ring-4 ring-amber-500/5" :
+              "bg-emerald-500/10 text-emerald-600 ring-4 ring-emerald-500/5"}`}>
+            
+            {toast.type === "delete" && <Trash2 size={20} strokeWidth={2.5} />}
+            {toast.type === "edit" && <Edit size={20} strokeWidth={2.5} />}
+            {toast.type === "add" && <CheckCircle2 size={20} strokeWidth={2.5} />}
+            {!["delete", "edit", "add"].includes(toast.type) && <CheckCircle2 size={20} strokeWidth={2.5} />}
+          </div>
+
+          {/* Text */}
+          <div className="flex flex-col gap-0.5 pr-2">
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">
+              System Core
+            </span>
+            <span className="text-[14px] font-bold text-slate-800">
+              {toast.message}
+            </span>
+          </div>
+
+          {/* Dynamic Progress Bar Color */}
+          <div className="absolute bottom-0 left-6 right-6 h-[2px] bg-slate-100/50 rounded-full overflow-hidden">
+            <div className={`h-full animate-[progressOut_3s_linear_forwards]
+              ${toast.type === "delete" ? "bg-red-500" : 
+                toast.type === "edit" ? "bg-amber-500" : "bg-emerald-500"}`} />
+          </div>
+        </div>
+
+        <style jsx>{`
+          @keyframes progressOut {
+            from { width: 100%; }
+            to { width: 0%; }
+          }
+        `}</style>
+      </div>,
+      document.body
+    )}
+
     <div className="relative min-h-screen p-8 lg:p-10 bg-[#fbfcfb] animate-in fade-in duration-700">
+
+      {loading && (
+        <div className="fixed inset-0 lg:left-72 z-[999] flex items-center justify-center bg-[#fbfcfb]">
+        <div className="relative px-14 py-12 flex flex-col items-center animate-pop-out w-full max-w-[480px] rounded-[40px]">
+          
+          {/* Dynamic Title */}
+          <p className="text-lg font-semibold shimmer-text mb-2 text-center">
+            {loadingAction === "add" && "Adding Account..."}
+            {loadingAction === "edit" && "Updating Account..."}
+            {loadingAction === "delete" && "Deleting Account..."}
+            {!loadingAction && "Synchronizing Records..."}
+          </p>
+
+          {/* Dynamic Subtitle */}
+          <p className="text-xs w-full text-gray-500 mb-4 text-center">
+            {loadingAction === "add" && "Saving the new user."}
+            {loadingAction === "edit" && "Saving the updated user info."}
+            {loadingAction === "delete" && "Erasing the selected user."}
+            {!loadingAction && "Preparing the latest user and reviewer data."}
+          </p>
+
+          {/* Progress Bar Style */}
+          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500 ease-out relative"
+              style={{ width: `${progress}%` }}
+            >
+              <div className="absolute inset-0 bg-white/20 animate-pulse" />
+            </div>
+          </div>
+
+          {/* Progress Percent */}
+          <p className="mt-3 text-xs text-gray-500 font-medium">
+            {Math.round(progress)}%
+          </p>
+        </div>
+      </div>
+      )}
       {/* Header Section - Identical to Overview */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
         <div>
@@ -366,6 +458,7 @@ if (loading) {
         onSuccess={handleUserDeleted}
       />
     </div>
+    </>
   );
 };
 

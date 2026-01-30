@@ -12,7 +12,7 @@ const AssignToReview = () => {
   const [allDocs, setAllDocs] = useState([]);
   const [modalMode, setModalMode] = useState("assign")
   const [progress, setProgress] = useState(0);
-  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+  const [toast, setToast] = useState({ show: false, visible: false,  message: "" });
 
   useEffect(() => {
     if (!loading) return;
@@ -102,11 +102,21 @@ const AssignToReview = () => {
   }
 
   const showToast = (message, type = "success") => {
-  setToast({ show: true, message, type });
-  
-  setTimeout(() => {
-    setToast((prev) => ({ ...prev, show: false }));
-  }, 4000);
+    setToast({ show: true, visible: false, message, type });
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setToast(prev => ({ ...prev, visible: true }));
+      });
+    });
+
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, visible: false }));
+    }, 3000);
+
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 3700);
 };
 
   const handleUpdateReviewer = (proposalId, newReviewerNames, actionMode) => {
@@ -381,54 +391,74 @@ const AssignToReview = () => {
       />
 
       {toast.show && ReactDOM.createPortal(
-        <div className="fixed top-8 right-8 z-[10000] pointer-events-none">
+        <div
+          className={`
+            fixed top-8 right-8 z-[10000] pointer-events-none
+            transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]
+            ${toast.visible
+              ? 'translate-x-0 translate-y-0 opacity-100 scale-100'
+              : 'translate-x-6 -translate-y-2 opacity-0 scale-95'}
+          `}
+        >
+          {/* TOAST CARD */}
           <div className={`
-            relative flex items-center gap-4 px-6 py-4 rounded-[24px] 
-            bg-white/80 backdrop-blur-xl border-2 shadow-[0_20px_50px_rgba(0,0,0,0.1)]
-            transition-all duration-500 pointer-events-auto
-            /* Right-side Animation: Slide in from the right */
-            animate-in fade-in slide-in-from-right-10 cubic-bezier(0.16, 1, 0.3, 1)
-            ${toast.message.toLowerCase().includes("reassign") 
-              ? "border-blue-500/20 shadow-blue-500/10" 
-              : "border-emerald-500/20 shadow-emerald-500/10"}
+            relative flex items-center gap-4 px-6 py-4 rounded-[28px]
+            bg-white/70 backdrop-blur-2xl
+            border border-white/40
+            shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)]
+            pointer-events-auto group
           `}>
-            {/* Decorative Side Accent */}
-            <div className={`absolute left-0 top-1/4 bottom-1/4 w-1 rounded-r-full 
-              ${toast.message.toLowerCase().includes("reassign") ? "bg-blue-500" : "bg-emerald-500"}`} 
+
+            {/* Accent Pill */}
+            <div
+              className={`absolute left-2 w-1.5 h-8 rounded-full blur-[1px]
+              ${toast.message.toLowerCase().includes("reassign")
+                ? "bg-blue-500/60"
+                : "bg-emerald-500/60"}`}
             />
 
-            {/* Icon Container with Soft Glow */}
-            <div className={`flex items-center justify-center w-10 h-10 rounded-2xl
-              ${toast.message.toLowerCase().includes("reassign") 
-                ? "bg-blue-50 text-blue-600 shadow-inner shadow-blue-200/50" 
-                : "bg-emerald-50 text-emerald-600 shadow-inner shadow-emerald-200/50"}`}
+            {/* Icon */}
+            <div
+              className={`relative flex items-center justify-center w-11 h-11 rounded-2xl
+              ${toast.message.toLowerCase().includes("reassign")
+                ? "bg-blue-500/10 text-blue-600 ring-4 ring-blue-500/5"
+                : "bg-emerald-500/10 text-emerald-600 ring-4 ring-emerald-500/5"}`}
             >
-              {toast.message.toLowerCase().includes("reassign") ? (
-                <RefreshCcw size={18} strokeWidth={2.5} className="animate-[spin_3s_linear_infinite]" />
-              ) : (
-                <UserCheck size={18} strokeWidth={2.5} className="animate-pulse" />
-              )}
+              {toast.message.toLowerCase().includes("reassign")
+                ? <RefreshCcw size={20} strokeWidth={2.5} className="animate-[spin_4s_linear_infinite]" />
+                : <UserCheck size={20} strokeWidth={2.5} className="animate-[bounce_2s_infinite]" />
+              }
             </div>
 
-            {/* Text Content */}
+            {/* Text */}
             <div className="flex flex-col gap-0.5 pr-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                System Notification
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">
+                System Core
               </span>
-              <span className="text-[13px] font-bold text-slate-800 tracking-tight">
+              <span className="text-[14px] font-bold text-slate-800 tracking-tight">
                 {toast.message}
               </span>
             </div>
 
-            {/* Subtle Close Indicator */}
-            <div className="ml-2 pl-4 border-l border-slate-100">
-              <div className={`w-1.5 h-1.5 rounded-full animate-pulse
-                ${toast.message.toLowerCase().includes("reassign") ? "bg-blue-400" : "bg-emerald-400"}`} 
+            {/* Progress Bar */}
+            <div className="absolute bottom-0 left-6 right-6 h-[2px] bg-slate-100/50 rounded-full overflow-hidden">
+              <div
+                className={`h-full animate-[progressOut_3s_linear_forwards]
+                ${toast.message.toLowerCase().includes("reassign")
+                  ? "bg-blue-500"
+                  : "bg-emerald-500"}`}
               />
             </div>
           </div>
+
+          <style jsx>{`
+            @keyframes progressOut {
+              from { width: 100%; }
+              to { width: 0%; }
+            }
+          `}</style>
         </div>,
-        document.body 
+        document.body
       )}
     </div>
   );
