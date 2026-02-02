@@ -31,3 +31,28 @@ def get_history_db(proposal_id):
     except Exception as e:
         print(e)
         return None
+    
+def get_history_cover_page_db(history_id):
+    try:
+        ...
+        query = """
+            SELECT * FROM proposal_cover_page_history WHERE history_id = %s;
+        """
+        params = (history_id,)
+        return execute_query(query, params, True)
+    except Exception as e:
+        print(e)
+        return None
+    
+def get_history_content_db(history_id):
+    try:
+        ...
+        query = """
+            SELECT * FROM proposal_content_history WHERE history_id = %s;
+        """
+        params = (history_id,)
+        return execute_query(query, params, True)
+    except Exception as e:
+        print(e)
+        return None
+

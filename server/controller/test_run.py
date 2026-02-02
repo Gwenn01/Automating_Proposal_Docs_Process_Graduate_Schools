@@ -92,11 +92,7 @@ def run_tests_controller():
     #     print(review_history_id)
     #print(get_review_base_proposal_user_id(2, 1))
     
-<<<<<<< HEAD
     # data =  {
-=======
-#     data =  {
->>>>>>> bb082aad09221a221a606d3706397e0d6de919a3
 #     "proposal_id": 1,
 #     "user_id": 7,
 #     "cover": {
@@ -153,9 +149,5 @@ def run_tests_controller():
 #         "trainees_count": 50
 #     }
 # }
-<<<<<<< HEAD
     #print(get_history_db(6))
-=======
-
->>>>>>> bb082aad09221a221a606d3706397e0d6de919a3
     print("Running test controller..")

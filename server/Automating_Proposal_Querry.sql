@@ -472,11 +472,6 @@ SELECT * FROM proposal_content_history;
 SELECT * FROM proposal_review_history;
 SELECT * FROM proposal_review_items_history;
 
-<<<<<<< HEAD
-=======
-DELETE FROM proposals_docs WHERE proposal_id >= 1;
-
->>>>>>> bb082aad09221a221a606d3706397e0d6de919a3
 UPDATE proposal_cover_page
 SET proposal_id = 1
 WHERE cover_id = 6;

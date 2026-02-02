@@ -104,6 +104,8 @@ def get_review_per_docs_mapper(proposal_cover, proposal_content, proposal_review
         # })
     
     data = {
+        "cover_id": proposal_cover['cover_id'],
+        "content_id": proposal_content['content_id'],
         "cover_page": {
             "submission_date": proposal_cover["submission_date"].strftime("%B %d, %Y"),
             "proposal_summary": {
