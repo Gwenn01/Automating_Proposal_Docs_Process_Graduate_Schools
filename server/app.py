@@ -33,7 +33,8 @@ from routes.reviewer.reviewer_routes import reviewer_db
 from routes.general.get_proposal_routes import proposals_bp
 from routes.general.get_review_docs_routes import reviews_bp
 # implementor
-
+#history
+from routes.general.get_history_routes import history_bp
 #---------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------
 app.register_blueprint(health_bp, url_prefix="/api")
@@ -56,6 +57,8 @@ app.register_blueprint(reviewer_db, url_prefix="/api")
 app.register_blueprint(proposals_bp, url_prefix="/api")
 app.register_blueprint(reviews_bp, url_prefix="/api")
 # implementor
+#history
+app.register_blueprint(history_bp, url_prefix="/api")
 # -------------------------------------------------
 # Entry Point
 # -------------------------------------------------
