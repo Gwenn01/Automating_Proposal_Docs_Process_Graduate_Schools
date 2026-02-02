@@ -3,12 +3,50 @@ import { Check, Pencil, X } from "lucide-react";
 import InlineInput from "./inlineInput";
 import ReviewerComment from "./ReviewerComment";
 import { getStatusStyle } from "../../utils/statusStyles";
+import { useEffect } from "react";
+import axios from "axios";
 
 const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   if (!isOpen || !proposalData) return null;
   
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState(null);
+
+const fetchHistoryByProposal = async (proposalId) => {
+  try {
+    const res = await axios.get(
+      "http://127.0.0.1:5000/api/get-history",
+      {
+        params: { proposal_id: proposalId }, // ✅ query param
+      }
+    );
+    return res.data;
+  } catch (error) {
+    console.error("Failed to fetch history:", error);
+    return [];
+  }
+};
+
+
+
+const [history, setHistory] = useState([]);
+const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  if (!proposalData?.proposal_id) return;
+
+  const loadHistory = async () => {
+    setLoading(true);
+    const data = await fetchHistoryByProposal(proposalData.proposal_id);
+    setHistory(data);
+    setLoading(false);
+  };
+
+  loadHistory();
+}, [proposalData?.proposal_id]);
+
+
+
 
   const rpd = proposalData?.reviews_per_docs;
   if (!rpd) return null;
@@ -19,7 +57,8 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
 
   const statusStyle = getStatusStyle(proposalData.status);
 
-  console.log("Proposal Data in ReviewerModal:", proposalData);
+
+  //console.log("Proposal Data in ReviewerModal:", proposalData);
 
   // Normalize data from the active source
   const normalized = {
@@ -78,10 +117,95 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
 
   const handleSave = async () => {
     try {
-      // 🔥 Call API here to save changes
-      // await axios.put(`/api/proposals/${proposalData.id}`, editedData);
+      // Prepare clean data structure excluding reviews
+      const cleanedData = {
+        proposal_id: editedData.proposal_id,
+        user_id: editedData.user_id,
+        content_id: editedData.content_id,
+        cover_id: editedData.cover_id,
+        
+        // Cover page data (excluding reviews)
+        cover: {
+          submission_date: editedData.reviews_per_docs?.cover_page?.submission_date,
+          board_resolution_title: editedData.reviews_per_docs?.cover_page?.proposal_summary?.program_title,
+          board_resolution_no: editedData.reviews_per_docs?.cover_page?.board_resolution_no,
+          approved_budget_words: editedData.reviews_per_docs?.cover_page?.proposal_summary?.approved_budget?.words,
+          approved_budget_amount: editedData.reviews_per_docs?.cover_page?.proposal_summary?.approved_budget?.amount,
+          duration_words: editedData.reviews_per_docs?.cover_page?.proposal_summary?.duration?.words,
+          duration_years: editedData.reviews_per_docs?.cover_page?.proposal_summary?.duration?.years,
+          date_from_to: editedData.reviews_per_docs?.cover_page?.proposal_summary?.proposal_coverage_period,
+          activity_title: editedData.reviews_per_docs?.cover_page?.activity_details?.title,
+          activity_date: editedData.reviews_per_docs?.cover_page?.activity_details?.date,
+          activity_venue: editedData.reviews_per_docs?.cover_page?.activity_details?.venue,
+          activity_value_statement: editedData.reviews_per_docs?.cover_page?.activity_details?.value_statement,
+          requested_activity_budget: editedData.reviews_per_docs?.cover_page?.activity_details?.requested_budget,
+          prmsu_participants_words: editedData.reviews_per_docs?.cover_page?.participants?.prmsu?.words,
+          prmsu_participants_num: editedData.reviews_per_docs?.cover_page?.participants?.prmsu?.count,
+          partner_agency_participants_words: editedData.reviews_per_docs?.cover_page?.participants?.partner_agency?.words,
+          partner_agency_participants_num: editedData.reviews_per_docs?.cover_page?.participants?.partner_agency?.count,
+          partner_agency_name: editedData.reviews_per_docs?.cover_page?.participants?.partner_agency?.name,
+          trainees_words: editedData.reviews_per_docs?.cover_page?.participants?.trainees?.words,
+          trainees_num: editedData.reviews_per_docs?.cover_page?.participants?.trainees?.count,
+        },
+        
+        // Content page data (excluding reviews)
+        content: {
+          program_title: editedData.reviews_per_docs?.project_profile?.program_title,
+          project_title: editedData.reviews_per_docs?.project_profile?.project_title,
+          activity_title: editedData.reviews_per_docs?.project_profile?.activity_title,
+          sdg_alignment: editedData.reviews_per_docs?.project_profile?.sdg_alignment,
+          extension_agenda: editedData.reviews_per_docs?.project_profile?.extension_agenda,
+          project_leader: editedData.reviews_per_docs?.project_profile?.proponents?.project_leader,
+          members: editedData.reviews_per_docs?.project_profile?.proponents?.members,
+          college_campus_program: editedData.reviews_per_docs?.project_profile?.college_campus_program,
+          collaborating_agencies: editedData.reviews_per_docs?.project_profile?.collaborating_agencies,
+          community_location: editedData.reviews_per_docs?.project_profile?.community_location,
+          target_sector: editedData.reviews_per_docs?.project_profile?.target_sector,
+          number_of_beneficiaries: editedData.reviews_per_docs?.project_profile?.number_of_beneficiaries,
+          implementation_period: editedData.reviews_per_docs?.project_profile?.implementation_period,
+          total_budget_requested: editedData.reviews_per_docs?.project_profile?.budgetary_requirements,
+          
+          rationale: editedData.reviews_per_docs?.rationale?.rationale_content,
+          significance: editedData.reviews_per_docs?.significance?.significance_content,
+          general_objectives: editedData.reviews_per_docs?.objectives?.general_content,
+          specific_objectives: editedData.reviews_per_docs?.objectives?.specific_content,
+          methodology: editedData.reviews_per_docs?.methodology?.methodology_content,
+          
+          expected_output_6ps: {
+            publications: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.publications,
+            patents: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.patents,
+            products: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.products,
+            people_services: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.people_services,
+            places_partnerships: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.places_partnerships,
+            policy: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.policy,
+          },
+          
+          social_impact: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.social_impact,
+          economic_impact: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.economic_impact,
+          
+          sustainability_plan: editedData.reviews_per_docs?.sustainability_plan?.sustainability_plan_content,
+          
+          org_and_staffing_json: editedData.reviews_per_docs?.organization_and_staffing?.organization_and_staffing_content,
+          
+          activity_schedule_json: {
+            activity_title: editedData.reviews_per_docs?.plan_of_activities?.plan_of_activities_content?.activity_title,
+            activity_date: editedData.reviews_per_docs?.plan_of_activities?.plan_of_activities_content?.activity_date,
+            schedule: editedData.reviews_per_docs?.plan_of_activities?.plan_of_activities_content?.schedule,
+          },
+          
+          budget_breakdown_json: {
+            meals: editedData.reviews_per_docs?.budgetary_requirement?.budgetary_requirement?.meals,
+            supplies: editedData.reviews_per_docs?.budgetary_requirement?.budgetary_requirement?.supplies,
+            transport: editedData.reviews_per_docs?.budgetary_requirement?.budgetary_requirement?.transport,
+            totals: editedData.reviews_per_docs?.budgetary_requirement?.budgetary_requirement?.totals,
+          },
+        },
+      };
       
-      console.log("Saving edited data:", editedData);
+      console.log("Saving cleaned data:", cleanedData);
+      
+      // 🔥 Call API here to save changes
+      // await axios.put(`/api/proposals/${proposalData.proposal_id}`, cleanedData);
       
       // Exit edit mode
       setIsEditing(false);
@@ -132,7 +256,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
         <textarea
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full border-b border-green-500 rounded-sm px-3 py-2 focus:ring-2 focus:ring-green-300 outline-none ${className}`}
+          className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
           rows={4}
         />
       );
@@ -143,7 +267,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
         type="text"
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full border-2 border-green-500 rounded-md px-3 py-1 focus:ring-1 focus:ring-green-300 outline-none ${className}`}
+        className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
       />
     );
   };
@@ -159,7 +283,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
         type="date"
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className={`border-2 border-green-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-300 outline-none ${className}`}
+        className={`border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
       />
     );
   };
@@ -175,7 +299,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
         type="number"
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full border-2 border-green-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-300 outline-none ${className}`}
+        className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
       />
     );
   };
@@ -1413,6 +1537,8 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
 
         {/* History Panel */}                   
         <div className="bg-white h-[95vh] w-1/5 max-w-2xl shadow-sm border border-gray-200 flex flex-col rounded-tr-xl rounded-br-xl">
+
+
           <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-800">History</h2>
@@ -1428,61 +1554,28 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
-              <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-sm font-semibold">
-                JD
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-700 font-medium">
-                  Proposal submitted
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Extension Program • 2 hours ago
-                </p>
-              </div>
-            </div>
+          <div className="space-y-2">
+                {history.map((item) => (
+                  <div
+                    key={`${item.proposal_id}-${item.version_no}-${item.status}`}
+                    className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-sm font-semibold">
+                      V{item.version_no}
+                    </div>
 
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
-              <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-semibold">
-                MK
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-700 font-medium">
+                        {formatStatus(item)}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Proposal ID {item.proposal_id} • {formatDate(item.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-700 font-medium">
-                  Review approved
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Community Outreach • Yesterday
-                </p>
-              </div>
-            </div>
 
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
-              <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-sm font-semibold">
-                AR
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-700 font-medium">
-                  Document updated
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  GAD Report • 3 days ago
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
-              <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-sm font-semibold">
-                LS
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-700 font-medium">
-                  Comment added
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Proposal Review • 1 week ago
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </div>

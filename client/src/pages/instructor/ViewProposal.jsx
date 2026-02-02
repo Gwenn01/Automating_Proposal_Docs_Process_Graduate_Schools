@@ -519,8 +519,6 @@ if (pageLoading) {
         onClose={() => setShowReviewerStatus(false)}
       />
 
-
-
     </div>
   );
 };
