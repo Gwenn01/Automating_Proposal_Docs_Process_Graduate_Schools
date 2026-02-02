@@ -6,120 +6,188 @@ import { getStatusStyle } from "../../utils/statusStyles";
 
 const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   if (!isOpen || !proposalData) return null;
+  
   const [isEditing, setIsEditing] = useState(false);
-  const rpd = proposalData?.reviews_per_docs;
+  const [editedData, setEditedData] = useState(null);
 
+  const rpd = proposalData?.reviews_per_docs;
   if (!rpd) return null;
 
-
-  // Correct mapping based on actual API structure
-  const cover = proposalData.cover_page?.cover_pages || {};
-  const content = proposalData.full_content?.content_pages || {};
+  // Use editedData when in edit mode, otherwise use proposalData
+  const activeData = isEditing ? editedData : proposalData;
+  const activeRpd = activeData?.reviews_per_docs;
 
   const statusStyle = getStatusStyle(proposalData.status);
 
-
-
-
   console.log("Proposal Data in ReviewerModal:", proposalData);
 
+  // Normalize data from the active source
   const normalized = {
-  cover: rpd.cover_page,
+    cover: activeRpd.cover_page,
+    project_profile: activeRpd.project_profile,
+    rationale: {
+      content: activeRpd.rationale?.rationale_content,
+      reviews: activeRpd.rationale?.reviews || [],
+    },
+    significance: {
+      content: activeRpd.significance?.significance_content,
+      reviews: activeRpd.significance?.reviews || [],
+    },
+    methodology: {
+      content: activeRpd.methodology?.methodology_content,
+      reviews: activeRpd.methodology?.reviews || [],
+    },
+    objectives: {
+      general: activeRpd.objectives?.general_content,
+      specific: activeRpd.objectives?.specific_content,
+      reviewsGeneral: activeRpd.objectives?.reviews_general || [],
+      reviewsSpecific: activeRpd.objectives?.reviews_specific || [],
+    },
+    planOfActivities: {
+      content: activeRpd.plan_of_activities?.plan_of_activities_content,
+      reviews: activeRpd.plan_of_activities?.reviews || [],
+    },
+    organization: {
+      content: activeRpd.organization_and_staffing?.organization_and_staffing_content,
+      reviews: activeRpd.organization_and_staffing?.reviews || [],
+    },
+    expectedOutput: {
+      content: activeRpd.expected_output_outcome?.["6ps"],
+      reviews: activeRpd.expected_output_outcome?.reviews || [],
+    },
+    sustainability: {
+      content: activeRpd.sustainability_plan?.sustainability_plan_content,
+      reviews: activeRpd.sustainability_plan?.reviews || [],
+    },
+    budget: {
+      content: activeRpd.budgetary_requirement?.budgetary_requirement,
+      reviews: activeRpd.budgetary_requirement?.reviews || [],
+    },
+  };
 
-  project_profile: rpd.project_profile,
-
-  rationale: {
-    content: rpd.rationale?.rationale_content,
-    reviews: rpd.rationale?.reviews || [],
-  },
-
-  significance: {
-    content: rpd.significance?.significance_content,
-    reviews: rpd.significance?.reviews || [],
-  },
-
-  methodology: {
-    content: rpd.methodology?.methodology_content,
-    reviews: rpd.methodology?.reviews || [],
-  },
-
-  objectives: {
-    general: rpd.objectives?.general_content,
-    specific: rpd.objectives?.specific_content,
-    reviewsGeneral: rpd.objectives?.reviews_general || [],
-    reviewsSpecific: rpd.objectives?.reviews_specific || [],
-  },
-
-  planOfActivities: {
-    content: rpd.plan_of_activities?.plan_of_activities_content,
-    reviews: rpd.plan_of_activities?.reviews || [],
-  },
-
-  organization: {
-    content: rpd.organization_and_staffing?.organization_and_staffing_content,
-    reviews: rpd.organization_and_staffing?.reviews || [],
-  },
-
-  expectedOutput: {
-    content: rpd.expected_output_outcome?.["6ps"],
-    reviews: rpd.expected_output_outcome?.reviews || [],
-  },
-
-  sustainability: {
-    content: rpd.sustainability_plan?.sustainability_plan_content,
-    reviews: rpd.sustainability_plan?.reviews || [],
-  },
-
-  budget: {
-    content: rpd.budgetary_requirement?.budgetary_requirement,
-    reviews: rpd.budgetary_requirement?.reviews || [],
-  },
-};
-
- const handleEdit = () => {
-   
+  const handleEdit = () => {
+    // Deep clone the proposal data for editing
+    setEditedData(JSON.parse(JSON.stringify(proposalData)));
     setIsEditing(true);
   };
 
   const handleCancel = () => {
-   
+    setEditedData(null);
     setIsEditing(false);
   };
 
-  const handleSave = () => {
-    // 🔥 call API here if needed
-    // await axios.put(...)
-
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      // 🔥 Call API here to save changes
+      // await axios.put(`/api/proposals/${proposalData.id}`, editedData);
+      
+      console.log("Saving edited data:", editedData);
+      
+      // Exit edit mode
+      setIsEditing(false);
+      
+      // Optional: Show success message
+      // toast.success("Changes saved successfully!");
+      
+      // Optional: Refresh parent component data
+      // onRefresh();
+      
+    } catch (err) {
+      console.error("Save error:", err);
+      // Optional: Show error message
+      // toast.error("Failed to save changes");
+    }
   };
 
+  // Helper function to update nested fields
+  const updateField = (path, value) => {
+    setEditedData(prev => {
+      const newData = { ...prev };
+      const keys = path.split('.');
+      let current = newData;
+      
+      // Navigate to the parent of the target field
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+          current[keys[i]] = {};
+        }
+        current = current[keys[i]];
+      }
+      
+      // Set the value
+      current[keys[keys.length - 1]] = value;
+      
+      return newData;
+    });
+  };
 
+  // Editable text component
+  const EditableText = ({ value, onChange, multiline = false, className = "" }) => {
+    if (!isEditing) {
+      return <p className={className}>{value || "N/A"}</p>;
+    }
+
+    if (multiline) {
+      return (
+        <textarea
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          className={`w-full border-b border-green-500 rounded-sm px-3 py-2 focus:ring-2 focus:ring-green-300 outline-none ${className}`}
+          rows={4}
+        />
+      );
+    }
+
+    return (
+      <input
+        type="text"
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        className={`w-full border-2 border-green-500 rounded-md px-3 py-1 focus:ring-1 focus:ring-green-300 outline-none ${className}`}
+      />
+    );
+  };
+
+  // Editable date component
+  const EditableDate = ({ value, onChange, className = "" }) => {
+    if (!isEditing) {
+      return <p className={className}>{value || "N/A"}</p>;
+    }
+
+    return (
+      <input
+        type="date"
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        className={`border-2 border-green-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-300 outline-none ${className}`}
+      />
+    );
+  };
+
+  // Editable number component
+  const EditableNumber = ({ value, onChange, className = "" }) => {
+    if (!isEditing) {
+      return <p className={className}>{value || "N/A"}</p>;
+    }
+
+    return (
+      <input
+        type="number"
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        className={`w-full border-2 border-green-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-300 outline-none ${className}`}
+      />
+    );
+  };
 
   return (
-
     <>
-
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-6 animate-overlay-enter">
         
-        {/* 4. Apply the Modal Pop-in Animation Class */}
         <div className="bg-white w-full max-w-5xl h-[95vh] rounded-bl-xl rounded-tl-xl shadow-2xl flex flex-col overflow-hidden">
           
           {/* Header */}
           <div className="flex justify-between items-center px-8 py-5 border-b bg-primaryGreen text-white">
-            {/* <div>
-              <h3 className="font-semibold text-xs">Proposal Details</h3>
-
-              <h1 className="text-lg font-bold mb-2">
-                {proposalData.title}
-              </h1>
-
-              <span
-                className={`inline-block px-4 py-2 rounded-full text-xs uppercase tracking-wider font-semibold ${statusStyle.className}`}
-              >
-                {statusStyle.label}
-              </span>
-            </div> */}
-
             <div className="absolute inset-0 bg-grid-white/[0.05] pointer-events-none"></div>
             
             <div className="relative z-10 flex flex-1 items-center justify-between">
@@ -135,150 +203,281 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                 </h1>
               </div>
 
-
               <div className="">
                 {!isEditing ? (
+                  <button
+                    onClick={handleEdit}
+                    className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-md font-semibold
+                              bg-yellow-500 text-white hover:bg-yellow-600 transition text-sm"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Edit
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={handleEdit}
-                      className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-md font-semibold
-                                bg-yellow-500 text-white hover:bg-white/20 transition text-sm"
+                      onClick={handleSave}
+                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-semibold
+                                bg-green-500 text-white hover:bg-green-700 transition"
                     >
-                      <Pencil className="w-4 h-4" />
-                      Edit
+                      <Check className="w-3.5 h-3.5" />
+                      Save
                     </button>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={handleSave}
-                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-semibold
-                                  bg-green-500 text-white hover:bg-green-700 transition"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                        Save
-                      </button>
 
-                      <button
-                        onClick={handleCancel}
-                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-semibold
-                                  bg-red-600 text-white hover:bg-red-800 transition"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                        Cancel
-                      </button>
-                    </div>
-                  )}
+                    <button
+                      onClick={handleCancel}
+                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-semibold
+                                bg-red-600 text-white hover:bg-red-800 transition"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      Cancel
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* <button
-              onClick={onClose}
-              className="p-2 bg-white rounded-full text-black hover:text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button> */}
           </div>
-
 
           {/* Main Content */}
           <div className="p-14 overflow-auto bg-white">
 
-
             {/* ========== COVER PAGE SECTION ========== */}
-          <section className="max-w-5xl mx-auto px-5 rounded-sm shadow-sm font-sans text-gray-900 leading-relaxed">
+            <section className="max-w-5xl mx-auto px-5 rounded-sm shadow-sm font-sans text-gray-900 leading-relaxed">
               
-            <div className="space-y-4 font-normal text-base">
-              <div>
-                <p className="font-medium">{normalized?.cover.submission_date || "N/A"}</p>
-              </div>
-
-              <div className="uppercase ">
-                <p className='font-bold'>DR. ROY N. VILLALOBOS</p>
-                <p>University President</p>
-                <p>President Ramon Magsaysay State University</p>
-              </div>
-
-              <p>Dear Sir:</p>
-
-              <p className="">
-                      I have the honor to submit the proposal for your consideration and appropriate action 
-                for the proposed extension program entitled {normalized?.cover.proposal_summary.program_title || "N/A"}
-                ,with the approved budget of {normalized?.cover.proposal_summary.approved_budget?.words || "N/A"}; {normalized?.cover.proposal_summary.approved_budget?.amount || "N/A"} with the duration 
-                of {normalized?.cover.proposal_summary.duration?.words || "N/A"} years, {normalized?.cover.proposal_summary.proposal_coverage_period || "N/A"}.
-              </p>
-
-              <p>
-                This program includes an activity entitled {normalized?.cover.activity_details?.title || "N/A"} on {normalized?.cover.activity_details?.date ? new Date(normalized?.cover.activity_details.date).toLocaleDateString("en-US",{ year: "numeric", month: "long", day: "numeric" }): "N/A"} at {normalized?.cover.activity_details?.venue || "N/A"}. This activity is valuable {normalized?.cover.activity_details?.value_statement || "N/A"}. The requested expenses 
-                for this activity from the university is {normalized?.cover.activity_details?.requested_budget || "N/A"}, 
-                which will be used to defray expenses for food, transportation, supplies and materials, 
-                and other expenses related to these activities.
-              </p>
-
-              <p>
-                Further, there is {normalized?.cover.participants?.prmsu?.words || "N/A"} ({normalized?.cover.participants?.prmsu?.count || "N/A"}) the total number of participants from PRMSU, 
-                another {normalized?.cover.participants?.partner_agency?.words || "N/A"} ({normalized?.cover.participants?.partner_agency?.count || "N/A"}) from the collaborating agency, {normalized?.cover.participants?.partner_agency?.name || "N/A"}, and {normalized?.cover.participants?.trainees?.words || "N/A"} ({normalized?.cover.participants?.trainees?.count || "N/A"}) trainees from the abovementioned community.
-              </p>
-
-              <p className="">Your favorable response regarding this matter will be highly appreciated.</p>
-
-              <p className="italic">Prepared by:</p>
-              <p className="py-1">Proponent</p>
-              <p className="italic">Noted by:</p>
-
-              <div className="">
-                <div className="grid grid-cols-2">
-                  <div className="">
-                    <p className="pt-4">Campus Extension Coordinator	</p>
-                    <p className="pt-4 italic">Endorsed by:</p>
-                    <p className="pt-4"></p>
-                    <p className="pt-1">Campus Director</p>
-                    <p className="pt-4 italic">Recommending Approval:</p>
-                    <p className="pt-7 font-bold text-[16px]">MARLON JAMES A. DEDICATORIA, Ph.D.</p>
-                    <p className="pt-1">Vice-President, Research and Development</p>
-                  </div>
-
-                  <div className="">
-                    <p className="pt-4">College Dean	</p>
-                    <p className="pt-4"></p>
-                    <p className="pt-4 font-bold text-[16px]">KATHERINE M.UY, MAEd</p>
-                    <p className="pt-1"> Director, Extension Services</p>
-                    <p className="pt-4 italic">Certified Funds Available</p>
-                    <p className="pt-7 font-bold text-[16px]">ROBERTO C. BRIONES JR., CPA</p>
-                    <p className="pt-1">University Accountant IV</p>
-                  </div>
+              <div className="space-y-4 font-normal text-base">
+                <div className={isEditing ? "bg-blue-50 rounded-lg p-3" : ""}>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Submission Date:</label>
+                  <EditableDate
+                    value={normalized?.cover.submission_date}
+                    onChange={(val) => updateField('reviews_per_docs.cover_page.submission_date', val)}
+                    className="font-medium"
+                  />
                 </div>
-                <p className="pt-10 italic text-center">Approved by:</p>
-                <p className="pt-5 font-bold text-[16px] text-center">ROY N. VILLALOBOS, DPA</p>
-                <p className="pt-1 text-center">University President</p>
-              </div>  
 
-            </div>
-          </section>         
+                <div className="uppercase ">
+                  <p className='font-bold'>DR. ROY N. VILLALOBOS</p>
+                  <p>University President</p>
+                  <p>President Ramon Magsaysay State University</p>
+                </div>
 
-          {/* ========== REVIEWER'S COMMENTS (Cover page) ========== */}
-          {normalized?.cover.reviews.length > 0 ? (
-            normalized?.cover.reviews.map((review, index) => (
+                <p>Dear Sir:</p>
+
+                <div className={isEditing ? "bg-blue-50 rounded-lg p-3 space-y-3" : ""}>
+                  <p className="text-gray-800">
+                    I have the honor to submit the proposal for your consideration and appropriate action 
+                    for the proposed extension program entitled{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.proposal_summary?.program_title}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.program_title', val)}
+                        className="inline"
+                      />
+                    </span>
+                    , with the approved budget of{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.proposal_summary?.approved_budget?.words}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.approved_budget.words', val)}
+                        className="inline"
+                      />
+                    </span>
+                    ;{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.proposal_summary?.approved_budget?.amount}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.approved_budget.amount', val)}
+                        className="inline"
+                      />
+                    </span>
+                    {" "}with the duration of{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.proposal_summary?.duration?.words}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.duration.words', val)}
+                        className="inline"
+                      />
+                    </span>
+                    {" "}years,{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.proposal_summary?.proposal_coverage_period}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.proposal_coverage_period', val)}
+                        className="inline"
+                      />
+                    </span>.
+                  </p>
+
+                  <p className="text-gray-800">
+                    This program includes an activity entitled{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.activity_details?.title}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.title', val)}
+                        className="inline"
+                      />
+                    </span>
+                    {" "}on{" "}
+                    {isEditing ? (
+                      <EditableDate
+                        value={normalized?.cover.activity_details?.date}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.date', val)}
+                      />
+                    ) : (
+                      <span>
+                        {normalized?.cover.activity_details?.date 
+                          ? new Date(normalized?.cover.activity_details.date).toLocaleDateString("en-US", { 
+                              year: "numeric", 
+                              month: "long", 
+                              day: "numeric" 
+                            })
+                          : "N/A"}
+                      </span>
+                    )}
+                    {" "}at{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.activity_details?.venue}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.venue', val)}
+                        className="inline"
+                      />
+                    </span>
+                    . This activity is valuable{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.activity_details?.value_statement}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.value_statement', val)}
+                        className="inline"
+                      />
+                    </span>
+                    . The requested expenses for this activity from the university is{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.activity_details?.requested_budget}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.requested_budget', val)}
+                        className="inline"
+                      />
+                    </span>
+                    , which will be used to defray expenses for food, transportation, supplies and materials, 
+                    and other expenses related to these activities.
+                  </p>
+
+                  <p className="text-gray-800">
+                    Further, there is{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.participants?.prmsu?.words}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.prmsu.words', val)}
+                        className="inline"
+                      />
+                    </span>
+                    {" "}(
+                    <span className="inline-block">
+                      <EditableNumber
+                        value={normalized?.cover.participants?.prmsu?.count}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.prmsu.count', val)}
+                        className="inline"
+                      />
+                    </span>
+                    ) the total number of participants from PRMSU, another{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.participants?.partner_agency?.words}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.words', val)}
+                        className="inline"
+                      />
+                    </span>
+                    {" "}(
+                    <span className="inline-block">
+                      <EditableNumber
+                        value={normalized?.cover.participants?.partner_agency?.count}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.count', val)}
+                        className="inline"
+                      />
+                    </span>
+                    ) from the collaborating agency,{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.participants?.partner_agency?.name}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.name', val)}
+                        className="inline"
+                      />
+                    </span>
+                    , and{" "}
+                    <span className="inline-block">
+                      <EditableText
+                        value={normalized?.cover.participants?.trainees?.words}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.trainees.words', val)}
+                        className="inline"
+                      />
+                    </span>
+                    {" "}(
+                    <span className="inline-block">
+                      <EditableNumber
+                        value={normalized?.cover.participants?.trainees?.count}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.trainees.count', val)}
+                        className="inline"
+                      />
+                    </span>
+                    ) trainees from the abovementioned community.
+                  </p>
+                </div>
+
+                <p className="">Your favorable response regarding this matter will be highly appreciated.</p>
+
+                <p className="italic">Prepared by:</p>
+                <p className="py-1">Proponent</p>
+                <p className="italic">Noted by:</p>
+
+                <div className="">
+                  <div className="grid grid-cols-2">
+                    <div className="">
+                      <p className="pt-4">Campus Extension Coordinator</p>
+                      <p className="pt-4 italic">Endorsed by:</p>
+                      <p className="pt-4"></p>
+                      <p className="pt-1">Campus Director</p>
+                      <p className="pt-4 italic">Recommending Approval:</p>
+                      <p className="pt-7 font-bold text-[16px]">MARLON JAMES A. DEDICATORIA, Ph.D.</p>
+                      <p className="pt-1">Vice-President, Research and Development</p>
+                    </div>
+
+                    <div className="">
+                      <p className="pt-4">College Dean</p>
+                      <p className="pt-4"></p>
+                      <p className="pt-4 font-bold text-[16px]">KATHERINE M.UY, MAEd</p>
+                      <p className="pt-1"> Director, Extension Services</p>
+                      <p className="pt-4 italic">Certified Funds Available</p>
+                      <p className="pt-7 font-bold text-[16px]">ROBERTO C. BRIONES JR., CPA</p>
+                      <p className="pt-1">University Accountant IV</p>
+                    </div>
+                  </div>
+                  <p className="pt-10 italic text-center">Approved by:</p>
+                  <p className="pt-5 font-bold text-[16px] text-center">ROY N. VILLALOBOS, DPA</p>
+                  <p className="pt-1 text-center">University President</p>
+                </div>  
+              </div>
+            </section>         
+
+            {/* ========== REVIEWER'S COMMENTS (Cover page) ========== */}
+            {normalized?.cover.reviews?.length > 0 ? (
+              normalized?.cover.reviews.map((review, index) => (
+                <ReviewerComment
+                  key={review.review_id || index}
+                  title={`Reviewer's Comment ${index + 1}`}
+                  comment={review.comment}
+                  reviewerName={review.reviewer_name}
+                />
+              ))
+            ) : (
               <ReviewerComment
-                key={review.review_id || index}
-                title={`Reviewer’s Comment ${index + 1}`}
-                comment={review.comment}
-                reviewerName={review.reviewer_name}
+                comment=""
+                reviewerName=""
               />
-            ))
-          ) : (
-            <ReviewerComment
-              comment=""
-              reviewerName=""
-            />
-          )}
-
-
-
-
+            )}
 
             {/* ========== CONTENT PAGE SECTION ========== */}
             <section>
               <h2 className="text-xl font-bold my-8">I. PROJECT PROFILE</h2>
-              {/* ========== I. PROJECT PROFILE ========== */}
+              
               <div className="overflow-x-auto">
                 <table className="w-full border border-black text-sm">
                   <tbody>
@@ -287,7 +486,10 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Program Title:
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.program_title || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.program_title}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.program_title', val)}
+                        />
                       </td>
                     </tr>
 
@@ -296,7 +498,10 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Project Title:
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.project_title || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.project_title}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.project_title', val)}
+                        />
                       </td>
                     </tr>
 
@@ -305,16 +510,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Activity Title:
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.activity_title || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.activity_title}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.activity_title', val)}
+                        />
                       </td>
                     </tr>
 
                     <tr className="border-b border-black">
                       <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
-                        SDG’s
+                        SDG's
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.sdg_alignment || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.sdg_alignment}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.sdg_alignment', val)}
+                        />
                       </td>
                     </tr>
 
@@ -323,16 +534,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Extension Agenda 
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.extension_agenda || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.extension_agenda}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.extension_agenda', val)}
+                        />
                       </td>
                     </tr>
 
                     <tr className="border-b border-black">
                       <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Proponents:  Project Leader
+                        Proponents: Project Leader
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.proponents?.project_leader || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.proponents?.project_leader}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.proponents.project_leader', val)}
+                        />
                       </td>
                     </tr>
 
@@ -341,7 +558,10 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Members:
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.proponents?.members || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.proponents?.members}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.proponents.members', val)}
+                        />
                       </td>
                     </tr>
 
@@ -350,7 +570,10 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         College/Campus/Mandated Program:
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.college_campus_program || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.college_campus_program}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.college_campus_program', val)}
+                        />
                       </td>
                     </tr>
 
@@ -359,7 +582,10 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Collaborating Agencies:
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.collaborating_agencies || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.collaborating_agencies}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.collaborating_agencies', val)}
+                        />
                       </td>
                     </tr>
 
@@ -368,7 +594,10 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Community Location:
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.community_location || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.community_location}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.community_location', val)}
+                        />
                       </td>
                     </tr>
 
@@ -377,7 +606,10 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Target Sector:
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.target_sector || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.target_sector}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.target_sector', val)}
+                        />
                       </td>
                     </tr>
 
@@ -386,7 +618,10 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Number of Beneficiaries
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.number_of_beneficiaries || "N/A"}
+                        <EditableNumber
+                          value={normalized?.project_profile?.number_of_beneficiaries}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.number_of_beneficiaries', val)}
+                        />
                       </td>
                     </tr>
 
@@ -395,7 +630,10 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Period of Implementation/ Duration:
                       </td>
                       <td className="px-4 py-3">
-                        {normalized?.project_profile?.implementation_period || "N/A"}
+                        <EditableText
+                          value={normalized?.project_profile?.implementation_period}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.implementation_period', val)}
+                        />
                       </td>
                     </tr>
 
@@ -404,18 +642,22 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                         Budgetary Requirements (PhP): 
                       </td>
                       <td className="px-4 py-3">
-                        Php {normalized?.project_profile?.budgetary_requirements || "N/A"}
+                        Php{" "}
+                        <EditableNumber
+                          value={normalized?.project_profile?.budgetary_requirements}
+                          onChange={(val) => updateField('reviews_per_docs.project_profile.budgetary_requirements', val)}
+                        />
                       </td>
                     </tr>
                   </tbody>
                 </table>
 
-                {/* ========== REVIEWER'S COMMENTS (Project Profile) ========== */}
-                {normalized?.project_profile.reviews.length > 0 ? (
+                {/* Reviewer's Comments - Project Profile */}
+                {normalized?.project_profile.reviews?.length > 0 ? (
                   normalized?.project_profile.reviews.map((review, index) => (
                     <ReviewerComment
                       key={review.review_id || index}
-                      title={`Reviewer’s Comment ${index + 1}`}
+                      title={`Reviewer's Comment ${index + 1}`}
                       comment={review.comment}
                       reviewerName={review.reviewer_name}
                     />
@@ -426,517 +668,752 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
                     reviewerName=""
                   />
                 )}
-
               </div>
 
-
+              {/* Text Sections */}
               <div className="space-y-6 text-gray-700 leading-relaxed">
-                  <div className="">
-                      <h3 className="font-bold text-gray-900 pt-10 text-xl ">II. RATIONALE</h3>
-                      <p className="text-base mt-3">{normalized?.rationale.content || "N/A"}</p>
-
-                      {/* ========== REVIEWER'S COMMENT ========== */}
-                      {/* ========== REVIEWER'S COMMENTS (RATIONALE) ========== */}
-                      {normalized?.rationale.reviews.length > 0 ? (
-                        normalized?.rationale.reviews.map((review, index) => (
-                          <ReviewerComment
-                            key={review.review_id || index}
-                            title={`Reviewer’s Comment ${index + 1}`}
-                            comment={review.comment}
-                            reviewerName={review.reviewer_name}
-                          />
-                        ))
-                      ) : (
-                        <ReviewerComment
-                          comment=""
-                          reviewerName=""
-                        />
-                      )}
-
+                {/* RATIONALE */}
+                <div className="">
+                  <h3 className="font-bold text-gray-900 pt-10 text-xl">II. RATIONALE</h3>
+                  <div className={isEditing ? "bg-blue-50 rounded-lg p-4 mt-3" : "mt-3"}>
+                    <EditableText
+                      value={normalized?.rationale.content}
+                      onChange={(val) => updateField('reviews_per_docs.rationale.rationale_content', val)}
+                      multiline={true}
+                      className="text-base"
+                    />
                   </div>
+
+                  {normalized?.rationale.reviews?.length > 0 ? (
+                    normalized?.rationale.reviews.map((review, index) => (
+                      <ReviewerComment
+                        key={review.review_id || index}
+                        title={`Reviewer's Comment ${index + 1}`}
+                        comment={review.comment}
+                        reviewerName={review.reviewer_name}
+                      />
+                    ))
+                  ) : (
+                    <ReviewerComment comment="" reviewerName="" />
+                  )}
+                </div>
+                
+                {/* SIGNIFICANCE */}
+                <div>
+                  <h3 className="font-bold text-gray-900 pt-5 text-xl">III. SIGNIFICANCE</h3>
+                  <div className={isEditing ? "bg-blue-50 rounded-lg p-4 mt-3" : "mt-3"}>
+                    <EditableText
+                      value={normalized?.significance.content}
+                      onChange={(val) => updateField('reviews_per_docs.significance.significance_content', val)}
+                      multiline={true}
+                      className="text-base"
+                    />
+                  </div>
+
+                  {normalized?.significance.reviews?.length > 0 ? (
+                    normalized?.significance.reviews.map((review, index) => (
+                      <ReviewerComment
+                        key={review.review_id || index}
+                        title={`Reviewer's Comment ${index + 1}`}
+                        comment={review.comment}
+                        reviewerName={review.reviewer_name}
+                      />
+                    ))
+                  ) : (
+                    <ReviewerComment comment="" reviewerName="" />
+                  )}
+                </div>
+
+                {/* OBJECTIVES */}
+                <div className="">
+                  <h3 className="font-bold text-gray-900 pt-5 text-xl">IV. OBJECTIVES</h3>
                   
-                  <div>
-                      <h3 className="font-bold text-gray-900 pt-5 text-xl ">III. SIGNIFICANCE</h3>
-                      <p className="text-base mt-3">{normalized?.significance.content || "N/A"}</p>
-
-                        {/* ========== REVIEWER'S COMMENTS (SIGNIFICANCE) ========== */}
-                        {normalized?.significance.reviews.length > 0 ? (
-                          normalized?.significance.reviews.map((review, index) => (
-                            <ReviewerComment
-                              key={review.review_id || index}
-                              title={`Reviewer’s Comment ${index + 1}`}
-                              comment={review.comment}
-                              reviewerName={review.reviewer_name}
-                            />
-                          ))
-                        ) : (
-                          <ReviewerComment
-                            comment=""
-                            reviewerName=""
-                          />
-                        )}
+                  <p className="text-base font-semibold mb-2 mt-3">General Objectives</p>
+                  <div className={isEditing ? "bg-blue-50 rounded-lg p-4" : "p-5 bg-gray-100"}>
+                    <EditableText
+                      value={normalized?.objectives?.general}
+                      onChange={(val) => updateField('reviews_per_docs.objectives.general_content', val)}
+                      multiline={true}
+                    />
                   </div>
 
-                  {/* OBJECTIVES */}
-                  <div className="">
-                      <h3 className="font-bold text-gray-900 pt-5 text-xl ">IV. OBJECTIVES</h3>
-                      <p className="text-base font-semibold mb-2 mt-3"> General Objectives</p>
-                      <p className="p-5 bg-gray-100">{normalized?.objectives?.general || "N/A"}</p>
+                  {normalized?.objectives.reviewsGeneral?.length > 0 ? (
+                    normalized?.objectives.reviewsGeneral.map((review, index) => (
+                      <ReviewerComment
+                        key={review.review_id || index}
+                        title={`Reviewer's Comment ${index + 1}`}
+                        comment={review.comment}
+                        reviewerName={review.reviewer_name}
+                      />
+                    ))
+                  ) : (
+                    <ReviewerComment comment="" reviewerName="" />
+                  )}
 
-                    {/* ========== REVIEWER'S COMMENTS (GENERAL OBJECTIVES) ========== */}
-                      {normalized?.objectives.reviewsGeneral.length > 0 ? (
-                        normalized?.objectives.reviewsGeneral.map((review, index) => (
-                          <ReviewerComment
-                            key={review.review_id || index}
-                            title={`Reviewer’s Comment ${index + 1}`}
-                            comment={review.comment}
-                            reviewerName={review.reviewer_name}
-                          />
-                        ))
-                      ) : (
-                        <ReviewerComment
-                          comment=""
-                          reviewerName=""
-                        />
-                      )}
-                      <p className="text-base font-semibold mb-2 mt-3">Specific Objectives</p>
-                      <p className="p-5 bg-gray-100">{normalized?.objectives?.specific || "N/A"}</p>
-
-                      {/* ========== REVIEWER'S COMMENTS (SPECIFIC OBJECTIVES) ========== */}
-                      {normalized?.objectives.reviewsGeneral.length > 0 ? (
-                        normalized?.objectives.reviewsGeneral.map((review, index) => (
-                          <ReviewerComment
-                            key={review.review_id || index}
-                            title={`Reviewer’s Comment ${index + 1}`}
-                            comment={review.comment}
-                            reviewerName={review.reviewer_name}
-                          />
-                        ))
-                      ) : (
-                        <ReviewerComment
-                          comment=""
-                          reviewerName=""
-                        />
-                      )}
+                  <p className="text-base font-semibold mb-2 mt-3">Specific Objectives</p>
+                  <div className={isEditing ? "bg-blue-50 rounded-lg p-4" : "p-5 bg-gray-100"}>
+                    <EditableText
+                      value={normalized?.objectives?.specific}
+                      onChange={(val) => updateField('reviews_per_docs.objectives.specific_content', val)}
+                      multiline={true}
+                    />
                   </div>
 
-                  <div className="">
-                      <h3 className="font-bold text-gray-900 pt-10 text-xl ">V. METHODOLOGY</h3>
-                      <p className="text-base mt-3">{normalized?.methodology.content || "N/A"}</p>
+                  {normalized?.objectives.reviewsSpecific?.length > 0 ? (
+                    normalized?.objectives.reviewsSpecific.map((review, index) => (
+                      <ReviewerComment
+                        key={review.review_id || index}
+                        title={`Reviewer's Comment ${index + 1}`}
+                        comment={review.comment}
+                        reviewerName={review.reviewer_name}
+                      />
+                    ))
+                  ) : (
+                    <ReviewerComment comment="" reviewerName="" />
+                  )}
+                </div>
 
-                      {/* ========== REVIEWER'S COMMENTS (METHODOLOGY) ========== */}
-                      {normalized?.methodology.reviews.length > 0 ? (
-                        normalized?.methodology.reviews.map((review, index) => (
-                          <ReviewerComment
-                            key={review.review_id || index}
-                            title={`Reviewer’s Comment ${index + 1}`}
-                            comment={review.comment}
-                            reviewerName={review.reviewer_name}
-                          />
-                        ))
-                      ) : (
-                        <ReviewerComment
-                          comment=""
-                          reviewerName=""
-                        />
-                      )}
+                {/* METHODOLOGY */}
+                <div className="">
+                  <h3 className="font-bold text-gray-900 pt-10 text-xl">V. METHODOLOGY</h3>
+                  <div className={isEditing ? "bg-blue-50 rounded-lg p-4 mt-3" : "mt-3"}>
+                    <EditableText
+                      value={normalized?.methodology.content}
+                      onChange={(val) => updateField('reviews_per_docs.methodology.methodology_content', val)}
+                      multiline={true}
+                      className="text-base"
+                    />
                   </div>
 
+                  {normalized?.methodology.reviews?.length > 0 ? (
+                    normalized?.methodology.reviews.map((review, index) => (
+                      <ReviewerComment
+                        key={review.review_id || index}
+                        title={`Reviewer's Comment ${index + 1}`}
+                        comment={review.comment}
+                        reviewerName={review.reviewer_name}
+                      />
+                    ))
+                  ) : (
+                    <ReviewerComment comment="" reviewerName="" />
+                  )}
+                </div>
 
-                  <div className="">
-                      <h3 className="font-bold text-gray-900 pt-10 text-xl mb-5">VI. EXPECTED OUTPUT/OUTCOME</h3>
+                {/* EXPECTED OUTPUT */}
+                <div className="">
+                  <h3 className="font-bold text-gray-900 pt-10 text-xl mb-5">VI. EXPECTED OUTPUT/OUTCOME</h3>
 
-                      <table className="w-full border border-black text-sm">
-                        <tbody>
-                          <tr className="border-b border-black">
-                            <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900 text-center">
-                              6Ps
-                            </td>
-                            <td className="px-4 py-3 text-center font-bold">
-                              OUTPUT
-                            </td>
-                          </tr>
+                  <table className="w-full border border-black text-sm">
+                    <tbody>
+                      <tr className="border-b border-black">
+                        <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900 text-center">
+                          6Ps
+                        </td>
+                        <td className="px-4 py-3 text-center font-bold">
+                          OUTPUT
+                        </td>
+                      </tr>
 
-                          <tr className="border-b border-black">
-                            <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
-                              Publications
-                            </td>
-                            <td className="px-4 py-3">
-                              {normalized?.expectedOutput?.content?.publications || "N/A"}
-                            </td>
-                          </tr>
-
-                          <tr className="border-b border-black">
-                            <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
-                              Patents/IP
-                            </td>
-                            <td className="px-4 py-3">
-                              {normalized?.expectedOutput?.content?.patents || "N/A"}
-                            </td>
-                          </tr>
-
-                          <tr className="border-b border-black">
-                            <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
-                              Products
-                            </td>
-                            <td className="px-4 py-3">
-                              {normalized?.expectedOutput?.content?.products || "N/A"}
-                            </td>
-                          </tr>
-
-                          <tr className="border-b border-black">
-                            <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                              People Services 
-                            </td>
-                            <td className="px-4 py-3">
-                              {normalized?.expectedOutput?.content?.people_services || "N/A"}
-                            </td>
-                          </tr>
-
-                          <tr className="border-b border-black">
-                            <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                              Places and Partnerships
-                            </td>
-                            <td className="px-4 py-3">
-                              {normalized?.expectedOutput?.content?.places_partnerships || "N/A"}
-                            </td>
-                          </tr>
-
-                          <tr className="border-b border-black">
-                            <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                              Policy
-                            </td>
-                            <td className="px-4 py-3">
-                              {normalized?.expectedOutput?.content?.policy || "N/A"}
-                            </td>
-                          </tr>
-
-                          <tr className="border-b border-black">
-                            <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                              Social Impact
-                            </td>
-                            <td className="px-4 py-3">
-                              {normalized?.expectedOutput?.content?.social_impact || "N/A"}
-                            </td>
-                          </tr>
-
-                          <tr className="border-b border-black">
-                            <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                              Economic Impact
-                            </td>
-                            <td className="px-4 py-3">
-                              {normalized?.expectedOutput?.content?.economic_impact || "N/A"}
-                            </td>
-                          </tr>
-
-                        </tbody>
-                      </table>
-
-                      {/* ========== REVIEWER'S COMMENTS (EXPECTED OUTPUT) ========== */}
-                      {normalized?.expectedOutput.reviews.length > 0 ? (
-                        normalized?.expectedOutput.reviews.map((review, index) => (
-                          <ReviewerComment
-                            key={review.review_id || index}
-                            title={`Reviewer’s Comment ${index + 1}`}
-                            comment={review.comment}
-                            reviewerName={review.reviewer_name}
+                      <tr className="border-b border-black">
+                        <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
+                          Publications
+                        </td>
+                        <td className="px-4 py-3">
+                          <EditableText
+                            value={normalized?.expectedOutput?.content?.publications}
+                            onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.publications', val)}
                           />
-                        ))
-                      ) : (
-                        <ReviewerComment
-                          comment=""
-                          reviewerName=""
-                        />
-                      )}
+                        </td>
+                      </tr>
 
+                      <tr className="border-b border-black">
+                        <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
+                          Patents/IP
+                        </td>
+                        <td className="px-4 py-3">
+                          <EditableText
+                            value={normalized?.expectedOutput?.content?.patents}
+                            onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.patents', val)}
+                          />
+                        </td>
+                      </tr>
+
+                      <tr className="border-b border-black">
+                        <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
+                          Products
+                        </td>
+                        <td className="px-4 py-3">
+                          <EditableText
+                            value={normalized?.expectedOutput?.content?.products}
+                            onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.products', val)}
+                          />
+                        </td>
+                      </tr>
+
+                      <tr className="border-b border-black">
+                        <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                          People Services 
+                        </td>
+                        <td className="px-4 py-3">
+                          <EditableText
+                            value={normalized?.expectedOutput?.content?.people_services}
+                            onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.people_services', val)}
+                          />
+                        </td>
+                      </tr>
+
+                      <tr className="border-b border-black">
+                        <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                          Places and Partnerships
+                        </td>
+                        <td className="px-4 py-3">
+                          <EditableText
+                            value={normalized?.expectedOutput?.content?.places_partnerships}
+                            onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.places_partnerships', val)}
+                          />
+                        </td>
+                      </tr>
+
+                      <tr className="border-b border-black">
+                        <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                          Policy
+                        </td>
+                        <td className="px-4 py-3">
+                          <EditableText
+                            value={normalized?.expectedOutput?.content?.policy}
+                            onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.policy', val)}
+                          />
+                        </td>
+                      </tr>
+
+                      <tr className="border-b border-black">
+                        <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                          Social Impact
+                        </td>
+                        <td className="px-4 py-3">
+                          <EditableText
+                            value={normalized?.expectedOutput?.content?.social_impact}
+                            onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.social_impact', val)}
+                          />
+                        </td>
+                      </tr>
+
+                      <tr className="border-b border-black">
+                        <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                          Economic Impact
+                        </td>
+                        <td className="px-4 py-3">
+                          <EditableText
+                            value={normalized?.expectedOutput?.content?.economic_impact}
+                            onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.economic_impact', val)}
+                          />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {normalized?.expectedOutput.reviews?.length > 0 ? (
+                    normalized?.expectedOutput.reviews.map((review, index) => (
+                      <ReviewerComment
+                        key={review.review_id || index}
+                        title={`Reviewer's Comment ${index + 1}`}
+                        comment={review.comment}
+                        reviewerName={review.reviewer_name}
+                      />
+                    ))
+                  ) : (
+                    <ReviewerComment comment="" reviewerName="" />
+                  )}
+                </div>
+
+                {/* SUSTAINABILITY PLAN */}
+                <div className="">
+                  <h3 className="font-bold text-gray-900 pt-10 text-xl">VII. SUSTAINABILITY PLAN</h3>
+                  <div className={isEditing ? "bg-blue-50 rounded-lg p-4 mt-3" : "mt-3"}>
+                    <EditableText
+                      value={normalized?.sustainability.content}
+                      onChange={(val) => updateField('reviews_per_docs.sustainability_plan.sustainability_plan_content', val)}
+                      multiline={true}
+                      className="text-base"
+                    />
                   </div>
 
-                  <div className="">
-                      <h3 className="font-bold text-gray-900 pt-10 text-xl ">VII. SUSTAINABILITY PLAN</h3>
-                      <p className="text-base mt-3">{normalized?.sustainability.content || "N/A"}</p>
+                  {normalized?.sustainability.reviews?.length > 0 ? (
+                    normalized?.sustainability.reviews.map((review, index) => (
+                      <ReviewerComment
+                        key={review.review_id || index}
+                        title={`Reviewer's Comment ${index + 1}`}
+                        comment={review.comment}
+                        reviewerName={review.reviewer_name}
+                      />
+                    ))
+                  ) : (
+                    <ReviewerComment comment="" reviewerName="" />
+                  )}
+                </div>
 
-                      {/* ========== REVIEWER'S COMMENTS (SUSTAINABILITY PLAN) ========== */}
-                      {normalized?.sustainability.reviews.length > 0 ? (
-                        normalized?.sustainability.reviews.map((review, index) => (
-                          <ReviewerComment
-                            key={review.review_id || index}
-                            title={`Reviewer’s Comment ${index + 1}`}
-                            comment={review.comment}
-                            reviewerName={review.reviewer_name}
-                          />
-                        ))
-                      ) : (
-                        <ReviewerComment
-                          comment=""
-                          reviewerName=""
-                        />
-                      )}
-                  </div>
+                {/* ORGANIZATION AND STAFFING */}
+                <div className="">
+                  <h3 className="font-bold text-gray-900 pt-10 text-xl mb-5">
+                    VIII. ORGANIZATION AND STAFFING{" "}
+                    <span className="text-base italic font-semibold">(Persons involved and responsibility)</span>
+                  </h3>
 
-                  <div className="">
-                      <h3 className="font-bold text-gray-900 pt-10 text-xl mb-5">VIII. ORGANIZATION AND STAFFING <span className="text-base italic font-semibold">(Persons involved and responsibility) </span></h3>
+                  <table className="w-full border border-black text-sm">
+                    <tbody>
+                      <tr className="border-b border-black">
+                        <td className="w-1/3 border-r border-black px-4 py-3 text-center font-bold">
+                          Activity/s
+                        </td>
+                        <td className="w-1/3 border-r border-black px-4 py-3 text-center font-bold">
+                          Designation / Name
+                        </td>
+                        <td className="w-1/3 px-4 py-3 text-center font-bold">
+                          Terms of Reference
+                        </td>
+                      </tr>
 
-                      <table className="w-full border border-black text-sm">
-                        <tbody>
-                          {/* TABLE HEADER */}
-                          <tr className="border-b border-black">
-                            <td className="w-1/3 border-r border-black px-4 py-3 text-center font-bold">
-                              Activity/s
+                      {normalized?.organization?.content?.length > 0 ? (
+                        normalized?.organization?.content.map((item, index) => (
+                          <tr key={index} className="border-b border-black">
+                            <td className="border-r border-black px-4 py-3 text-gray-900">
+                              {item.activity || "N/A"}
                             </td>
-                            <td className="w-1/3 border-r border-black px-4 py-3 text-center font-bold">
-                              Designation / Name
+                            <td className="border-r border-black px-4 py-3 whitespace-pre-line">
+                              {isEditing ? (
+                                <textarea
+                                  value={item.designation || ""}
+                                  onChange={(e) => {
+                                    const newContent = [...normalized.organization.content];
+                                    newContent[index].designation = e.target.value;
+                                    updateField('reviews_per_docs.organization_and_staffing.organization_and_staffing_content', newContent);
+                                  }}
+                                  className="w-full border-2 border-blue-500 rounded-lg px-2 py-1"
+                                  rows={3}
+                                />
+                              ) : (
+                                item.designation || "N/A"
+                              )}
                             </td>
-                            <td className="w-1/3 px-4 py-3 text-center font-bold">
-                              Terms of Reference
-                            </td>
-                          </tr>
-
-                          {/* TABLE BODY */}
-                          {normalized?.organization?.content.length > 0 ? (
-                            normalized?.organization?.content.map((item, index) => (
-                              <tr key={index} className="border-b border-black">
-                                <td className="border-r border-black px-4 py-3 text-gray-900">
-                                  {item.activity || "N/A"}
-                                </td>
-
-                                <td className="border-r border-black px-4 py-3 whitespace-pre-line">
-                                  {item.designation || "N/A"}
-                                </td>
-
-                                <td className="px-4 py-3 text-gray-900 whitespace-pre-line">
-                                  {item.terms || "N/A"}
-                                </td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan={3} className="text-center px-4 py-3 text-gray-500">
-                                No data available
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-
-                      {/* ========== REVIEWER'S COMMENTS (ORGANIZATION AND STAFFING) ========== */}
-                      {normalized?.organization.reviews.length > 0 ? (
-                        normalized?.organization.reviews.map((review, index) => (
-                          <ReviewerComment
-                            key={review.review_id || index}
-                            title={`Reviewer’s Comment ${index + 1}`}
-                            comment={review.comment}
-                            reviewerName={review.reviewer_name}
-                          />
-                        ))
-                      ) : (
-                        <ReviewerComment
-                          comment=""
-                          reviewerName=""
-                        />
-                      )}
-
-                  </div>
-
-                  <div className="">
-                      <h3 className="font-bold text-gray-900 pt-10 text-xl ">IX. PLAN OF ACTIVITIES</h3>
-                      <p className="text-xl font-bold mt-3 text-center">{normalized?.planOfActivities?.content.activity_title || "N/A"}</p>
-                      <p className="text-lg mt-3 text-center">
-                        {normalized?.planOfActivities?.content.activity_date
-                          ? new Date(normalized?.planOfActivities?.content.activity_date).toLocaleDateString(
-                              "en-US",
-                              { year: "numeric", month: "long", day: "numeric" }
-                            )
-                          : "N/A"}
-                      </p>
-
-                      <p className="text-lg mt-2 mb-5 text-center font-semibold">PROGRAMME</p>
-
-                      <table className="w-full border border-black text-sm">
-                        <tbody>
-                          {/* TABLE HEADER */}
-                          <tr className="border-b border-black">
-                            <td className="w-1/5 border-r border-black px-4 py-3 text-center font-bold">
-                              Time
-                            </td>
-                            <td className="w-1/3 border-r border-black px-4 py-3 text-center font-bold">
-                              Part of the program
+                            <td className="px-4 py-3 text-gray-900 whitespace-pre-line">
+                              {isEditing ? (
+                                <textarea
+                                  value={item.terms || ""}
+                                  onChange={(e) => {
+                                    const newContent = [...normalized.organization.content];
+                                    newContent[index].terms = e.target.value;
+                                    updateField('reviews_per_docs.organization_and_staffing.organization_and_staffing_content', newContent);
+                                  }}
+                                  className="w-full border-2 border-blue-500 rounded-lg px-2 py-1"
+                                  rows={3}
+                                />
+                              ) : (
+                                item.terms || "N/A"
+                              )}
                             </td>
                           </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={3} className="text-center px-4 py-3 text-gray-500">
+                            No data available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
 
-                          {/* TABLE BODY */}
-                          {normalized?.planOfActivities?.content.schedule.length > 0 ? (
-                            normalized?.planOfActivities?.content.schedule.map((item, index) => (
-                              <tr key={index} className="border-b border-black">
-                                <td className="border-r border-black px-4 py-3 text-gray-900">
-                                  {item.time || "N/A"}
-                                </td>
+                  {normalized?.organization.reviews?.length > 0 ? (
+                    normalized?.organization.reviews.map((review, index) => (
+                      <ReviewerComment
+                        key={review.review_id || index}
+                        title={`Reviewer's Comment ${index + 1}`}
+                        comment={review.comment}
+                        reviewerName={review.reviewer_name}
+                      />
+                    ))
+                  ) : (
+                    <ReviewerComment comment="" reviewerName="" />
+                  )}
+                </div>
 
-                                <td className="border-r border-black px-4 py-3 whitespace-pre-line">
+                {/* PLAN OF ACTIVITIES */}
+                <div className="">
+                  <h3 className="font-bold text-gray-900 pt-10 text-xl">IX. PLAN OF ACTIVITIES</h3>
+                  
+                  <div className={isEditing ? "bg-blue-50 rounded-lg p-4 mt-3" : "mt-3"}>
+                    <EditableText
+                      value={normalized?.planOfActivities?.content?.activity_title}
+                      onChange={(val) => updateField('reviews_per_docs.plan_of_activities.plan_of_activities_content.activity_title', val)}
+                      className="text-xl font-bold text-center"
+                    />
+                  </div>
+
+                  <p className="text-lg mt-3 text-center">
+                    {isEditing ? (
+                      <EditableDate
+                        value={normalized?.planOfActivities?.content?.activity_date}
+                        onChange={(val) => updateField('reviews_per_docs.plan_of_activities.plan_of_activities_content.activity_date', val)}
+                      />
+                    ) : (
+                      normalized?.planOfActivities?.content?.activity_date
+                        ? new Date(normalized?.planOfActivities?.content.activity_date).toLocaleDateString(
+                            "en-US",
+                            { year: "numeric", month: "long", day: "numeric" }
+                          )
+                        : "N/A"
+                    )}
+                  </p>
+
+                  <p className="text-lg mt-2 mb-5 text-center font-semibold">PROGRAMME</p>
+
+                  <table className="w-full border border-black text-sm">
+                    <tbody>
+                      <tr className="border-b border-black">
+                        <td className="w-1/5 border-r border-black px-4 py-3 text-center font-bold">
+                          Time
+                        </td>
+                        <td className="w-1/3 border-r border-black px-4 py-3 text-center font-bold">
+                          Part of the program
+                        </td>
+                      </tr>
+
+                      {normalized?.planOfActivities?.content?.schedule?.length > 0 ? (
+                        normalized?.planOfActivities?.content.schedule.map((item, index) => (
+                          <tr key={index} className="border-b border-black">
+                            <td className="border-r border-black px-4 py-3 text-gray-900">
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={item.time || ""}
+                                  onChange={(e) => {
+                                    const newSchedule = [...normalized.planOfActivities.content.schedule];
+                                    newSchedule[index].time = e.target.value;
+                                    updateField('reviews_per_docs.plan_of_activities.plan_of_activities_content.schedule', newSchedule);
+                                  }}
+                                  className="w-full border-2 border-blue-500 rounded-lg px-2 py-1"
+                                />
+                              ) : (
+                                item.time || "N/A"
+                              )}
+                            </td>
+                            <td className="border-r border-black px-4 py-3 whitespace-pre-line">
+                              {isEditing ? (
+                                <div className="space-y-2">
+                                  <input
+                                    type="text"
+                                    value={item.activity || ""}
+                                    onChange={(e) => {
+                                      const newSchedule = [...normalized.planOfActivities.content.schedule];
+                                      newSchedule[index].activity = e.target.value;
+                                      updateField('reviews_per_docs.plan_of_activities.plan_of_activities_content.schedule', newSchedule);
+                                    }}
+                                    placeholder="Activity"
+                                    className="w-full border-2 border-blue-500 rounded-lg px-2 py-1"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={item.speaker || ""}
+                                    onChange={(e) => {
+                                      const newSchedule = [...normalized.planOfActivities.content.schedule];
+                                      newSchedule[index].speaker = e.target.value;
+                                      updateField('reviews_per_docs.plan_of_activities.plan_of_activities_content.schedule', newSchedule);
+                                    }}
+                                    placeholder="Speaker"
+                                    className="w-full border-2 border-blue-500 rounded-lg px-2 py-1"
+                                  />
+                                </div>
+                              ) : (
+                                <>
                                   <p>{item.activity || "Not Assigned"}</p>
                                   <p>{item.speaker || "Not Assigned"}</p>
-                                </td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan={3} className="text-center px-4 py-3 text-gray-500">
-                                No data available
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-
-                      {/* ========== REVIEWER'S COMMENTS (PLAN OF ACTIVITIES) ========== */}
-                      {normalized?.planOfActivities.reviews.length > 0 ? (
-                        normalized?.planOfActivities.reviews.map((review, index) => (
-                          <ReviewerComment
-                            key={review.review_id || index}
-                            title={`Reviewer’s Comment ${index + 1}`}
-                            comment={review.comment}
-                            reviewerName={review.reviewer_name}
-                          />
+                                </>
+                              )}
+                            </td>
+                          </tr>
                         ))
                       ) : (
-                        <ReviewerComment
-                          comment=""
-                          reviewerName=""
-                        />
+                        <tr>
+                          <td colSpan={2} className="text-center px-4 py-3 text-gray-500">
+                            No data available
+                          </td>
+                        </tr>
                       )}
+                    </tbody>
+                  </table>
 
-                  </div>
+                  {normalized?.planOfActivities.reviews?.length > 0 ? (
+                    normalized?.planOfActivities.reviews.map((review, index) => (
+                      <ReviewerComment
+                        key={review.review_id || index}
+                        title={`Reviewer's Comment ${index + 1}`}
+                        comment={review.comment}
+                        reviewerName={review.reviewer_name}
+                      />
+                    ))
+                  ) : (
+                    <ReviewerComment comment="" reviewerName="" />
+                  )}
+                </div>
+
+                {/* BUDGETARY REQUIREMENT */}
+                <div className="">
+                  <h3 className="font-bold text-gray-900 pt-10 text-xl">XI. BUDGETARY REQUIREMENT</h3>
+                  <table className="w-full border border-black text-sm mt-6">
+                    <tbody>
+                      <tr className="border-b border-black bg-gray-100">
+                        <td className="border-r border-black px-4 py-3 font-bold text-center">
+                          CATEGORY
+                        </td>
+                        <td className="border-r border-black px-4 py-3 font-bold text-center">
+                          ITEM
+                        </td>
+                        <td className="border-r border-black px-4 py-3 font-bold text-center">
+                          Cost (PHP)
+                        </td>
+                        <td className="border-r border-black px-4 py-3 font-bold text-center">
+                          PAX/QTY.
+                        </td>
+                        <td className="px-4 py-3 font-bold text-center">
+                          AMOUNT
+                        </td>
+                      </tr>
+
+                      {/* MEALS */}
+                      {normalized?.budget?.content?.meals?.map((row, index) => (
+                        <tr key={`meals-${index}`} className="border-b border-black">
+                          <td className="border-r border-black px-4 py-3">Meals</td>
+                          <td className="border-r border-black px-4 py-3">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={row.item || ""}
+                                onChange={(e) => {
+                                  const newMeals = [...normalized.budget.content.meals];
+                                  newMeals[index].item = e.target.value;
+                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.meals', newMeals);
+                                }}
+                                className="w-full border-2 border-blue-500 rounded px-2 py-1"
+                              />
+                            ) : (
+                              row.item
+                            )}
+                          </td>
+                          <td className="border-r border-black px-4 py-3 text-right">
+                            {isEditing ? (
+                              <input
+                                type="number"
+                                value={row.cost || ""}
+                                onChange={(e) => {
+                                  const newMeals = [...normalized.budget.content.meals];
+                                  newMeals[index].cost = e.target.value;
+                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.meals', newMeals);
+                                }}
+                                className="w-full border-2 border-blue-500 rounded px-2 py-1"
+                              />
+                            ) : (
+                              `₱ ${row.cost}`
+                            )}
+                          </td>
+                          <td className="border-r border-black px-4 py-3 text-right">
+                            {isEditing ? (
+                              <input
+                                type="number"
+                                value={row.qty || ""}
+                                onChange={(e) => {
+                                  const newMeals = [...normalized.budget.content.meals];
+                                  newMeals[index].qty = e.target.value;
+                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.meals', newMeals);
+                                }}
+                                className="w-full border-2 border-blue-500 rounded px-2 py-1"
+                              />
+                            ) : (
+                              row.qty
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">₱ {row.amount}</td>
+                        </tr>
+                      ))}
+
+                      {/* TRANSPORT */}
+                      {normalized?.budget?.content?.transport?.map((row, index) => (
+                        <tr key={`transport-${index}`} className="border-b border-black">
+                          <td className="border-r border-black px-4 py-3">Transport</td>
+                          <td className="border-r border-black px-4 py-3">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={row.item || ""}
+                                onChange={(e) => {
+                                  const newTransport = [...normalized.budget.content.transport];
+                                  newTransport[index].item = e.target.value;
+                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.transport', newTransport);
+                                }}
+                                className="w-full border-2 border-blue-500 rounded px-2 py-1"
+                              />
+                            ) : (
+                              row.item
+                            )}
+                          </td>
+                          <td className="border-r border-black px-4 py-3 text-right">
+                            {isEditing ? (
+                              <input
+                                type="number"
+                                value={row.cost || ""}
+                                onChange={(e) => {
+                                  const newTransport = [...normalized.budget.content.transport];
+                                  newTransport[index].cost = e.target.value;
+                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.transport', newTransport);
+                                }}
+                                className="w-full border-2 border-blue-500 rounded px-2 py-1"
+                              />
+                            ) : (
+                              `₱ ${row.cost}`
+                            )}
+                          </td>
+                          <td className="border-r border-black px-4 py-3 text-right">
+                            {isEditing ? (
+                              <input
+                                type="number"
+                                value={row.qty || ""}
+                                onChange={(e) => {
+                                  const newTransport = [...normalized.budget.content.transport];
+                                  newTransport[index].qty = e.target.value;
+                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.transport', newTransport);
+                                }}
+                                className="w-full border-2 border-blue-500 rounded px-2 py-1"
+                              />
+                            ) : (
+                              row.qty
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">₱ {row.amount}</td>
+                        </tr>
+                      ))}
+
+                      {/* SUPPLIES */}
+                      {normalized?.budget?.content?.supplies?.map((row, index) => (
+                        <tr key={`supplies-${index}`} className="border-b border-black">
+                          <td className="border-r border-black px-4 py-3">Supplies</td>
+                          <td className="border-r border-black px-4 py-3">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={row.item || ""}
+                                onChange={(e) => {
+                                  const newSupplies = [...normalized.budget.content.supplies];
+                                  newSupplies[index].item = e.target.value;
+                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.supplies', newSupplies);
+                                }}
+                                className="w-full border-2 border-blue-500 rounded px-2 py-1"
+                              />
+                            ) : (
+                              row.item
+                            )}
+                          </td>
+                          <td className="border-r border-black px-4 py-3 text-right">
+                            {isEditing ? (
+                              <input
+                                type="number"
+                                value={row.cost || ""}
+                                onChange={(e) => {
+                                  const newSupplies = [...normalized.budget.content.supplies];
+                                  newSupplies[index].cost = e.target.value;
+                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.supplies', newSupplies);
+                                }}
+                                className="w-full border-2 border-blue-500 rounded px-2 py-1"
+                              />
+                            ) : (
+                              `₱ ${row.cost}`
+                            )}
+                          </td>
+                          <td className="border-r border-black px-4 py-3 text-right">
+                            {isEditing ? (
+                              <input
+                                type="number"
+                                value={row.qty || ""}
+                                onChange={(e) => {
+                                  const newSupplies = [...normalized.budget.content.supplies];
+                                  newSupplies[index].qty = e.target.value;
+                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.supplies', newSupplies);
+                                }}
+                                className="w-full border-2 border-blue-500 rounded px-2 py-1"
+                              />
+                            ) : (
+                              row.qty
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">₱ {row.amount}</td>
+                        </tr>
+                      ))}
+
+                      {/* TOTALS */}
+                      <tr className="font-bold bg-gray-100">
+                        <td colSpan={4} className="border-r border-black px-4 py-3 text-right">
+                          Grand Total
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <p>₱ {proposalData?.full_content?.content_pages?.budgetary_requirement?.totals?.grand_total || 0}</p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {normalized?.budget.reviews?.length > 0 ? (
+                    normalized?.budget.reviews.map((review, index) => (
+                      <ReviewerComment
+                        key={review.review_id || index}
+                        title={`Reviewer's Comment ${index + 1}`}
+                        comment={review.comment}
+                        reviewerName={review.reviewer_name}
+                      />
+                    ))
+                  ) : (
+                    <ReviewerComment comment="" reviewerName="" />
+                  )}
+                </div>
+
+                {/* Footer Signatures */}
+                <div className="py-4">
+                  <p className="italic my-3">Prepared by:</p>
+                  <p className="py-1 mb-2">Proponent</p>
+                  <p className="italic">Noted by:</p>
 
                   <div className="">
-                      <h3 className="font-bold text-gray-900 pt-10 text-xl ">XI. BUDGETARY REQUIREMENT </h3>
-                        <table className="w-full border border-black text-sm mt-6">
-                          <tbody>
-
-                            {/* TABLE HEADER */}
-                            <tr className="border-b border-black bg-gray-100">
-                              <td className="border-r border-black px-4 py-3 font-bold text-center">
-                                CATEGORY
-                              </td>
-                              <td className="border-r border-black px-4 py-3 font-bold text-center">
-                                ITEM
-                              </td>
-                              <td className="border-r border-black px-4 py-3 font-bold text-center">
-                                <p>Cost (PHP)</p>
-                              </td>
-                              <td className="border-r border-black px-4 py-3 font-bold text-center">
-                                PAX/QTY.
-                              </td>
-                              <td className="px-4 py-3 font-bold text-center">
-                                AMOUNT
-                              </td>
-                            </tr>
-
-                            {/* MEALS */}
-                            {normalized?.budget?.content.meals.map((row, index) => (
-                              <tr key={`meals-${index}`} className="border-b border-black">
-                                <td className="border-r border-black px-4 py-3">Meals</td>
-                                <td className="border-r border-black px-4 py-3">{row.item}</td>
-                                <td className="border-r border-black px-4 py-3 text-right">₱ {row.cost}</td>
-                                <td className="border-r border-black px-4 py-3 text-right">{row.qty}</td>
-                                <td className="px-4 py-3 text-right">₱ {row.amount}</td>
-                              </tr>
-                            ))} 
-
-                            {/* TRANSPORT */}
-                            {normalized?.budget?.content.transport?.map((row, index) => (
-                              <tr key={`transport-${index}`} className="border-b border-black">
-                                <td className="border-r border-black px-4 py-3">Transport</td>
-                                <td className="border-r border-black px-4 py-3">{row.item}</td>
-                                <td className="border-r border-black px-4 py-3 text-right">₱ {row.cost}</td>
-                                <td className="border-r border-black px-4 py-3 text-right">{row.qty}</td>
-                                <td className="px-4 py-3 text-right">₱ {row.amount}</td>
-                              </tr>
-                            ))}
-
-                            {/* SUPPLIES */}
-                            {normalized?.budget?.content.supplies?.map((row, index) => (
-                              <tr key={`supplies-${index}`} className="border-b border-black">
-                                <td className="border-r border-black px-4 py-3">Supplies</td>
-                                <td className="border-r border-black px-4 py-3">{row.item}</td>
-                                <td className="border-r border-black px-4 py-3 text-right">₱ {row.cost}</td>
-                                <td className="border-r border-black px-4 py-3 text-right">{row.qty}</td>
-                                <td className="px-4 py-3 text-right">₱ {row.amount}</td>
-                              </tr>
-                            ))}
-
-                            {/* TOTALS */}
-                            <tr className="font-bold bg-gray-100">
-                              <td colSpan={4} className="border-r border-black px-4 py-3 text-right">
-                                Grand Total
-                              </td>
-                              <td className="px-4 py-3 text-right">
-                                <p>₱ {content?.budgetary_requirement?.totals?.grand_total || 0}</p>
-                              </td>
-                            </tr>
-
-                          </tbody>
-                        </table>
-                      {/* ========== REVIEWER'S COMMENTS (BUDGET) ========== */}
-                      {normalized?.budget.reviews.length > 0 ? (
-                        normalized?.budget.reviews.map((review, index) => (
-                          <ReviewerComment
-                            key={review.review_id || index}
-                            title={`Reviewer’s Comment ${index + 1}`}
-                            comment={review.comment}
-                            reviewerName={review.reviewer_name}
-                          />
-                        ))
-                      ) : (
-                        <ReviewerComment
-                          comment=""
-                          reviewerName=""
-                        />
-                      )}
-                  </div>
-
-                  <div className="py-4">
-                  <p className="italic my-3">Prepared by:</p>
-                    <p className="py-1 mb-2">Proponent</p>
-                    <p className="italic">Noted by:</p>
-
-                    <div className="">
-                      <div className="grid grid-cols-2">
-                        <div className="">
-                          <p className="pt-4">Campus Extension Coordinator	</p>
-                          <p className="pt-4 italic">Endorsed by:</p>
-                          <p className="pt-4"></p>
-                          <p className="pt-1">Campus Director</p>
-                          <p className="pt-4 italic">Recommending Approval:</p>
-                          <p className="pt-7 font-bold text-[16px]">MARLON JAMES A. DEDICATORIA, Ph.D.</p>
-                          <p className="pt-1">Vice-President, Research and Development</p>
-                        </div>
-
-                        <div className="">
-                          <p className="pt-4">College Dean	</p>
-                          <p className="pt-4"></p>
-                          <p className="pt-4 font-bold text-[16px]">KATHERINE M.UY, MAEd</p>
-                          <p className="pt-1"> Director, Extension Services</p>
-                          <p className="pt-4 italic">Certified Funds Available</p>
-                          <p className="pt-7 font-bold text-[16px]">ROBERTO C. BRIONES JR., CPA</p>
-                          <p className="pt-1">University Accountant IV</p>
-                        </div>
+                    <div className="grid grid-cols-2">
+                      <div className="">
+                        <p className="pt-4">Campus Extension Coordinator</p>
+                        <p className="pt-4 italic">Endorsed by:</p>
+                        <p className="pt-4"></p>
+                        <p className="pt-1">Campus Director</p>
+                        <p className="pt-4 italic">Recommending Approval:</p>
+                        <p className="pt-7 font-bold text-[16px]">MARLON JAMES A. DEDICATORIA, Ph.D.</p>
+                        <p className="pt-1">Vice-President, Research and Development</p>
                       </div>
-                      <p className="pt-10 italic text-center">Approved by:</p>
-                      <p className="pt-5 font-bold text-[16px] text-center">ROY N. VILLALOBOS, DPA</p>
-                      <p className="pt-1 text-center">University President</p>
-                    </div>  
-                  </div>
 
-
+                      <div className="">
+                        <p className="pt-4">College Dean</p>
+                        <p className="pt-4"></p>
+                        <p className="pt-4 font-bold text-[16px]">KATHERINE M.UY, MAEd</p>
+                        <p className="pt-1"> Director, Extension Services</p>
+                        <p className="pt-4 italic">Certified Funds Available</p>
+                        <p className="pt-7 font-bold text-[16px]">ROBERTO C. BRIONES JR., CPA</p>
+                        <p className="pt-1">University Accountant IV</p>
+                      </div>
+                    </div>
+                    <p className="pt-10 italic text-center">Approved by:</p>
+                    <p className="pt-5 font-bold text-[16px] text-center">ROY N. VILLALOBOS, DPA</p>
+                    <p className="pt-1 text-center">University President</p>
+                  </div>  
+                </div>
               </div>
             </section>
           </div>
         </div>
 
-        {/*History */}                   
+        {/* History Panel */}                   
         <div className="bg-white h-[95vh] w-1/5 max-w-2xl shadow-sm border border-gray-200 flex flex-col rounded-tr-xl rounded-br-xl">
-  
-        {/* Header */}
-        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+          <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-800">History</h2>
               <p className="text-xs text-gray-400 mt-1">Recent changes of proposal</p>
@@ -948,74 +1425,66 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
             >
               <X className="w-5 h-5" />
             </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
+              <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-sm font-semibold">
+                JD
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-700 font-medium">
+                  Proposal submitted
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Extension Program • 2 hours ago
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
+              <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-semibold">
+                MK
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-700 font-medium">
+                  Review approved
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Community Outreach • Yesterday
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
+              <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-sm font-semibold">
+                AR
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-700 font-medium">
+                  Document updated
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  GAD Report • 3 days ago
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
+              <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-sm font-semibold">
+                LS
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-700 font-medium">
+                  Comment added
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Proposal Review • 1 week ago
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-
-        {/* History List */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-          
-          {/* Row */}
-          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
-            <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-sm font-semibold">
-              JD
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-gray-700 font-medium">
-                Proposal submitted
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Extension Program • 2 hours ago
-              </p>
-            </div>
-          </div>
-
-          {/* Row */}
-          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
-            <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-semibold">
-              MK
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-gray-700 font-medium">
-                Review approved
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Community Outreach • Yesterday
-              </p>
-            </div>
-          </div>
-
-          {/* Row */}
-          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
-            <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-sm font-semibold">
-              AR
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-gray-700 font-medium">
-                Document updated
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                GAD Report • 3 days ago
-              </p>
-            </div>
-          </div>
-
-          {/* Row */}
-          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
-            <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-sm font-semibold">
-              LS
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-gray-700 font-medium">
-                Comment added
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Proposal Review • 1 week ago
-              </p>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
       </div>
     </>
   );
