@@ -103,6 +103,12 @@ def get_review_per_docs_mapper(proposal_cover, proposal_content, proposal_review
         #     "comment": r["participants_feedback"],
         # })
     
+    if not proposal_cover.get('cover_id'):
+        proposal_cover['cover_id'] = proposal_cover.get('cover_history_id')
+
+    if not proposal_content.get('content_id'):
+        proposal_content['content_id'] = proposal_content.get('content_history_id')
+
     data = {
         "cover_id": proposal_cover['cover_id'],
         "content_id": proposal_content['content_id'],

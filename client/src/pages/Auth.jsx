@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { prmsuLogo } from "../assets";
 import { CustomButton, FormInput } from "../components";
 import { useNavigate } from "react-router-dom";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 
 
 const Auth = () => {
@@ -12,8 +13,6 @@ const Auth = () => {
   const [loginError, setLoginError] = useState("");
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
-
-
 
   const [loginData, setLoginData] = useState({
     identifier: "",
@@ -69,9 +68,6 @@ const handleLogin = async () => {
   }
 };
 
-
-
-
 const handleRegister = async () => {
   if (registerLoading) return;
 
@@ -119,303 +115,253 @@ const handleRegister = async () => {
   }
 };
 
-
-
   return (
-    <div className="flex min-h-screen">
-      {/* LEFT SIDE - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+    <div className="flex min-h-screen bg-slate-50 antialiased overflow-hidden">
+      
+      {/* LEFT SIDE - The Form */}
+      <div className="w-full lg:w-[45%] flex items-center justify-center p-6 lg:p-10 bg-white z-20 shadow-2xl min-h-screen">
         <div className="w-full max-w-md">
-          {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <img src={prmsuLogo} alt="PRMSU Logo" className="w-20 h-20" />
-          </div>
+          {/* Logo Section - Compacted margins */}
+         <Motion.div 
+            initial={{ opacity: 0, y: -20 }} 
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center space-x-4 mb-8 pb-6 border-b border-slate-100"
+          >
+            {/* Modern Logo Container */}
+            <div className="relative">
+              <div className="p-2.5 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl shadow-inner border border-emerald-100/50">
+                <img src={prmsuLogo} alt="PRMSU Logo" className="w-10 h-10 object-contain filter drop-shadow-sm" />
+              </div>
+              {/* Subtle status indicator for a "Portal" feel */}
+              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-white rounded-full flex items-center justify-center shadow-sm">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              </div>
+            </div>
 
-          {/* Title */}
-          <h1 className="text-4xl font-bold text-gray-900 mb-2 text-center">
-            {mode === "login" ? "Sign In" : "Sign Up"}
-          </h1>
-          <p className="text-gray-500 text-center mb-2 text-base">Extension Office</p>
-          <p className="text-gray-400 text-sm text-center mb-8">
-            {mode === "login" 
-              ? "Welcome back! Please enter your credentials" 
-              : "Create your account to get started"}
-          </p>
+            {/* Text Content - Flex column keeps them together */}
+            <div className="flex flex-col justify-center">
+              <div className="flex items-center space-x-2">
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-none">
+                  {mode === "login" ? "Welcome Back" : "Create Account"}
+                </h1>
+                <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                  v2.0
+                </span>
+              </div>
+              <p className="text-slate-400 font-semibold mt-1.5 tracking-[0.05em] uppercase text-[9px] flex items-center">
+                <span className="w-4 h-[1px] bg-emerald-200 mr-2"></span>
+                Extension Office Portal
+              </p>
+            </div>
+          </Motion.div>
 
-          {/* LOGIN FORM */}
-          {mode === "login" && (
-            <>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Email Address
-                  </label>
+          {/* Form Container */}
+          <Motion.div layout className="space-y-4">
+            <AnimatePresence mode="wait">
+              {mode === "login" ? (
+                <Motion.div
+                  key="login"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Email Address</label>
                     <FormInput
                       ref={emailRef}
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder="name@university.edu"
                       value={loginData.identifier}
-                      onChange={(e) => {
-                        setLoginData({ ...loginData, identifier: e.target.value });
-                        setLoginError("");
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          passwordRef.current?.focus();
-                        }
-                      }}
+                      onChange={(e) => setLoginData({ ...loginData, identifier: e.target.value })}
                     />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Password
-                  </label>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Password</label>
                     <FormInput
                       ref={passwordRef}
                       type="password"
                       placeholder="••••••••"
                       value={loginData.password}
-                      onChange={(e) => {
-                        setLoginData({ ...loginData, password: e.target.value });
-                        setLoginError("");
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleLogin();
-                        }
-                      }}
+                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                     />
-
-                </div>
-
-                {loginError && (
-                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-                    {loginError}
                   </div>
-                )}
-
-                <CustomButton
-                  title="Sign In"
-                  handlePress={handleLogin}
-                  containerStyles="mt-6"
-                  isLoading={loginLoading}
-                  loadingText="Signing in..."
-                />
-              </div>
-
-              <p className="text-sm text-center mt-6 text-gray-600">
-                Don't have an account?{" "}
-                <span
-                  className="text-emerald-600 cursor-pointer font-semibold hover:text-emerald-700 transition-colors"
-                  onClick={() => {
-                    setMode("register");
-                    setLoginError("");
-                  }}
+                </Motion.div>
+              ) : (
+                <Motion.div
+                  key="register"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  /* REMOVED: max-h and overflow-y-auto to prevent inner scroll */
+                  className="grid grid-cols-2 gap-x-3 gap-y-3"
                 >
-                  Sign up here
-                </span>
-              </p>
-            </>
-          )}
-
-          {/* REGISTER FORM */}
-          {mode === "register" && (
-            <>
-              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Full Name
-                  </label>
-                  <FormInput
-                    placeholder="John Doe"
-                    value={registerData.name}
-                    onChange={(e) =>
-                      setRegisterData({ ...registerData, name: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Email Address
-                  </label>
-                  <FormInput
-                    type="email"
-                    placeholder="you@example.com"
-                    value={registerData.email}
-                    onChange={(e) =>
-                      setRegisterData({ ...registerData, email: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Campus
-                    </label>
-                    <FormInput
-                      type="select"
-                      value={registerData.campus}
-                      onChange={(e) =>
-                        setRegisterData({ ...registerData, campus: e.target.value })
-                      }
-                      options={[
-                        { label: "Iba Campus", value: "iba" },
-                        { label: "Botolan Campus", value: "botolan" },
-                      ]}
-                      required
+                  {/* Full Name */}
+                  <div className="space-y-1 col-span-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Full Name</label>
+                    <FormInput 
+                      placeholder="John Doe" 
+                      value={registerData.name} 
+                      onChange={(e) => setRegisterData({...registerData, name: e.target.value})} 
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Department
-                    </label>
-                    <FormInput
-                      type="select"
-                      value={registerData.department}
-                      onChange={(e) =>
-                        setRegisterData({ ...registerData, department: e.target.value })
-                      }
-                      options={[
-                        { label: "CCIT", value: "CCIT" },
-                        { label: "CTHM", value: "CTHM" },
-                        { label: "CIT", value: "CIT" },
-                        { label: "COE", value: "COE" },
-                      ]}
-                      required
+                  {/* Email */}
+                  <div className="space-y-1 col-span-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Email Address</label>
+                    <FormInput 
+                      type="email" 
+                      placeholder="you@example.com" 
+                      value={registerData.email} 
+                      onChange={(e) => setRegisterData({...registerData, email: e.target.value})} 
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Position
-                  </label>
-                  <FormInput
-                    placeholder="e.g., Professor, Instructor"
-                    value={registerData.position}
-                    onChange={(e) =>
-                      setRegisterData({ ...registerData, position: e.target.value })
-                    }
-                  />
-                </div>
+                  {/* Campus & Department Row */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Campus</label>
+                    <FormInput 
+                      type="select" 
+                      options={[{label: "Iba", value: "iba"}, {label: "Botolan", value: "botolan"}]} 
+                      value={registerData.campus} 
+                      onChange={(e) => setRegisterData({...registerData, campus: e.target.value})} 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Dept.</label>
+                    <FormInput 
+                      type="select" 
+                      options={[{label: "CCIT", value: "CCIT"}, {label: "CTHM", value: "CTHM"}]} 
+                      value={registerData.department} 
+                      onChange={(e) => setRegisterData({...registerData, department: e.target.value})} 
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Password
-                  </label>
-                  <FormInput
-                    type="password"
-                    placeholder="••••••••"
-                    value={registerData.password}
-                    onChange={(e) =>
-                      setRegisterData({ ...registerData, password: e.target.value })
-                    }
-                  />
-                </div>
+                  {/* Position */}
+                  <div className="space-y-1 col-span-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Position</label>
+                    <FormInput 
+                      placeholder="Instructor" 
+                      value={registerData.position} 
+                      onChange={(e) => setRegisterData({...registerData, position: e.target.value})} 
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Confirm Password
-                  </label>
-                  <FormInput
-                    type="password"
-                    placeholder="••••••••"
-                    value={registerData.confirmPassword}
-                    onChange={(e) =>
-                      setRegisterData({ ...registerData, confirmPassword: e.target.value })
-                    }
-                  />
-                </div>
+                  {/* Password Row */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Password</label>
+                    <FormInput 
+                      type="password" 
+                      placeholder="••••" 
+                      value={registerData.password} 
+                      onChange={(e) => setRegisterData({...registerData, password: e.target.value})} 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Confirm</label>
+                    <FormInput 
+                      type="password" 
+                      placeholder="••••" 
+                      value={registerData.confirmPassword} 
+                      onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})} 
+                    />
+                  </div>
+                </Motion.div>
+              )}
+            </AnimatePresence>
 
-                <CustomButton
-                  title="Create Account"
-                  handlePress={handleRegister}
-                  containerStyles="mt-6"
-                  isLoading={registerLoading}
-                  loadingText="Creating account..."
-                />
-              </div>
+            {/* Error Message */}
+            {loginError && (
+              <Motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="bg-red-50 border border-red-100 text-red-600 px-4 py-2 rounded-xl text-[11px] font-medium"
+              >
+                {loginError}
+              </Motion.div>
+            )}
 
-              <p className="text-sm text-center mt-6 text-gray-600">
-                Already have an account?{" "}
-                <span
-                  className="text-emerald-600 cursor-pointer font-semibold hover:text-emerald-700 transition-colors"
-                  onClick={() => setMode("login")}
-                >
-                  Sign in
-                </span>
-              </p>
-            </>
-          )}
+            {/* Action Button */}
+            <CustomButton
+              title={mode === "login" ? "Sign In" : "Create Account"}
+              handlePress={mode === "login" ? handleLogin : handleRegister}
+              containerStyles="w-full py-3 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+              isLoading={loginLoading || registerLoading}
+            />
+
+            {/* Switch Mode Button */}
+            <p className="text-center text-slate-500 font-medium text-xs">
+              {mode === "login" ? "New here?" : "Joined already?"}
+              <button 
+                type="button"
+                onClick={() => {
+                  setMode(mode === "login" ? "register" : "login");
+                  setLoginError("");
+                }}
+                className="ml-2 text-emerald-600 font-bold hover:text-emerald-700 underline-offset-2 hover:underline transition-all"
+              >
+                {mode === "login" ? "Create account" : "Sign in"}
+              </button>
+            </p>
+          </Motion.div>
         </div>
       </div>
 
-      {/* RIGHT SIDE - Welcome Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 items-center justify-center p-12 relative overflow-hidden">
-        {/* Decorative circles */}
-        <div className="absolute top-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 left-10 w-60 h-60 bg-white/10 rounded-full blur-3xl"></div>
+      {/* RIGHT SIDE - Premium Mesh Panel */}
+      <div className="hidden lg:flex lg:w-[55%] relative bg-[#0a0f1a] overflow-hidden items-center justify-center p-20">
         
-        <div className="text-white max-w-lg relative z-10">
-          <h2 className="text-5xl font-bold mb-6 leading-tight">
-            {mode === "login" ? "Welcome Back!" : "Join Us Today!"}
-          </h2>
-          <p className="text-emerald-50 text-lg leading-relaxed mb-10">
-            {mode === "login" 
-              ? "We're delighted to see you again! Access your G.A.D Extension Office account to manage programs, track activities, and collaborate with your team. Your contributions make a difference in promoting gender equality and development."
-              : "Create your account to become part of the G.A.D Extension Office community. Together, we work towards advancing gender and development initiatives across our campuses. Join us in making a positive impact."}
-          </p>
-          
-          <div className="space-y-5">
-            <div className="flex items-start space-x-4 group">
-              <div className="w-6 h-6 flex-shrink-0 mt-1 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <p className="text-emerald-50 text-base">Access comprehensive program management tools</p>
-            </div>
-            <div className="flex items-start space-x-4 group">
-              <div className="w-6 h-6 flex-shrink-0 mt-1 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <p className="text-emerald-50 text-base">Collaborate with colleagues across campuses</p>
-            </div>
-            <div className="flex items-start space-x-4 group">
-              <div className="w-6 h-6 flex-shrink-0 mt-1 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <p className="text-emerald-50 text-base">Track and report on GAD activities seamlessly</p>
-            </div>
-          </div>
+        {/* Animated Mesh Blobs */}
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-600/20 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[0%] w-[400px] h-[400px] bg-teal-500/10 rounded-full blur-[100px]"></div>
 
-          {mode === "login" && (
-            <div className="mt-12 pt-8 border-t border-white/20">
-              <p className="text-emerald-100 text-sm">
-                No account yet?{" "}
-                <span 
-                  className="font-semibold underline cursor-pointer hover:text-white transition-colors"
-                  onClick={() => setMode("register")}
-                >
-                  Sign up now
-                </span>
-              </p>
-            </div>
-          )}
+        {/* Glassmorphism Card */}
+        <Motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative z-10 w-full max-w-lg p-10 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl"
+        >
+          <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold tracking-widest uppercase">
+            Platform Statistics
+          </div>
+          
+          <h2 className="text-5xl font-bold text-white leading-[1.1] mb-6">
+            Modern G.A.D <br />
+            <span className="text-emerald-400">Management.</span>
+          </h2>
+          
+          <p className="text-slate-400 text-lg leading-relaxed mb-10">
+            {mode === "login" 
+              ? "Access your dashboard to monitor extension programs and gender development initiatives across all campuses."
+              : "Join our network of educators dedicated to campus development and community extension services."}
+          </p>
+
+          <div className="space-y-4">
+            <FeatureRow text="Real-time Activity Reporting" />
+            <FeatureRow text="Automated Compliance Tracking" />
+            <FeatureRow text="Inter-Campus Collaboration" />
+          </div>
+        </Motion.div>
+
+        {/* Subtle decorative grid */}
+        <div className="absolute inset-0 opacity-[0.15] pointer-events-none" 
+             style={{ backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)`, backgroundSize: '40px 40px' }}>
         </div>
       </div>
     </div>
   );
 };
+
+const FeatureRow = ({ text }) => (
+  <div className="flex items-center space-x-3 group">
+    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500 transition-colors duration-300">
+      <svg className="w-3.5 h-3.5 text-emerald-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    <span className="text-slate-300 font-medium group-hover:text-white transition-colors">{text}</span>
+  </div>
+);
 
 export default Auth;
