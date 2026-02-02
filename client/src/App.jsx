@@ -5,6 +5,8 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
 import LandingPage from "./pages/LandingPage";
 import AboutPage from "./pages/AboutPage";
+import Feature from "./pages/FeaturePage";
+import Guidelines from "./pages/GuidelinesPage";
 
 function App() {
   return (
@@ -26,6 +28,24 @@ function App() {
           element={
             <PublicRoute>
               <AboutPage />
+            </PublicRoute>
+          }
+        />
+        
+        <Route 
+          path="/feature"
+          element={
+            <PublicRoute>
+              <Feature />
+            </PublicRoute>
+          }
+        />
+
+        <Route 
+          path="/guidelines"
+          element={
+            <PublicRoute>
+              <Guidelines />
             </PublicRoute>
           }
         />
