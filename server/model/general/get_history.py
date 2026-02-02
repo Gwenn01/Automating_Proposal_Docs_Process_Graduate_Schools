@@ -56,3 +56,22 @@ def get_history_content_db(history_id):
         print(e)
         return None
 
+def get_history_reviews_db(history_id):
+    try:
+        ...
+        query = """
+            SELECT 
+                prh.history_id,
+                prh.user_id,
+                u.fullname,
+                prih.*
+            FROM proposal_review_history prh
+            LEFT JOIN users u ON prh.user_id = u.user_id
+            LEFT JOIN proposal_review_items_history prih ON prh.review_history_id = prih.review_history_id
+            WHERE prh.history_id = %s;
+        """
+        params = (history_id,)
+        return execute_query(query, params, True)
+    except Exception as e:
+        print(e)
+        return None
