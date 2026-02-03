@@ -14,6 +14,34 @@ const ManageDocuments = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+  let interval;
+
+  const fetchDocuments = async () => {
+      try {
+        interval = setInterval(() => {
+          setProgress((prev) => (prev < 90 ? prev + 5 : prev));
+        }, 300);
+
+        const res = await axios.get("http://127.0.0.1:5000/api/get-all-docs");
+        setDocuments(res.data);
+
+        setProgress(100);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load documents");
+      } finally {
+        clearInterval(interval);
+        setTimeout(() => setLoading(false), 400); // smooth exit
+      }
+    };
+
+    fetchDocuments();
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -32,31 +60,35 @@ const ManageDocuments = () => {
   }, []);
 
    if (loading) {
-    return (
-      <>
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in">
-          <div
-            className="relative bg-white backdrop-blur-xl px-14 py-10 rounded-2xl shadow-2xl flex flex-col items-center animate-pop-out"
-          >
-            {/* Gradient Ring Loader */}
-            <div className="relative animate-float mb-5">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 animate-spin" />
-              <div className="absolute inset-2 bg-white rounded-full" />
-            </div>
-
-            {/* Text */}
-            <p className="text-lg font-semibold shimmer-text loading-dots mb-2">
+      return (
+        <div className="w-full h-full bg-white inset-0 z-[60] flex items-center justify-center backdrop-blur-md animate-fade-in">
+          <div className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-[450px] rounded-2xl">
+            
+            <p className="text-lg font-semibold shimmer-text mb-2 text-center">
               Indexing Registry
             </p>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-xs w-full text-gray-500 mb-4 text-center">
               Preparing official records and submission statuses.
+            </p>
+
+            {/* Progress Bar */}
+            <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500 ease-out relative"
+                style={{ width: `${progress}%` }}
+              >
+                <div className="absolute inset-0 bg-white/20 animate-pulse" />
+              </div>
+            </div>
+
+            <p className="mt-3 text-xs text-gray-500 font-medium">
+              {Math.round(progress)}%
             </p>
           </div>
         </div>
-      </>
-    );
-  }
+      );
+    }
   if (error) return <p>{error}</p>;
 
   const filteredDocuments = documents.filter(
@@ -122,214 +154,229 @@ const ManageDocuments = () => {
 
         {/* Table Section - Professional & Modern Layout */}
         <div className="overflow-x-auto pb-4 custom-scrollbar">
-          <table className="w-full border-separate border-spacing-y-[18px]">
+          <table className="w-full border-separate border-spacing-y-4 table-fixed">
             <thead>
-              <tr className="text-slate-400 uppercase text-[11px] tracking-[0.2em] font-black">
-                <th className="pb-2 px-6 text-left font-bold">
-                  Document Details
-                </th>
-                <th className="pb-2 px-6 text-center font-bold">Status</th>
-                <th className="pb-2 px-6 text-center font-bold">
-                  Registry Date
-                </th>
-                <th className="pb-2 px-6 text-center font-bold">Actions</th>
+              <tr className="text-slate-400 uppercase text-[10px] tracking-[0.2em] font-black">
+                {/* Defined widths for absolute consistency */}
+                <th className="w-[45%] pb-2 px-8 text-left">Document Details</th>
+                <th className="w-[18%] pb-2 px-6 text-center">Status</th>
+                <th className="w-[17%] pb-2 px-6 text-center">Registry Date</th>
+                <th className="w-[20%] pb-2 px-6 text-center">Actions</th>
               </tr>
             </thead>
+            
             <tbody>
               {filteredDocuments.map((doc) => (
                 <tr key={doc.id} className="group">
-                  {/* Author & Title Details - Premium Editorial Style */}
-                  <td className="py-7 px-6 bg-white border-y border-slate-100/50 shadow-[0_4px_15px_rgba(0,0,0,0.02)] group-hover:border-emerald-100 group-hover:bg-emerald-50/40 transition-all duration-500">
-                    <div className="flex items-center gap-6">
-                      {/* Icon Container with Glassmorphism & Motion */}
-                      <div className="relative flex-shrink-0 group/icon">
-                        <div className="w-14 h-14 rounded-[20px] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center border border-slate-200/60 group-hover/icon:border-emerald-200 group-hover/icon:bg-white group-hover/icon:rotate-[10deg] group-hover/icon:scale-110 transition-all duration-500 shadow-sm relative overflow-hidden">
-                          {/* Subtle background pattern inside icon box */}
-                          <div className="absolute inset-0 opacity-0 group-hover/icon:opacity-10 transition-opacity bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:4px_4px]" />
+                  
+                  {/* COLUMN 1: DOCUMENT DETAILS - Premium Glass Edition */}
+                  <td className="w-[45%] py-6 px-8 relative overflow-hidden bg-white/70 backdrop-blur-xl first:rounded-l-[32px] border-y border-l border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.03)] group-hover:bg-white/90 transition-all duration-700 ease-in-out">
+                    
+                    {/* Subsurface Light Effect - Only visible on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-                          <FileText
-                            size={22}
-                            className="text-slate-400 group-hover:text-emerald-500 transition-colors duration-500 relative z-10"
+                    <div className="relative z-10 flex items-center gap-6">
+                      {/* Enhanced Squircle Icon Container */}
+                      <div className="relative flex-shrink-0">
+                        <div className="w-16 h-16 rounded-[24px] bg-white shadow-[inset_0_0_0_1px_rgba(0,0,0,0.05),0_10px_20px_rgba(0,0,0,0.04)] flex items-center justify-center group-hover:scale-105 group-hover:-rotate-3 transition-all duration-500">
+                          <div className="absolute inset-0 rounded-[24px] bg-gradient-to-tr from-emerald-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <FileText 
+                            size={24} 
+                            strokeWidth={1.2} 
+                            className="text-slate-400 group-hover:text-emerald-600 transition-colors duration-500" 
                           />
                         </div>
-
-                        {/* Verified Status Pulse Ring */}
-                        <div className="absolute -top-1 -right-1 flex h-4 w-4">
+                        
+                        {/* Floating Status Ring */}
+                        <div className="absolute -top-1 -right-1 flex h-5 w-5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-20"></span>
-                          <div className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-white shadow-sm border border-emerald-100">
-                            <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                          <div className="relative inline-flex rounded-full h-5 w-5 bg-white border border-slate-100 items-center justify-center shadow-sm">
+                            <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                           </div>
                         </div>
                       </div>
 
-                      {/* Text Content - Better Hierarchy */}
-                      <div className="flex flex-col max-w-[480px]">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[15px] font-black text-slate-800 tracking-tight leading-none group-hover:text-emerald-700 transition-colors">
+                      {/* Typography - Editorial Layout */}
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-3 mb-1">
+                          <span className="text-[15px] font-black text-slate-900 truncate tracking-tight group-hover:text-emerald-950 transition-colors">
                             {doc.name}
                           </span>
-                          {/* Subtle "Author" Label that appears on hover */}
-                          <span className="opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-[-10px] group-hover:translate-x-0 text-[9px] font-black bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded uppercase tracking-wider">
-                            Author
+                          <span className="opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-500 text-[8px] font-black bg-emerald-600 text-white px-2 py-0.5 rounded-md uppercase tracking-widest shadow-lg shadow-emerald-200/50">
+                            Official
                           </span>
                         </div>
-
+                        
                         <div className="relative">
-                          <p className="text-[12.5px] font-semibold text-slate-500 leading-[1.6] line-clamp-2 group-hover:text-slate-600 transition-colors italic decoration-emerald-500/30">
-                            "{doc.title}"
+                          <p className="text-[13px] font-medium text-slate-500 truncate leading-relaxed group-hover:text-slate-700 transition-colors">
+                            <span className="text-emerald-500/40 font-serif italic mr-0.5 text-base">“</span>
+                            {doc.title}
+                            <span className="text-emerald-500/40 font-serif italic ml-0.5 text-base">”</span>
                           </p>
                         </div>
 
-                        {/* Minimalist Meta Info */}
-                        <div className="flex items-center gap-3 mt-2 opacity-60 group-hover:opacity-100 transition-opacity duration-500">
-                          <div className="flex items-center gap-1">
-                            <div className="w-1 h-1 rounded-full bg-slate-300" />
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                              Academic Research
+                        {/* Meta Footer - Centered & Refined */}
+                        <div className="flex items-center gap-3 mt-3">
+                          {/* Proposal Tag - Forced Centering */}
+                          <div className="flex items-center justify-center px-2 py-1 rounded-md bg-slate-100 group-hover:bg-emerald-100 transition-colors duration-300">
+                            <span className="text-[9px] font-black text-slate-400 group-hover:text-emerald-700 uppercase tracking-[0.1em] leading-none">
+                              Proposal
                             </span>
                           </div>
+                          
+                          {/* Separator */}
+                          <div className="w-1 h-1 rounded-full bg-slate-200 group-hover:bg-emerald-300 transition-colors" />
+                          
+                          {/* Institutional Label */}
+                          <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest group-hover:text-slate-500 transition-colors duration-300 leading-none">
+                            Institutional File
+                          </span>
                         </div>
                       </div>
                     </div>
                   </td>
 
-                  {/* Status Badge - Updated for 6 Statuses */}
-                  <td className="py-7 px-6 bg-white border-y border-slate-100/50 shadow-[0_4px_15px_rgba(0,0,0,0.02)] group-hover:border-emerald-100 group-hover:bg-emerald-50/40 transition-all duration-500 text-center">
+                  {/* COLUMN 2: STATUS BADGE - Premium Jewel Style */}
+                  <td className="w-[18%] py-5 px-4 bg-white/70 backdrop-blur-xl border-y border-white/40 group-hover:bg-white/90 transition-all duration-700 text-center">
                     <div className="flex flex-col items-center justify-center gap-2">
                       {(() => {
                         const config = STATUS_MAP[doc.status] || { label: doc.status, color: "slate" };
-                        const colorClass = {
-                          blue: "bg-blue-500/5 text-blue-600 border-blue-500/20 group-hover:bg-blue-500",
-                          indigo: "bg-indigo-500/5 text-indigo-600 border-indigo-500/20 group-hover:bg-indigo-500",
-                          amber: "bg-amber-500/5 text-amber-600 border-amber-500/20 group-hover:bg-amber-500",
-                          purple: "bg-purple-500/5 text-purple-600 border-purple-500/20 group-hover:bg-purple-500",
-                          emerald: "bg-emerald-500/5 text-emerald-600 border-emerald-500/20 group-hover:bg-emerald-500",
-                          rose: "bg-rose-500/5 text-rose-600 border-rose-500/20 group-hover:bg-rose-500",
-                          slate: "bg-slate-500/5 text-slate-600 border-slate-500/20 group-hover:bg-slate-500",
-                        }[config.color];
+                        
+                        // Premium Color Mapping with Translucent Glows
+                        const colors = {
+                          emerald: "text-emerald-600 bg-emerald-500/5 border-emerald-500/20 group-hover:bg-emerald-600 group-hover:text-white shadow-[0_2px_10px_rgba(16,185,129,0.1)]",
+                          amber: "text-amber-600 bg-amber-500/5 border-amber-500/20 group-hover:bg-amber-500 group-hover:text-white shadow-[0_2px_10px_rgba(245,158,11,0.1)]",
+                          rose: "text-rose-600 bg-rose-500/5 border-rose-500/20 group-hover:bg-rose-500 group-hover:text-white shadow-[0_2px_10px_rgba(244,63,94,0.1)]",
+                          blue: "text-blue-600 bg-blue-500/5 border-blue-500/20 group-hover:bg-blue-500 group-hover:text-white shadow-[0_2px_10px_rgba(59,130,246,0.1)]",
+                          slate: "text-slate-600 bg-slate-500/5 border-slate-500/20 group-hover:bg-slate-500 group-hover:text-white shadow-[0_2px_10px_rgba(100,116,139,0.1)]",
+                        };
 
-                        const dotClass = {
-                          blue: "bg-blue-500",
-                          indigo: "bg-indigo-500",
-                          amber: "bg-amber-500",
-                          purple: "bg-purple-500",
-                          emerald: "bg-emerald-500",
-                          rose: "bg-rose-500",
-                          slate: "bg-slate-500",
-                        }[config.color];
+                        const activeColor = colors[config.color] || colors.slate;
 
                         return (
-                          <div className={`relative inline-flex items-center px-4 py-2 rounded-xl transition-all duration-500 min-w-[145px] justify-center overflow-hidden border group-hover:text-white ${colorClass}`}>
-                            {/* Pulse Dot */}
-                            <span className="relative flex h-2 w-2 mr-2.5 flex-shrink-0">
-                              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 group-hover:bg-white ${dotClass}`}></span>
-                              <span className={`relative inline-flex rounded-full h-2 w-2 group-hover:bg-white ${dotClass}`}></span>
-                            </span>
+                          <div className={`
+                            relative overflow-hidden
+                            inline-flex items-center justify-center 
+                            px-4 py-2 rounded-xl border
+                            min-w-[130px] 
+                            transition-all duration-500 ease-out
+                            ${activeColor}
+                          `}>
+                            {/* Internal Shine Effect */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            
+                            {/* Status Pulse Dot */}
+                            <div className="relative flex h-2 w-2 mr-2.5">
+                              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-40 bg-current`}></span>
+                              <span className={`relative inline-flex rounded-full h-2 w-2 bg-current border border-white/20`}></span>
+                            </div>
 
-                            <span className="relative text-[10px] font-black uppercase tracking-wider">
+                            <span className="relative text-[10px] font-black uppercase tracking-[0.12em] leading-none">
                               {config.label}
                             </span>
                           </div>
                         );
                       })()}
 
-                      <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500">
+                      {/* Metadata Label - Perfectly Centered */}
+                      <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em] group-hover:text-emerald-600/60 transition-colors duration-500">
                         Workflow State
                       </span>
                     </div>
                   </td>
 
-                  {/* Registry Date - Sleek Single-Line Timestamp */}
-                  <td className="py-7 px-6 bg-white border-y border-slate-100/50 shadow-[0_4px_15px_rgba(0,0,0,0.02)] group-hover:border-emerald-100 group-hover:bg-emerald-50/40 transition-all duration-500 text-center">
-                    <div className="inline-flex flex-col items-center group/date">
-                      {/* Main Date Display - Unified Row */}
-                      <div className="flex items-center gap-3 bg-slate-50 group-hover:bg-white px-4 py-2.5 rounded-xl border border-slate-100 group-hover:border-emerald-200 group-hover:shadow-sm transition-all duration-500">
+                  {/* COLUMN 3: REGISTRY DATE - High-Fidelity Timestamp */}
+                  <td className="w-[17%] py-5 px-4 bg-white/70 backdrop-blur-xl border-y border-white/40 group-hover:bg-white/90 transition-all duration-700 text-center">
+                    <div className="inline-flex flex-col items-center justify-center gap-2.5">
+                      
+                      {/* Minimalist Date Capsule */}
+                      <div className="group/date relative flex items-center gap-2.5 px-4 py-2 bg-slate-50/50 rounded-xl border border-slate-100 group-hover:border-emerald-200/60 group-hover:bg-white group-hover:shadow-[0_4px_12px_rgba(16,185,129,0.05)] transition-all duration-500">
+                        
+                        {/* Soft Icon Glow */}
                         <div className="flex-shrink-0 flex items-center justify-center">
-                          <Calendar
-                            size={15}
-                            className="text-slate-400 group-hover:text-emerald-500 transition-colors"
+                          <Calendar 
+                            size={14} 
+                            strokeWidth={2.2}
+                            className="text-slate-400 group-hover:text-emerald-500 transition-colors duration-500" 
                           />
                         </div>
 
-                        <div className="flex items-center whitespace-nowrap gap-1.5">
-                          <span className="text-[12px] font-black text-slate-700 group-hover:text-slate-900 transition-colors tracking-tight">
-                            {formatDate(doc.submissionDate)}
-                          </span>
-                          {/* Subtle separator dot only on hover */}
-                          <span className="w-1 h-1 rounded-full bg-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
+                        {/* Date Text */}
+                        <span className="text-[11px] font-black text-slate-700 tracking-tight leading-none group-hover:text-slate-900 transition-colors">
+                          {formatDate(doc.submissionDate)}
+                        </span>
+
+                        {/* Hover Background Shine */}
+                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover/date:animate-[shimmer_1.5s_infinite] pointer-events-none" />
                       </div>
 
-                      {/* Floating Metadata - Appears on Hover */}
-                      <div className="mt-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-500">
-                        <ShieldCheck size={10} className="text-emerald-500" />
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">
-                          System Timestamped
+                      {/* Verification Badge - Editorial Style */}
+                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-500 delay-75">
+                        <div className="flex items-center justify-center w-3 h-3 rounded-full bg-emerald-100/50">
+                          <ShieldCheck size={9} className="text-emerald-600" />
+                        </div>
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">
+                          Registry Verified
                         </span>
                       </div>
+
                     </div>
                   </td>
 
-                  {/* Actions Column - Multi-tier Modern Layout */}
-                  <td className="py-6 px-6 bg-white last:rounded-r-[32px] border-y border-r border-slate-100/50 shadow-[0_4px_20px_rgba(0,0,0,0.03)] group-hover:border-emerald-100/50 group-hover:bg-emerald-50/30 transition-all duration-700">
-                    <div className="flex flex-col items-center justify-center gap-3">
+                  {/* COLUMN 4: ACTIONS - Premium Command Center */}
+                  <td className="w-[20%] py-5 px-6 bg-white/70 backdrop-blur-xl last:rounded-r-[32px] border-y border-r border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.03)] group-hover:bg-white/90 transition-all duration-700">
+                    <div className="flex flex-col items-center justify-center gap-4">
                       
-                      {/* Tier 1: Standard Actions (Always Horizontal) */}
                       <div className="flex items-center justify-center gap-3">
-                        {/* View Document */}
-                        <div className="group/action relative">
-                          <button className="p-3 bg-slate-50 text-slate-400 rounded-xl transition-all duration-300 hover:bg-blue-600 hover:text-white hover:-translate-y-1 shadow-sm border border-slate-100 active:scale-95">
-                            <FileText size={18} strokeWidth={2.5} />
+                        {/* View Docs Button with Dynamic Quote */}
+                        <div className="group/action relative flex flex-col items-center">
+                          {/* The Quote Tooltip - Appears on hover or focus-within */}
+                          <div className="absolute -top-10 scale-90 opacity-0 group-hover/action:opacity-100 group-hover/action:scale-100 group-focus-within/action:opacity-100 group-focus-within/action:scale-100 transition-all duration-300 pointer-events-none">
+                            <div className="bg-slate-900 text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg shadow-xl uppercase tracking-[0.15em] whitespace-nowrap relative">
+                              View Docs
+                              {/* Tooltip Arrow */}
+                              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45" />
+                            </div>
+                          </div>
+
+                          <button className="p-3 bg-white text-slate-400 rounded-xl border border-slate-100 shadow-sm transition-all duration-300 hover:border-emerald-200 hover:text-emerald-600 hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-500/10 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 active:scale-95">
+                            <FileText size={18} strokeWidth={2} />
                           </button>
-                          <span className="absolute -top-9 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg opacity-0 group-hover/action:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 uppercase tracking-widest shadow-xl">
-                            View Docs
-                          </span>
                         </div>
 
-                        {/* View Review */}
-                        <div className="group/action relative">
-                          <button className="p-3 bg-slate-50 text-slate-400 rounded-xl transition-all duration-300 hover:bg-indigo-600 hover:text-white hover:-translate-y-1 shadow-sm border border-slate-100 active:scale-95">
-                            <Eye size={18} strokeWidth={2.5} />
+                        {/* Quick View Button with Dynamic Quote */}
+                        <div className="group/action relative flex flex-col items-center">
+                          {/* The Quote Tooltip */}
+                          <div className="absolute -top-10 scale-90 opacity-0 group-hover/action:opacity-100 group-hover/action:scale-100 group-focus-within/action:opacity-100 group-focus-within/action:scale-100 transition-all duration-300 pointer-events-none">
+                            <div className="bg-indigo-600 text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg shadow-xl uppercase tracking-[0.15em] whitespace-nowrap relative">
+                              View Proposal
+                              {/* Tooltip Arrow */}
+                              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-indigo-600 rotate-45" />
+                            </div>
+                          </div>
+
+                          <button className="p-3 bg-white text-slate-400 rounded-xl border border-slate-100 shadow-sm transition-all duration-300 hover:border-indigo-200 hover:text-indigo-600 hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 active:scale-95">
+                            <Eye size={18} strokeWidth={2} />
                           </button>
-                          <span className="absolute -top-9 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-black px-2.5 py-1.5 rounded-lg opacity-0 group-hover/action:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 uppercase tracking-widest shadow-xl">
-                            View Review
-                          </span>
                         </div>
                       </div>
 
-                      {/* Tier 2: Decision Actions (Appears Below for 'for_approval') */}
+                      {/* Decision Tier stays clean to avoid clutter */}
                       {doc.status === "for_approval" && (
-                        <div className="flex flex-col w-full gap-2 animate-in fade-in slide-in-from-top-2 duration-500">
-                          {/* Subtle Horizontal Divider */}
-                          <div className="flex items-center gap-2 px-2">
-                              <div className="h-[1px] flex-1 bg-slate-100" />
-                              <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em]">Decision</span>
-                              <div className="h-[1px] flex-1 bg-slate-100" />
-                          </div>
-
-                          <div className="flex items-center justify-center gap-2">
-                              {/* Approve Button */}
-                              <button 
-                                  onClick={() => console.log("Approved", doc.id)}
-                                  className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 hover:bg-emerald-500 hover:text-white transition-all duration-300 group/btn"
-                              >
-                                  <ShieldCheck size={14} strokeWidth={3} />
-                                  <span className="text-[10px] font-black uppercase tracking-tight">Approve</span>
-                              </button>
-
-                              {/* Reject Button */}
-                              <button 
-                                  onClick={() => console.log("Rejected", doc.id)}
-                                  className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-rose-50 text-rose-600 rounded-lg border border-rose-100 hover:bg-rose-500 hover:text-white transition-all duration-300 group/btn"
-                              >
-                                  <Trash2 size={14} strokeWidth={3} />
-                                  <span className="text-[10px] font-black uppercase tracking-tight">Reject</span>
-                              </button>
+                        <div className="w-full max-w-[160px] flex flex-col gap-2 animate-in fade-in slide-in-from-top-3 duration-500">
+                          <div className="flex items-center gap-2">
+                            <button className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-[9px] font-black uppercase tracking-wider hover:bg-emerald-700 transition-all focus:ring-2 focus:ring-emerald-500/40">
+                              Approve
+                            </button>
+                            <button className="flex-1 py-2 bg-white text-rose-500 rounded-lg border border-rose-100 text-[9px] font-black uppercase tracking-wider hover:bg-rose-50 transition-all focus:ring-2 focus:ring-rose-500/20">
+                              Reject
+                            </button>
                           </div>
                         </div>
                       )}
                     </div>
                   </td>
+
                 </tr>
               ))}
             </tbody>
