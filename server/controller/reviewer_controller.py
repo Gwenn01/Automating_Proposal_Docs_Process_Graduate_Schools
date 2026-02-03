@@ -4,6 +4,7 @@ from model.reviewer.insert_reviewer_item import insert_review_item, updated_revi
 from model.reviewer.get_reviewer import get_reviewer_per_docs
 from controller.mapper.reviewer_get_docs_mapper import get_docs_mapper
 from model.reviewer.put_review_item import put_review_item
+from model.reviewer.put_decision_review import put_decision_review
 
 def get_docs_controller():
     try:
@@ -26,13 +27,17 @@ def put_reviews_item_docs_controller():
         data = request.get_json(force=True)  
         review_id = data.get('review_id')
         proposal_id = data.get('proposal_id')
+        user_id = data.get('reviewer_id')
         if not data:
             return {"error": "review data are required"}, 400
 
         success = insert_review_item(review_id, data)
         is_updated = updated_reviewed_count(proposal_id)
         is_reviewed = update_is_reviewed(review_id)
-        if not success or not is_updated or not is_reviewed:
+        
+        change_decision = put_decision_review(proposal_id, user_id, 'need_revision')
+        
+        if not success or not is_updated or not is_reviewed or not change_decision:
             return {"error": "Failed to insert review"}, 500
 
         return jsonify({"message": "Review inserted successfully"}), 200
@@ -79,5 +84,26 @@ def update_review_items_controller():
 
         return jsonify({"message": "Review updated successfully"}), 200
 
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+def approve_proposal_controller():
+    try:
+        ...
+        data = request.get_json(force=True)
+
+        proposal_id = data.get("proposal_id")
+        user_id = data.get("user_id")
+        
+        if not proposal_id or not user_id:
+            return {"error": "Invalid payload"}, 400
+
+        success = put_decision_review(proposal_id, user_id, "approved")
+        
+        if not success:
+            return {"error": "No rows updated. Check proposal_id/user_id"}, 404
+
+        return jsonify({"message": "Proposal approved successfully"}), 200
+        
     except Exception as e:
         return {"error": str(e)}, 500

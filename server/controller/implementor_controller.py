@@ -200,8 +200,8 @@ def check_edit_proposal_controller():
         data = request.get_json(force=True)
         proposal_id = data.get("proposal_id")
         user_id = data.get("user_id")
-
-        if handle_check_edit_proposal(proposal_id, user_id):
+        proposal = handle_check_edit_proposal(proposal_id, user_id)[0]
+        if proposal['reviewed_count'] >= proposal['reviewer_count']:
             return jsonify({"message": "Proposal can be edited", "status": True}), 200
         else:
             return jsonify({"message": "Proposal cannot be edited", "status": False}), 200

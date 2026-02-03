@@ -5,12 +5,13 @@ def handle_check_edit_proposal(proposal_id, user_id):
         ...
         query = """
             SELECT 
-                * 
+                reviewed_count,
+                reviewer_count 
             FROM proposals_docs 
             WHERE proposal_id = %s AND user_id = %s
         """
         params = (proposal_id, user_id)
-        result = execute_query(query, params)
+        result = execute_query(query, params, True)
         return result
     except Exception as e:
         print(e)
