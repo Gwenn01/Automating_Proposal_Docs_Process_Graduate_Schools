@@ -25,6 +25,7 @@ def get_reviewer_per_docs(proposal_id, reviewer_id):
         SELECT 
             pr.proposal_id,
             pr.user_id,
+            pr.review_deadline
             u.fullname,
             u.email
         FROM proposal_reviews pr
