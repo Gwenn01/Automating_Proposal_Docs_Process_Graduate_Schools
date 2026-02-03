@@ -84,7 +84,7 @@ def bar_data_mapper(rows):
     STATUS_MAP = {
         "for_review": "ForReview",
         "under_review": "UnderReview",
-        "revision": "Revisions",
+        "for_revision": "Revisions",
         "approval": "Approval",
         "completed": "Completed",
         "rejected": "Rejected",
