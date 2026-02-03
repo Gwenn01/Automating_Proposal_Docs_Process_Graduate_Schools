@@ -79,7 +79,7 @@ const ManageDocuments = () => {
   const STATUS_MAP = {
     for_review: { label: "For Review", color: "blue" },
     under_review: { label: "Under Review", color: "indigo" },
-    for_revisions: { label: "For Revisions", color: "amber" },
+    for_revision: { label: "For Revision", color: "amber" },
     for_approval: { label: "For Approval", color: "purple" },
     approved: { label: "Approved", color: "emerald" },
     rejected: { label: "Rejected", color: "rose" },
