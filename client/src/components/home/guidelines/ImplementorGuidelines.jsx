@@ -149,7 +149,7 @@ const ImplementorGuidelines = () => {
                       <p className="text-sm font-bold text-slate-900">Technical Support</p>
                     </div>
                   </div>
-                </button>E8S 8888888888888888
+                </button>
               </div>
 
             </div>

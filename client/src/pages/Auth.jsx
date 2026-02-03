@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { prmsuLogo } from "../assets";
+import { BarChart3, Globe, ShieldCheck, Zap } from "lucide-react";
 import { CustomButton, FormInput } from "../components";
 import { useNavigate } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
@@ -121,247 +122,355 @@ const handleRegister = async () => {
       {/* LEFT SIDE - The Form */}
       <div className="w-full lg:w-[45%] flex items-center justify-center p-6 lg:p-10 bg-white z-20 shadow-2xl min-h-screen">
         <div className="w-full max-w-md">
-          {/* Logo Section - Compacted margins */}
-         <Motion.div 
+          
+         {/* Logo Section - Premium Minimalist Style */}
+          <Motion.div 
             initial={{ opacity: 0, y: -20 }} 
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center space-x-4 mb-8 pb-6 border-b border-slate-100"
+            className="flex items-center space-x-5 mb-10 pb-2 border-b border-slate-50"
           >
-            {/* Modern Logo Container */}
-            <div className="relative">
-              <div className="p-2.5 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl shadow-inner border border-emerald-100/50">
-                <img src={prmsuLogo} alt="PRMSU Logo" className="w-10 h-10 object-contain filter drop-shadow-sm" />
+            {/* Clean Logo Container - No BG color, just soft depth */}
+            <div className="relative group">
+              <div className="relative z-10 transition-transform duration-500 group-hover:scale-110">
+                <img 
+                  src={prmsuLogo} 
+                  alt="PRMSU Logo" 
+                  className="w-12 h-12 object-contain" 
+                />
               </div>
-              {/* Subtle status indicator for a "Portal" feel */}
-              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-white rounded-full flex items-center justify-center shadow-sm">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              
+              {/* Subtle Glow Ring - Replaces the box background */}
+              <div className="absolute inset-0 bg-emerald-400/10 blur-2xl rounded-full scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              
+              {/* Refined Status Indicator */}
+              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-[0_2px_5px_rgba(0,0,0,0.05)] border border-slate-50">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full">
+                  <div className="w-full h-full bg-emerald-500 rounded-full animate-ping opacity-40" />
+                </div>
               </div>
             </div>
 
-            {/* Text Content - Flex column keeps them together */}
-            <div className="flex flex-col justify-center">
-              <div className="flex items-center space-x-2">
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-none">
-                  {mode === "login" ? "Welcome Back" : "Create Account"}
+            {/* Typography Section */}
+            <div className="flex flex-col space-y-1">
+              <div className="flex items-center space-x-3">
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none">
+                  {mode === "login" ? "Welcome" : "Register"}
                 </h1>
-                <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                  v2.0
+                
+                {/* Professional Divider */}
+                <div className="h-4 w-[1px] bg-slate-200" /> 
+                
+                {/* Professional Phase Label */}
+                <span className="text-[9px] font-black text-emerald-600 tracking-[0.15em] uppercase">
+                  {mode === "login" ? "Authorized Access" : "Staff Registration"}
                 </span>
               </div>
-              <p className="text-slate-400 font-semibold mt-1.5 tracking-[0.05em] uppercase text-[9px] flex items-center">
-                <span className="w-4 h-[1px] bg-emerald-200 mr-2"></span>
-                Extension Office Portal
-              </p>
+              
+              <div className="flex items-center">
+                <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase flex items-center">
+                  Extension Office
+                  <span className="mx-2 text-emerald-300">•</span>
+                  <span className="text-slate-300 font-medium italic">PRMSU System</span>
+                </p>
+              </div>
             </div>
           </Motion.div>
 
-          {/* Form Container */}
-          <Motion.div layout className="space-y-4">
-            <AnimatePresence mode="wait">
-              {mode === "login" ? (
-                <Motion.div
-                  key="login"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-4"
+          {/* Form Container - Wrapped in a <form> tag for Enter shortcut */}
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault(); // Prevents page refresh
+              mode === "login" ? handleLogin() : handleRegister();
+            }}
+          >
+            <Motion.div layout className="space-y-4">
+              <AnimatePresence mode="wait">
+                {mode === "login" ? (
+                  <Motion.div
+                    key="login"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Email Address</label>
+                      <FormInput
+                        ref={emailRef}
+                        type="email"
+                        placeholder="name@university.edu"
+                        value={loginData.identifier}
+                        onChange={(e) => setLoginData({ ...loginData, identifier: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Password</label>
+                      <FormInput
+                        ref={passwordRef}
+                        type="password"
+                        placeholder="••••••••"
+                        value={loginData.password}
+                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      />
+                    </div>
+                  </Motion.div>
+                ) : (
+                  <Motion.div
+                    key="register"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="grid grid-cols-2 gap-x-3 gap-y-3"
+                  >
+                    {/* Full Name */}
+                    <div className="space-y-1 col-span-2">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Full Name</label>
+                      <FormInput 
+                        placeholder="John Doe" 
+                        value={registerData.name} 
+                        onChange={(e) => setRegisterData({...registerData, name: e.target.value})} 
+                      />
+                    </div>
+                    {/* Email */}
+                    <div className="space-y-1 col-span-2">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Email Address</label>
+                      <FormInput 
+                        type="email" 
+                        placeholder="you@example.com" 
+                        value={registerData.email} 
+                        onChange={(e) => setRegisterData({...registerData, email: e.target.value})} 
+                      />
+                    </div>
+                    {/* Campus & Department Row */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Campus</label>
+                      <FormInput 
+                        type="select" 
+                        options={[{label: "Iba", value: "iba"}, {label: "Botolan", value: "botolan"}]} 
+                        value={registerData.campus} 
+                        onChange={(e) => setRegisterData({...registerData, campus: e.target.value})} 
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Dept.</label>
+                      <FormInput 
+                        type="select" 
+                        options={[{label: "CCIT", value: "CCIT"}, {label: "CTHM", value: "CTHM"}]} 
+                        value={registerData.department} 
+                        onChange={(e) => setRegisterData({...registerData, department: e.target.value})} 
+                      />
+                    </div>
+                    {/* Position */}
+                    <div className="space-y-1 col-span-2">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Position</label>
+                      <FormInput 
+                        placeholder="Instructor" 
+                        value={registerData.position} 
+                        onChange={(e) => setRegisterData({...registerData, position: e.target.value})} 
+                      />
+                    </div>
+                    {/* Password Row */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Password</label>
+                      <FormInput 
+                        type="password" 
+                        placeholder="••••" 
+                        value={registerData.password} 
+                        onChange={(e) => setRegisterData({...registerData, password: e.target.value})} 
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Confirm</label>
+                      <FormInput 
+                        type="password" 
+                        placeholder="••••" 
+                        value={registerData.confirmPassword} 
+                        onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})} 
+                      />
+                    </div>
+                  </Motion.div>
+                )}
+              </AnimatePresence>
+
+              {loginError && (
+                <Motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-red-50 border border-red-100 text-red-600 px-4 py-2 rounded-xl text-[11px] font-medium"
                 >
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Email Address</label>
-                    <FormInput
-                      ref={emailRef}
-                      type="email"
-                      placeholder="name@university.edu"
-                      value={loginData.identifier}
-                      onChange={(e) => setLoginData({ ...loginData, identifier: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Password</label>
-                    <FormInput
-                      ref={passwordRef}
-                      type="password"
-                      placeholder="••••••••"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                    />
-                  </div>
-                </Motion.div>
-              ) : (
-                <Motion.div
-                  key="register"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  /* REMOVED: max-h and overflow-y-auto to prevent inner scroll */
-                  className="grid grid-cols-2 gap-x-3 gap-y-3"
-                >
-                  {/* Full Name */}
-                  <div className="space-y-1 col-span-2">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Full Name</label>
-                    <FormInput 
-                      placeholder="John Doe" 
-                      value={registerData.name} 
-                      onChange={(e) => setRegisterData({...registerData, name: e.target.value})} 
-                    />
-                  </div>
-
-                  {/* Email */}
-                  <div className="space-y-1 col-span-2">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Email Address</label>
-                    <FormInput 
-                      type="email" 
-                      placeholder="you@example.com" 
-                      value={registerData.email} 
-                      onChange={(e) => setRegisterData({...registerData, email: e.target.value})} 
-                    />
-                  </div>
-
-                  {/* Campus & Department Row */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Campus</label>
-                    <FormInput 
-                      type="select" 
-                      options={[{label: "Iba", value: "iba"}, {label: "Botolan", value: "botolan"}]} 
-                      value={registerData.campus} 
-                      onChange={(e) => setRegisterData({...registerData, campus: e.target.value})} 
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Dept.</label>
-                    <FormInput 
-                      type="select" 
-                      options={[{label: "CCIT", value: "CCIT"}, {label: "CTHM", value: "CTHM"}]} 
-                      value={registerData.department} 
-                      onChange={(e) => setRegisterData({...registerData, department: e.target.value})} 
-                    />
-                  </div>
-
-                  {/* Position */}
-                  <div className="space-y-1 col-span-2">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Position</label>
-                    <FormInput 
-                      placeholder="Instructor" 
-                      value={registerData.position} 
-                      onChange={(e) => setRegisterData({...registerData, position: e.target.value})} 
-                    />
-                  </div>
-
-                  {/* Password Row */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Password</label>
-                    <FormInput 
-                      type="password" 
-                      placeholder="••••" 
-                      value={registerData.password} 
-                      onChange={(e) => setRegisterData({...registerData, password: e.target.value})} 
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Confirm</label>
-                    <FormInput 
-                      type="password" 
-                      placeholder="••••" 
-                      value={registerData.confirmPassword} 
-                      onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})} 
-                    />
-                  </div>
+                  {loginError}
                 </Motion.div>
               )}
-            </AnimatePresence>
 
-            {/* Error Message */}
-            {loginError && (
-              <Motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="bg-red-50 border border-red-100 text-red-600 px-4 py-2 rounded-xl text-[11px] font-medium"
-              >
-                {loginError}
-              </Motion.div>
-            )}
+              {/* Action Button - Note: type="submit" enables the Enter key trigger */}
+              <CustomButton
+                type="submit"
+                title={mode === "login" ? "Sign In" : "Create Account"}
+                containerStyles={`
+                  w-full py-4 mt-6 relative overflow-hidden bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm tracking-widest uppercase
+                  rounded-2xl shadow-[0_10px_25px_-5px_rgba(16,185,129,0.4)] hover:shadow-[0_15px_30px_-5px_rgba(16,185,129,0.5)]
+                  transition-all duration-300 transform hover:-translate-y-1 active:scale-[0.98] border-t border-white/20
+                `}
+                isLoading={loginLoading || registerLoading}
+              />
 
-            {/* Action Button */}
-            <CustomButton
-              title={mode === "login" ? "Sign In" : "Create Account"}
-              handlePress={mode === "login" ? handleLogin : handleRegister}
-              containerStyles="w-full py-3 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-              isLoading={loginLoading || registerLoading}
-            />
-
-            {/* Switch Mode Button */}
-            <p className="text-center text-slate-500 font-medium text-xs">
-              {mode === "login" ? "New here?" : "Joined already?"}
-              <button 
-                type="button"
-                onClick={() => {
-                  setMode(mode === "login" ? "register" : "login");
-                  setLoginError("");
-                }}
-                className="ml-2 text-emerald-600 font-bold hover:text-emerald-700 underline-offset-2 hover:underline transition-all"
-              >
-                {mode === "login" ? "Create account" : "Sign in"}
-              </button>
-            </p>
-          </Motion.div>
+              <p className="text-center text-slate-500 font-medium text-xs">
+                {mode === "login" ? "New here?" : "Joined already?"}
+                <button 
+                  type="button" // Keep this as type="button" so it doesn't trigger the form
+                  onClick={() => {
+                    setMode(mode === "login" ? "register" : "login");
+                    setLoginError("");
+                  }}
+                  className="ml-2 text-emerald-600 font-bold hover:text-emerald-700 underline-offset-2 hover:underline transition-all"
+                >
+                  {mode === "login" ? "Create account" : "Sign in"}
+                </button>
+              </p>
+            </Motion.div>
+          </form>
         </div>
       </div>
 
-      {/* RIGHT SIDE - Premium Mesh Panel */}
-      <div className="hidden lg:flex lg:w-[55%] relative bg-[#0a0f1a] overflow-hidden items-center justify-center p-20">
+      {/* RIGHT SIDE - Premium Saturated Green Panel */}
+      <div className="hidden lg:flex lg:w-[55%] h-screen sticky top-0 bg-gradient-to-br from-emerald-600 via-emerald-500 to-green-600 overflow-hidden items-center justify-center p-12">
         
-        {/* Animated Mesh Blobs */}
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-600/20 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[0%] w-[400px] h-[400px] bg-teal-500/10 rounded-full blur-[100px]"></div>
+        {/* Saturated Mesh Glows - Standard Green/Emerald focus */}
+        <div className="absolute top-[-10%] left-[-10%] w-[700px] h-[700px] bg-emerald-400/30 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-green-400/40 rounded-full blur-[100px]"></div>
+        <div className="absolute top-[20%] right-[5%] w-[400px] h-[400px] bg-lime-300/20 rounded-full blur-[80px]"></div>
 
-        {/* Glassmorphism Card */}
-        <Motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative z-10 w-full max-w-lg p-10 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl"
-        >
-          <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold tracking-widest uppercase">
-            Platform Statistics
-          </div>
+        {/* Content Wrapper */}
+        <div className="relative z-10 w-full max-w-lg">
           
-          <h2 className="text-5xl font-bold text-white leading-[1.1] mb-6">
-            Modern G.A.D <br />
-            <span className="text-emerald-400">Management.</span>
-          </h2>
-          
-          <p className="text-slate-400 text-lg leading-relaxed mb-10">
-            {mode === "login" 
-              ? "Access your dashboard to monitor extension programs and gender development initiatives across all campuses."
-              : "Join our network of educators dedicated to campus development and community extension services."}
-          </p>
+          {/* Main Glassmorphism Container - Lighter "Frosted Ice" Style */}
+          <Motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative backdrop-blur-3xl bg-white/[0.15] border border-white/30 p-10 pt-24 rounded-[3rem] shadow-[0_40px_100px_rgba(0,0,0,0.2)] overflow-visible"
+          >
+            {/* ATTACHED FLOATING CARD */}
+            <Motion.div 
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -top-12 left-1/2 -translate-x-1/2 w-72 bg-white/80 backdrop-blur-2xl p-6 rounded-[2.5rem] border border-white/40 shadow-[0_20px_40px_rgba(0,0,0,0.08)] z-20 overflow-hidden"
+            >
+              {/* Subtle Inner Bevel for that "Apple Glass" look */}
+              <div className="absolute inset-0 border border-white/50 rounded-[2.5rem] pointer-events-none" />
 
-          <div className="space-y-4">
-            <FeatureRow text="Real-time Activity Reporting" />
-            <FeatureRow text="Automated Compliance Tracking" />
-            <FeatureRow text="Inter-Campus Collaboration" />
-          </div>
-        </Motion.div>
+              {/* Top Navigation / Status Bar Style */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  </div>
+                  <div className="h-3 w-16 bg-slate-200/50 rounded-full animate-pulse" />
+                </div>
+                <div className="text-[10px] font-semibold text-slate-400 tabular-nums tracking-tight">
+                  99%
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                {/* iOS Style Segmented Progress Bar */}
+                <div className="relative h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <Motion.div 
+                    initial={{ width: "10%" }} 
+                    animate={{ width: "85%" }} 
+                    transition={{ duration: 3, repeat: Infinity, ease: [0.65, 0, 0.35, 1] }}
+                    className="h-full bg-emerald-500 rounded-full" 
+                  />
+                </div>
 
-        {/* Subtle decorative grid */}
+                {/* Metadata Row */}
+                <div className="flex justify-between items-end">
+                  <div className="space-y-1.5">
+                    <div className="h-1 w-20 bg-slate-200/60 rounded-full" />
+                    <div className="h-1 w-12 bg-slate-100/80 rounded-full" />
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-[9px] font-bold text-emerald-600 tracking-wide uppercase font-sans">
+                      Active Sync
+                    </span>
+                    <span className="text-[8px] text-slate-400 font-medium">prmsu-server-01</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Apple-style Bottom Reflection Light */}
+              <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent" />
+            </Motion.div>
+
+            {/* Content Section - Premium Refined Layout */}
+            <div className="relative z-10 text-center lg:text-left px-4">
+              
+              {/* Modern Minimalist Badge */}
+              <Motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="inline-flex items-center space-x-3 px-4 py-1.5 mb-8 rounded-full bg-white/10 border border-white/20 backdrop-blur-md shadow-sm"
+              >
+                <span className="flex h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_#fff]" />
+                <span className="text-[11px] font-bold text-white/90 tracking-[0.3em] uppercase">
+                  Institutional System
+                </span>
+              </Motion.div>
+              
+              {/* Premium Typography Layout */}
+              <div className="mb-10 space-y-2">
+                <h2 className="text-6xl font-black text-white tracking-tighter leading-[0.9] drop-shadow-2xl">
+                  Extension <br />
+                  <span className="text-emerald-200/90 font-light italic">Office.</span>
+                </h2>
+                <div className="h-1 w-20 bg-gradient-to-r from-emerald-300 to-transparent rounded-full mt-4" />
+              </div>
+              
+              {/* Refined Description */}
+              <p className="text-white/80 text-base leading-relaxed mb-12 max-w-md font-normal tracking-tight">
+                {mode === "login" 
+                  ? "Direct access to the unified infrastructure for community engagement and institutional outreach metrics."
+                  : "Empowering faculty through streamlined data management for sustainable community development."}
+              </p>
+
+              {/* Feature Grid - Ultra Premium Milky Glass (70% Opacity) */}
+              <div className="grid grid-cols-2 gap-4 max-w-lg">
+                <FeatureCard icon={<BarChart3 size={20} strokeWidth={1.5} />} text="Analytics" />
+                <FeatureCard icon={<Globe size={20} strokeWidth={1.5} />} text="Network" />
+                <FeatureCard icon={<ShieldCheck size={20} strokeWidth={1.5} />} text="Security" />
+                <FeatureCard icon={<Zap size={20} strokeWidth={1.5} />} text="Export" />
+              </div>
+            </div>
+          </Motion.div>
+        </div>
+
+        {/* Professional Grid Overlay */}
         <div className="absolute inset-0 opacity-[0.15] pointer-events-none" 
-             style={{ backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)`, backgroundSize: '40px 40px' }}>
+            style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`, backgroundSize: '40px 40px' }}>
         </div>
       </div>
     </div>
   );
 };
 
-const FeatureRow = ({ text }) => (
-  <div className="flex items-center space-x-3 group">
-    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500 transition-colors duration-300">
-      <svg className="w-3.5 h-3.5 text-emerald-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-      </svg>
+const FeatureCard = ({ icon, text }) => (
+  <Motion.div 
+    whileHover={{ scale: 1.02, backgroundColor: "rgba(255, 255, 255, 0.95)" }}
+    whileTap={{ scale: 0.98 }}
+    className="flex items-center px-4 h-12 rounded-2xl bg-white/70 backdrop-blur-2xl border border-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.03)] transition-all duration-300 cursor-pointer group"
+  >
+    {/* Compact Icon Container */}
+    <div className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-600/50 text-white group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-sm">
+      {/* Icon scales slightly on hover */}
+      <div className="group-hover:scale-110 transition-transform duration-300">
+        {React.cloneElement(icon, { size: 14, strokeWidth: 2.5 })}
+      </div>
     </div>
-    <span className="text-slate-300 font-medium group-hover:text-white transition-colors">{text}</span>
-  </div>
+
+    {/* Text - Turns Emerald on Hover */}
+    <span className="ml-3 text-emerald-500 font-bold text-[13px] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis group-hover:text-emerald-600 transition-colors duration-300">
+      {text}
+    </span>
+  </Motion.div>
 );
 
 export default Auth;
