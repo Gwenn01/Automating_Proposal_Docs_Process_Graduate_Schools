@@ -12,38 +12,111 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState(null);
 
-const fetchHistoryByProposal = async (proposalId) => {
-  try {
-    const res = await axios.get(
-      "http://127.0.0.1:5000/api/get-history",
-      {
-        params: { proposal_id: proposalId }, // ✅ query param
-      }
-    );
-    return res.data;
-  } catch (error) {
-    console.error("Failed to fetch history:", error);
-    return [];
-  }
-};
-
-
-
 const [history, setHistory] = useState([]);
-const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(false);
+
+const proposalId = proposalData?.proposal_id;
 
 useEffect(() => {
-  if (!proposalData?.proposal_id) return;
+  if (!proposalId) return;
 
-  const loadHistory = async () => {
-    setLoading(true);
-    const data = await fetchHistoryByProposal(proposalData.proposal_id);
-    setHistory(data);
-    setLoading(false);
+  const fetchHistory = async () => {
+    try {
+      setLoading(true);
+
+        // FIX: Send reviewer_id in the request body
+        const response = await fetch('http://127.0.0.1:5000/api/get-history', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            proposal_id: proposalId  // Send the proposal_id as intended
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Fetched history data:", data);
+
+      const mappedHistory = data.map(item => ({
+        history_id: item.history_id,
+        proposal_id: item.proposal_id,
+        status: item.status,          // "current" | "history"
+        version_no: item.version_no,
+        created_at: item.created_at,
+      }));
+
+      setHistory(mappedHistory);
+    } catch (err) {
+      console.error("Failed to fetch history:", err);
+      setHistory([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  loadHistory();
-}, [proposalData?.proposal_id]);
+  fetchHistory();
+}, [proposalId]);
+
+
+console.log("Proposal History:", history);
+console.log("proposalData ID:", proposalId);
+
+ const storedUser = localStorage.getItem("user");
+ const userId = storedUser ? JSON.parse(storedUser).user_id : null;
+
+ console.log("User ID from localStorage:", userId);
+
+useEffect(() => {
+  if (!proposalId) return;
+
+  const fetchCheckUpdateProposal = async () => {
+    try {
+      setLoading(true);
+
+
+        // FIX: Send reviewer_id in the request body
+        const response = await fetch('http://127.0.0.1:5000/api/check-update-proposal', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            proposal_id: proposalId,  // Send the proposal_id as intended
+            user_id: userId
+            
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Updated Proposal:", data);
+
+      const mappedHistory = data.map(item => ({
+        message: item.message,
+        status: item.status,
+      }));
+
+      setHistory(mappedHistory);
+    } catch (err) {
+      console.error("Failed to fetch history:", err);
+      setHistory([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCheckUpdateProposal();
+}, [proposalId, userId]);
+
+
 
 
 
@@ -1554,27 +1627,45 @@ useEffect(() => {
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-          <div className="space-y-2">
-                {history.map((item) => (
+            <div className="space-y-2">
+              {history.map((item) => {
+                // Determine the label
+                const label =
+                  item.status === "current"
+                    ? "Current Proposal"
+                    : `Revise ${item.version_no}`;
+
+                // Format the date nicely
+                const formattedDate = new Date(item.created_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                });
+
+                return (
                   <div
                     key={`${item.proposal_id}-${item.version_no}-${item.status}`}
                     className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer"
                   >
+                    {/* Version badge */}
                     <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-sm font-semibold">
                       V{item.version_no}
                     </div>
 
                     <div className="flex-1">
-                      <p className="text-sm text-gray-700 font-medium">
-                        {formatStatus(item)}
-                      </p>
+                      {/* Label */}
+                      <p className="text-sm text-gray-700 font-medium">{label}</p>
+
+                      {/* Proposal ID and date */}
                       <p className="text-xs text-gray-400 mt-1">
-                        Proposal ID {item.proposal_id} • {formatDate(item.created_at)}
+                        Proposal ID {item.proposal_id} • {formattedDate}
                       </p>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
+            </div>
+
 
           </div>
         </div>
