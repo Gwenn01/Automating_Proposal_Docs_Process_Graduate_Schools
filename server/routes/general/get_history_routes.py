@@ -6,10 +6,10 @@ from controller.history_conttroller import (
 
 history_bp = Blueprint('history_bp', __name__)
 
-@history_bp.route('/get-history')
+@history_bp.route('/get-history', methods=['POST'])
 def get_history():
     return get_history_controller()
 
-@history_bp.route('/get-history-data')
+@history_bp.route('/get-history-data', methods=['POST'])
 def get_history_data():
     return get_history_data_controller()
