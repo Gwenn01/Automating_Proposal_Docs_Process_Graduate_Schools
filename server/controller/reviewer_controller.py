@@ -21,6 +21,45 @@ def get_docs_controller():
 
     except Exception as e:
         return {"error": str(e)}, 500
+   
+    
+def get_completed_docs_controller():
+    ...
+    try:
+        ...
+        data = request.get_json(force=True)  # force JSON parsing
+        reviewer_id = data.get('reviewer_id')
+
+        if not reviewer_id:
+            return {"error": "reviewer_id is required"}, 400
+
+        docs = get_docs_for_reviewers(reviewer_id)
+        filter_docs = [doc for doc in docs if doc['status'] == 'approved']
+        data_docs = [get_docs_mapper(d) for d in filter_docs]
+
+        return jsonify(data_docs), 200
+    except Exception as e:
+        return {"error": str(e)}, 500
+    
+
+
+def get_pending_docs_controller():
+    try:
+        ...
+        data = request.get_json(force=True)  # force JSON parsing
+        reviewer_id = data.get('reviewer_id')
+
+        if not reviewer_id:
+            return {"error": "reviewer_id is required"}, 400
+
+        docs = get_docs_for_reviewers(reviewer_id)
+        filter_docs = [doc for doc in docs if doc['status'] == 'under_review']
+        data_docs = [get_docs_mapper(d) for d in filter_docs]
+
+        return jsonify(data_docs), 200
+    except Exception as e:
+        return {"error": str(e)}, 500
+    
 
 def put_reviews_item_docs_controller():
     try:

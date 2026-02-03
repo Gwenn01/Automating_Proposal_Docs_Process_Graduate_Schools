@@ -1,6 +1,8 @@
 from flask import Blueprint, request
 from controller.reviewer_controller import (
     get_docs_controller,
+    get_completed_docs_controller,
+    get_pending_docs_controller,
     put_reviews_item_docs_controller,
     get_reviewer_per_docs_controller,
     update_review_items_controller,
@@ -12,6 +14,15 @@ reviewer_db = Blueprint('reviewer', __name__)
 @reviewer_db.route('/get-docs-for-reviewer', methods=['POST'])
 def get_docs():
     return get_docs_controller()
+
+@reviewer_db.route('/get-completed-docs-for-reviewer', methods=['POST'])
+def get_completed_docs():
+    return get_completed_docs_controller()
+
+@reviewer_db.route('/get-pending-docs-for-reviewer', methods=['POST'])
+def get_pending_docs():
+    return get_pending_docs_controller()
+
 
 @reviewer_db.route('/post-reviews-item', methods=['POST'])
 def post_review_item():
