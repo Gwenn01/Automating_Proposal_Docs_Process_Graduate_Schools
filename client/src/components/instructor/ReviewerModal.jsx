@@ -1612,62 +1612,73 @@ useEffect(() => {
         <div className="bg-white h-[95vh] w-1/5 max-w-2xl shadow-sm border border-gray-200 flex flex-col rounded-tr-xl rounded-br-xl">
 
 
-          <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-800">History</h2>
-              <p className="text-xs text-gray-400 mt-1">Recent changes of proposal</p>
-            </div>
-
-            <button
-              onClick={onClose}
-              className="p-3 bg-gray-200 rounded-full text-black hover:text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800">History</h2>
+            <p className="text-xs text-gray-400 mt-1">Recent changes of proposal</p>
           </div>
+
+          <button
+            onClick={() => {
+              setHistory(null); // or setHistory(null) if you prefer
+              onClose();       // then call the existing onClose
+            }}
+            className="p-3 bg-gray-200 rounded-full text-black hover:text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
             <div className="space-y-2">
-              {history.map((item) => {
-                // Determine the label
-                const label =
-                  item.status === "current"
-                    ? "Current Proposal"
-                    : `Revise ${item.version_no}`;
+              {true ? (
+                // Spinner container
+                <div className="flex flex-col gap-3 justify-center items-center py-20">
+                  <div className="w-10 h-10 border-4 border-emerald-300 border-t-emerald-600 rounded-full animate-spin"></div>
 
-                // Format the date nicely
-                const formattedDate = new Date(item.created_at).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                });
+                  <p className="text-sm font-light text-gray-500">Loading History</p>
+                </div>
+              ) : (
+                history.map((item) => {
+                  // Determine the label
+                  const label =
+                    item.status === "current"
+                      ? "Current Proposal"
+                      : `Revise ${item.version_no}`;
 
-                return (
-                  <div
-                    key={`${item.proposal_id}-${item.version_no}-${item.status}`}
-                    className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer"
-                  >
-                    {/* Version badge */}
-                    <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-sm font-semibold">
-                      V{item.version_no}
+                  // Format the date nicely
+                  const formattedDate = new Date(item.created_at).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  });
+
+                  return (
+                    <div
+                      key={`${item.proposal_id + 1}`}
+                      className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer"
+                    >
+                      {/* Version badge */}
+                      <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-sm font-semibold">
+                        V{item.version_no}
+                      </div>
+
+                      <div className="flex-1">
+                        {/* Label */}
+                        <p className="text-sm text-gray-700 font-medium">{label}</p>
+
+                        {/* Proposal ID and date */}
+                        <p className="text-xs text-gray-400 mt-1">
+                          Proposal ID {item.proposal_id} • {formattedDate}
+                        </p>
+                      </div>
                     </div>
-
-                    <div className="flex-1">
-                      {/* Label */}
-                      <p className="text-sm text-gray-700 font-medium">{label}</p>
-
-                      {/* Proposal ID and date */}
-                      <p className="text-xs text-gray-400 mt-1">
-                        Proposal ID {item.proposal_id} • {formattedDate}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
-
-
           </div>
+
         </div>
       </div>
     </>
