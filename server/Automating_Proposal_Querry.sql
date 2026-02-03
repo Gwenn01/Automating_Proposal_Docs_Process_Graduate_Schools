@@ -472,6 +472,16 @@ SELECT * FROM proposal_content_history;
 SELECT * FROM proposal_review_history;
 SELECT * FROM proposal_review_items_history;
 
+ALTER TABLE proposal_reviews
+MODIFY review_deadline DATETIME
+DEFAULT (DATE_ADD(NOW(), INTERVAL 7 DAY));
+
+
+ALTER TABLE proposal_reviews
+ADD review_deadline DATETIME,
+ADD is_expired TINYINT DEFAULT 0;
+
+
 UPDATE proposal_cover_page
 SET proposal_id = 1
 WHERE cover_id = 6;

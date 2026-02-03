@@ -35,6 +35,7 @@ from model.implementor.put_proposals import (
 )
 from middleware.proposal_validator import validate_proposal_data, validate_proposal_cover_page_data, validate_proposal_content_data
 from model.implementor.handle_check_edit_proposal import handle_check_edit_proposal
+from model.implementor.put_proposal_deadline import put_proposal_deadline_db
 # creating or inserting proposal into database
 def save_proposal():
     data = request.get_json()
@@ -112,6 +113,7 @@ def handle_insertion_history(proposal_id, user_id):
         for reviewer in reviewer_id:
             review_history_id = insert_review_history(history_id, reviewer["user_id"], version_no)
             review_item = get_review_base_proposal_user_id(proposal_id, reviewer["user_id"])
+            reset_review = put_proposal_deadline_db(proposal_id, reviewer["user_id"])
             if review_item:
                 insert_review_items_history(review_history_id, review_item)
         
@@ -194,7 +196,7 @@ def revise_proposals_controller():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-    
+  #check if its okay to update ==================================================================================================================  
 def check_edit_proposal_controller():
     try:
         data = request.get_json(force=True)
