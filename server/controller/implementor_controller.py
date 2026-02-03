@@ -34,7 +34,7 @@ from model.implementor.put_proposals import (
     update_proposal_status
 )
 from middleware.proposal_validator import validate_proposal_data, validate_proposal_cover_page_data, validate_proposal_content_data
-
+from model.implementor.handle_check_edit_proposal import handle_check_edit_proposal
 # creating or inserting proposal into database
 def save_proposal():
     data = request.get_json()
@@ -191,5 +191,20 @@ def revise_proposals_controller():
         else:
             return jsonify({"message": "Proposal revision failed"}), 500
         
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    
+def check_edit_proposal_controller():
+    try:
+        data = request.get_json(force=True)
+        proposal_id = data.get("proposal_id")
+        user_id = data.get("user_id")
+
+        if handle_check_edit_proposal(proposal_id, user_id):
+            return jsonify({"message": "Proposal can be edited", "status": True}), 200
+        else:
+            return jsonify({"message": "Proposal cannot be edited", "status": False}), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -1,7 +1,11 @@
 from flask import Blueprint
-from controller.implementor_controller import revise_proposals_controller
+from controller.implementor_controller import revise_proposals_controller, check_edit_proposal_controller
 
 implementor_bp = Blueprint('implementor_bp', __name__)
+
+@implementor_bp.route('/check-update-proposal', methods=['POST'])
+def check_update_proposal():
+    return check_edit_proposal_controller()
 
 @implementor_bp.route('/update-proposal-docs', methods=['POST'])
 def update_docs_implementor():
