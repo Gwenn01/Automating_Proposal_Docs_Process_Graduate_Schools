@@ -14,6 +14,8 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
 
 const [history, setHistory] = useState([]);
 const [loading, setLoading] = useState(false);
+const [selectedHistoryData, setSelectedHistoryData] = useState(null);
+const [loadingHistoryData, setLoadingHistoryData] = useState(false);
 
 const proposalId = proposalData?.proposal_id;
 
@@ -24,33 +26,39 @@ useEffect(() => {
     try {
       setLoading(true);
 
-        // FIX: Send reviewer_id in the request body
-        const response = await fetch('http://127.0.0.1:5000/api/get-history', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            proposal_id: proposalId  // Send the proposal_id as intended
-          }),
-        });
+      const response = await fetch('http://127.0.0.1:5000/api/get-history', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          proposal_id: proposalId
+        }),
+      });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-        const data = await response.json();
-        console.log("Fetched history data:", data);
+      const data = await response.json();
+      console.log("Fetched history data:", data);
 
-      const mappedHistory = data.map(item => ({
-        history_id: item.history_id,
-        proposal_id: item.proposal_id,
-        status: item.status,          // "current" | "history"
-        version_no: item.version_no,
-        created_at: item.created_at,
-      }));
+      // Ensure data is an array before mapping
+      if (Array.isArray(data)) {
+        const mappedHistory = data.map(item => ({
+          history_id: item.history_id,
+          proposal_id: item.proposal_id,
+          status: item.status,          // "current" | "history"
+          version_no: item.version_no,
+          created_at: item.created_at,
+        }));
 
-      setHistory(mappedHistory);
+        setHistory(mappedHistory);
+        console.log("Mapped history:", mappedHistory);
+      } else {
+        console.error("Expected array but got:", typeof data);
+        setHistory([]);
+      }
     } catch (err) {
       console.error("Failed to fetch history:", err);
       setHistory([]);
@@ -63,53 +71,40 @@ useEffect(() => {
 }, [proposalId]);
 
 
-console.log("Proposal History:", history);
-console.log("proposalData ID:", proposalId);
-
  const storedUser = localStorage.getItem("user");
  const userId = storedUser ? JSON.parse(storedUser).user_id : null;
 
- console.log("User ID from localStorage:", userId);
 
 useEffect(() => {
-  if (!proposalId) return;
+  if (!proposalId || !userId) return;
 
   const fetchCheckUpdateProposal = async () => {
     try {
-      setLoading(true);
+      const response = await fetch('http://127.0.0.1:5000/api/check-update-proposal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          proposal_id: proposalId,
+          user_id: userId
+        }),
+      });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-        // FIX: Send reviewer_id in the request body
-        const response = await fetch('http://127.0.0.1:5000/api/check-update-proposal', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            proposal_id: proposalId,  // Send the proposal_id as intended
-            user_id: userId
-            
-          }),
-        });
+      const data = await response.json();
+      console.log("Check Update Proposal Response:", data);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("Updated Proposal:", data);
-
-      const mappedHistory = data.map(item => ({
-        message: item.message,
-        status: item.status,
-      }));
-
-      setHistory(mappedHistory);
+      // This endpoint returns {message: string, status: boolean}, not an array
+      // So we don't need to set history here, just log the response
+      if (!data.status) {
+        console.log("Note:", data.message);
+      }
     } catch (err) {
-      console.error("Failed to fetch history:", err);
-      setHistory([]);
-    } finally {
-      setLoading(false);
+      console.error("Failed to check update proposal:", err);
     }
   };
 
@@ -117,6 +112,53 @@ useEffect(() => {
 }, [proposalId, userId]);
 
 
+// Function to fetch history data when clicking on a history item
+const fetchHistoryData = async (historyId) => {
+  try {
+    setLoadingHistoryData(true);
+    
+    const response = await fetch('http://127.0.0.1:5000/api/get-history-data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        history_id: historyId
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error:", errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Structure the data to match the expected format
+    // The API returns the raw data, we need to wrap it in the same structure as proposalData
+    const structuredData = {
+      ...proposalData, // Keep the proposal metadata
+      history_id: historyId, // Add history_id for tracking
+      reviews_per_docs: data // The fetched data becomes reviews_per_docs
+    };
+    
+    
+    // Set the selected history data which will replace the current view
+    setSelectedHistoryData(structuredData);
+    
+  } catch (err) {
+    console.error("Failed to fetch history data:", err);
+    alert("Failed to load history data. Please try again.");
+  } finally {
+    setLoadingHistoryData(false);
+  }
+};
+
+// Function to go back to current proposal view
+const resetToCurrentProposal = () => {
+  setSelectedHistoryData(null);
+};
 
 
 
@@ -125,57 +167,80 @@ useEffect(() => {
   if (!rpd) return null;
 
   // Use editedData when in edit mode, otherwise use proposalData
-  const activeData = isEditing ? editedData : proposalData;
+  // If selectedHistoryData exists, use it instead
+  const activeData = selectedHistoryData || (isEditing ? editedData : proposalData);
   const activeRpd = activeData?.reviews_per_docs;
 
-  const statusStyle = getStatusStyle(proposalData.status);
-
-
-  //console.log("Proposal Data in ReviewerModal:", proposalData);
+  // Add safety check for activeRpd
+  if (!activeRpd) {
+    console.error("activeRpd is undefined", { activeData, selectedHistoryData, isEditing, editedData, proposalData });
+    return null;
+  }
 
   // Normalize data from the active source
-  const normalized = {
-    cover: activeRpd.cover_page,
-    project_profile: activeRpd.project_profile,
-    rationale: {
-      content: activeRpd.rationale?.rationale_content,
-      reviews: activeRpd.rationale?.reviews || [],
+// Replace the normalization section (around line 235-265) with this:
+
+const normalized = {
+  cover: activeRpd.cover_page || {},
+  project_profile: activeRpd.project_profile || {},
+  rationale: {
+    content: activeRpd.rationale?.rationale_content || "",
+    reviews: activeRpd.rationale?.reviews || [],
+  },
+  significance: {
+    content: activeRpd.significance?.significance_content || "",
+    reviews: activeRpd.significance?.reviews || [],
+  },
+  methodology: {
+    content: activeRpd.methodology?.methodology_content || "",
+    reviews: activeRpd.methodology?.reviews || [],
+  },
+  objectives: {
+    general: activeRpd.objectives?.general_content || "",
+    specific: activeRpd.objectives?.specific_content || "",
+    reviewsGeneral: activeRpd.objectives?.reviews_general || [],
+    reviewsSpecific: activeRpd.objectives?.reviews_specific || [],
+  },
+  planOfActivities: {
+    content: {
+      activity_title: activeRpd.plan_of_activities?.plan_of_activities_content?.activity_title || "",
+      activity_date: activeRpd.plan_of_activities?.plan_of_activities_content?.activity_date || "",
+      schedule: Array.isArray(activeRpd.plan_of_activities?.plan_of_activities_content?.schedule)
+        ? activeRpd.plan_of_activities.plan_of_activities_content.schedule
+        : []
     },
-    significance: {
-      content: activeRpd.significance?.significance_content,
-      reviews: activeRpd.significance?.reviews || [],
+    reviews: activeRpd.plan_of_activities?.reviews || [],
+  },
+  organization: {
+    content: Array.isArray(activeRpd.organization_and_staffing?.organization_and_staffing_content)
+      ? activeRpd.organization_and_staffing.organization_and_staffing_content
+      : [],
+    reviews: activeRpd.organization_and_staffing?.reviews || [],
+  },
+  expectedOutput: {
+    content: activeRpd.expected_output_outcome?.["6ps"] || {},
+    reviews: activeRpd.expected_output_outcome?.reviews || [],
+  },
+  sustainability: {
+    content: activeRpd.sustainability_plan?.sustainability_plan_content || "",
+    reviews: activeRpd.sustainability_plan?.reviews || [],
+  },
+  budget: {
+    content: {
+      meals: Array.isArray(activeRpd.budgetary_requirement?.budgetary_requirement?.meals)
+        ? activeRpd.budgetary_requirement.budgetary_requirement.meals
+        : [],
+      supplies: Array.isArray(activeRpd.budgetary_requirement?.budgetary_requirement?.supplies)
+        ? activeRpd.budgetary_requirement.budgetary_requirement.supplies
+        : [],
+      transport: Array.isArray(activeRpd.budgetary_requirement?.budgetary_requirement?.transport)
+        ? activeRpd.budgetary_requirement.budgetary_requirement.transport
+        : [],
+      totals: activeRpd.budgetary_requirement?.budgetary_requirement?.totals || {}
     },
-    methodology: {
-      content: activeRpd.methodology?.methodology_content,
-      reviews: activeRpd.methodology?.reviews || [],
-    },
-    objectives: {
-      general: activeRpd.objectives?.general_content,
-      specific: activeRpd.objectives?.specific_content,
-      reviewsGeneral: activeRpd.objectives?.reviews_general || [],
-      reviewsSpecific: activeRpd.objectives?.reviews_specific || [],
-    },
-    planOfActivities: {
-      content: activeRpd.plan_of_activities?.plan_of_activities_content,
-      reviews: activeRpd.plan_of_activities?.reviews || [],
-    },
-    organization: {
-      content: activeRpd.organization_and_staffing?.organization_and_staffing_content,
-      reviews: activeRpd.organization_and_staffing?.reviews || [],
-    },
-    expectedOutput: {
-      content: activeRpd.expected_output_outcome?.["6ps"],
-      reviews: activeRpd.expected_output_outcome?.reviews || [],
-    },
-    sustainability: {
-      content: activeRpd.sustainability_plan?.sustainability_plan_content,
-      reviews: activeRpd.sustainability_plan?.reviews || [],
-    },
-    budget: {
-      content: activeRpd.budgetary_requirement?.budgetary_requirement,
-      reviews: activeRpd.budgetary_requirement?.reviews || [],
-    },
-  };
+    reviews: activeRpd.budgetary_requirement?.reviews || [],
+  },
+};
 
   const handleEdit = () => {
     // Deep clone the proposal data for editing
@@ -392,7 +457,7 @@ useEffect(() => {
                 <div className="flex items-center gap-3 ">
                   <div className="w-1 h-5 bg-white/80 rounded-full"></div>
                   <h3 className="font-semibold text-xs uppercase tracking-wider text-emerald-100">
-                    Reviewer's Evaluation on Proposal
+                    {selectedHistoryData ? "Historical Version" : "Reviewer's Evaluation on Proposal"}
                   </h3>
                 </div>
                 <h1 className="text-xl font-bold leading-tight text-white drop-shadow-sm">
@@ -401,7 +466,15 @@ useEffect(() => {
               </div>
 
               <div className="">
-                {!isEditing ? (
+                {selectedHistoryData ? (
+                  <button
+                    onClick={resetToCurrentProposal}
+                    className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-md font-semibold
+                              bg-blue-500 text-white hover:bg-blue-600 transition text-sm"
+                  >
+                    Back to Current
+                  </button>
+                ) : !isEditing ? (
                   <button
                     onClick={handleEdit}
                     className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-md font-semibold
@@ -438,420 +511,235 @@ useEffect(() => {
           {/* Main Content */}
           <div className="p-14 overflow-auto bg-white">
 
-            {/* ========== COVER PAGE SECTION ========== */}
-            <section className="max-w-5xl mx-auto px-5 rounded-sm shadow-sm font-sans text-gray-900 leading-relaxed">
-              
-              <div className="space-y-4 font-normal text-base">
-                <div className={isEditing ? "bg-blue-50 rounded-lg p-3" : ""}>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Submission Date:</label>
-                  <EditableDate
-                    value={normalized?.cover.submission_date}
-                    onChange={(val) => updateField('reviews_per_docs.cover_page.submission_date', val)}
-                    className="font-medium"
-                  />
-                </div>
-
-                <div className="uppercase ">
-                  <p className='font-bold'>DR. ROY N. VILLALOBOS</p>
-                  <p>University President</p>
-                  <p>President Ramon Magsaysay State University</p>
-                </div>
-
-                <p>Dear Sir:</p>
-
-                <div className={isEditing ? "bg-blue-50 rounded-lg p-3 space-y-3" : ""}>
-                  <p className="text-gray-800">
-                    I have the honor to submit the proposal for your consideration and appropriate action 
-                    for the proposed extension program entitled{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.proposal_summary?.program_title}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.program_title', val)}
-                        className="inline"
-                      />
-                    </span>
-                    , with the approved budget of{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.proposal_summary?.approved_budget?.words}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.approved_budget.words', val)}
-                        className="inline"
-                      />
-                    </span>
-                    ;{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.proposal_summary?.approved_budget?.amount}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.approved_budget.amount', val)}
-                        className="inline"
-                      />
-                    </span>
-                    {" "}with the duration of{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.proposal_summary?.duration?.words}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.duration.words', val)}
-                        className="inline"
-                      />
-                    </span>
-                    {" "}years,{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.proposal_summary?.proposal_coverage_period}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.proposal_coverage_period', val)}
-                        className="inline"
-                      />
-                    </span>.
-                  </p>
-
-                  <p className="text-gray-800">
-                    This program includes an activity entitled{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.activity_details?.title}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.title', val)}
-                        className="inline"
-                      />
-                    </span>
-                    {" "}on{" "}
-                    {isEditing ? (
-                      <EditableDate
-                        value={normalized?.cover.activity_details?.date}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.date', val)}
-                      />
-                    ) : (
-                      <span>
-                        {normalized?.cover.activity_details?.date 
-                          ? new Date(normalized?.cover.activity_details.date).toLocaleDateString("en-US", { 
-                              year: "numeric", 
-                              month: "long", 
-                              day: "numeric" 
-                            })
-                          : "N/A"}
-                      </span>
-                    )}
-                    {" "}at{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.activity_details?.venue}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.venue', val)}
-                        className="inline"
-                      />
-                    </span>
-                    . This activity is valuable{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.activity_details?.value_statement}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.value_statement', val)}
-                        className="inline"
-                      />
-                    </span>
-                    . The requested expenses for this activity from the university is{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.activity_details?.requested_budget}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.requested_budget', val)}
-                        className="inline"
-                      />
-                    </span>
-                    , which will be used to defray expenses for food, transportation, supplies and materials, 
-                    and other expenses related to these activities.
-                  </p>
-
-                  <p className="text-gray-800">
-                    Further, there is{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.participants?.prmsu?.words}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.prmsu.words', val)}
-                        className="inline"
-                      />
-                    </span>
-                    {" "}(
-                    <span className="inline-block">
-                      <EditableNumber
-                        value={normalized?.cover.participants?.prmsu?.count}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.prmsu.count', val)}
-                        className="inline"
-                      />
-                    </span>
-                    ) the total number of participants from PRMSU, another{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.participants?.partner_agency?.words}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.words', val)}
-                        className="inline"
-                      />
-                    </span>
-                    {" "}(
-                    <span className="inline-block">
-                      <EditableNumber
-                        value={normalized?.cover.participants?.partner_agency?.count}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.count', val)}
-                        className="inline"
-                      />
-                    </span>
-                    ) from the collaborating agency,{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.participants?.partner_agency?.name}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.name', val)}
-                        className="inline"
-                      />
-                    </span>
-                    , and{" "}
-                    <span className="inline-block">
-                      <EditableText
-                        value={normalized?.cover.participants?.trainees?.words}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.trainees.words', val)}
-                        className="inline"
-                      />
-                    </span>
-                    {" "}(
-                    <span className="inline-block">
-                      <EditableNumber
-                        value={normalized?.cover.participants?.trainees?.count}
-                        onChange={(val) => updateField('reviews_per_docs.cover_page.participants.trainees.count', val)}
-                        className="inline"
-                      />
-                    </span>
-                    ) trainees from the abovementioned community.
-                  </p>
-                </div>
-
-                <p className="">Your favorable response regarding this matter will be highly appreciated.</p>
-
-                <p className="italic">Prepared by:</p>
-                <p className="py-1">Proponent</p>
-                <p className="italic">Noted by:</p>
-
-                <div className="">
-                  <div className="grid grid-cols-2">
-                    <div className="">
-                      <p className="pt-4">Campus Extension Coordinator</p>
-                      <p className="pt-4 italic">Endorsed by:</p>
-                      <p className="pt-4"></p>
-                      <p className="pt-1">Campus Director</p>
-                      <p className="pt-4 italic">Recommending Approval:</p>
-                      <p className="pt-7 font-bold text-[16px]">MARLON JAMES A. DEDICATORIA, Ph.D.</p>
-                      <p className="pt-1">Vice-President, Research and Development</p>
-                    </div>
-
-                    <div className="">
-                      <p className="pt-4">College Dean</p>
-                      <p className="pt-4"></p>
-                      <p className="pt-4 font-bold text-[16px]">KATHERINE M.UY, MAEd</p>
-                      <p className="pt-1"> Director, Extension Services</p>
-                      <p className="pt-4 italic">Certified Funds Available</p>
-                      <p className="pt-7 font-bold text-[16px]">ROBERTO C. BRIONES JR., CPA</p>
-                      <p className="pt-1">University Accountant IV</p>
-                    </div>
-                  </div>
-                  <p className="pt-10 italic text-center">Approved by:</p>
-                  <p className="pt-5 font-bold text-[16px] text-center">ROY N. VILLALOBOS, DPA</p>
-                  <p className="pt-1 text-center">University President</p>
-                </div>  
+            {/* Loading indicator for history data */}
+            {loadingHistoryData && (
+              <div className="flex flex-col gap-3 justify-center items-center py-20">
+                <div className="w-10 h-10 border-4 border-emerald-300 border-t-emerald-600 rounded-full animate-spin"></div>
+                <p className="text-sm font-light text-gray-500">Loading Historical Data...</p>
               </div>
-            </section>         
-
-            {/* ========== REVIEWER'S COMMENTS (Cover page) ========== */}
-            {normalized?.cover.reviews?.length > 0 ? (
-              normalized?.cover.reviews.map((review, index) => (
-                <ReviewerComment
-                  key={review.review_id || index}
-                  title={`Reviewer's Comment ${index + 1}`}
-                  comment={review.comment}
-                  reviewerName={review.reviewer_name}
-                />
-              ))
-            ) : (
-              <ReviewerComment
-                comment=""
-                reviewerName=""
-              />
             )}
 
-            {/* ========== CONTENT PAGE SECTION ========== */}
-            <section>
-              <h2 className="text-xl font-bold my-8">I. PROJECT PROFILE</h2>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full border border-black text-sm">
-                  <tbody>
-                    <tr className="border-b border-black">
-                      <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Program Title:
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.program_title}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.program_title', val)}
-                        />
-                      </td>
-                    </tr>
+            {!loadingHistoryData && (
+              <>
+                {/* ========== COVER PAGE SECTION ========== */}
+                <section className="max-w-5xl mx-auto px-5 rounded-sm shadow-sm font-sans text-gray-900 leading-relaxed">
+                  
+                  <div className="space-y-4 font-normal text-base">
+                    <div className={isEditing ? "bg-blue-50 rounded-lg p-3" : ""}>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">Submission Date:</label>
+                      <EditableDate
+                        value={normalized?.cover.submission_date}
+                        onChange={(val) => updateField('reviews_per_docs.cover_page.submission_date', val)}
+                        className="font-medium"
+                      />
+                    </div>
 
-                    <tr className="border-b border-black">
-                      <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Project Title:
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.project_title}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.project_title', val)}
-                        />
-                      </td>
-                    </tr>
+                    <div className="uppercase ">
+                      <p className='font-bold'>DR. ROY N. VILLALOBOS</p>
+                      <p>University President</p>
+                      <p>President Ramon Magsaysay State University</p>
+                    </div>
 
-                    <tr className="border-b border-black">
-                      <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Activity Title:
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.activity_title}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.activity_title', val)}
-                        />
-                      </td>
-                    </tr>
+                    <p>Dear Sir:</p>
 
-                    <tr className="border-b border-black">
-                      <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
-                        SDG's
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.sdg_alignment}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.sdg_alignment', val)}
-                        />
-                      </td>
-                    </tr>
+                    <div className={isEditing ? "bg-blue-50 rounded-lg p-3 space-y-3" : ""}>
+                      <p className="text-gray-800">
+                        I have the honor to submit the proposal for your consideration and appropriate action 
+                        for the proposed extension program entitled{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.proposal_summary?.program_title}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.program_title', val)}
+                            className="inline"
+                          />
+                        </span>
+                        , with the approved budget of{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.proposal_summary?.approved_budget?.words}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.approved_budget.words', val)}
+                            className="inline"
+                          />
+                        </span>
+                        ;{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.proposal_summary?.approved_budget?.amount}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.approved_budget.amount', val)}
+                            className="inline"
+                          />
+                        </span>
+                        {" "}with the duration of{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.proposal_summary?.duration?.words}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.duration.words', val)}
+                            className="inline"
+                          />
+                        </span>
+                        {" "}years,{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.proposal_summary?.proposal_coverage_period}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.proposal_coverage_period', val)}
+                            className="inline"
+                          />
+                        </span>.
+                      </p>
 
-                    <tr className="border-b border-black">
-                      <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Extension Agenda 
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.extension_agenda}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.extension_agenda', val)}
-                        />
-                      </td>
-                    </tr>
+                      <p className="text-gray-800">
+                        This program includes an activity entitled{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.activity_details?.title}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.title', val)}
+                            className="inline"
+                          />
+                        </span>
+                        {" "}on{" "}
+                        {isEditing ? (
+                          <EditableDate
+                            value={normalized?.cover.activity_details?.date}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.date', val)}
+                          />
+                        ) : (
+                          <span>
+                            {normalized?.cover.activity_details?.date 
+                              ? new Date(normalized?.cover.activity_details.date).toLocaleDateString("en-US", { 
+                                  year: "numeric", 
+                                  month: "long", 
+                                  day: "numeric" 
+                                })
+                              : "N/A"}
+                          </span>
+                        )}
+                        {" "}at{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.activity_details?.venue}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.venue', val)}
+                            className="inline"
+                          />
+                        </span>
+                        . This activity is valuable{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.activity_details?.value_statement}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.value_statement', val)}
+                            className="inline"
+                          />
+                        </span>
+                        . The requested expenses for this activity from the university is{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.activity_details?.requested_budget}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.requested_budget', val)}
+                            className="inline"
+                          />
+                        </span>
+                        , which will be used to defray expenses for food, transportation, supplies and materials, 
+                        and other expenses related to these activities.
+                      </p>
 
-                    <tr className="border-b border-black">
-                      <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Proponents: Project Leader
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.proponents?.project_leader}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.proponents.project_leader', val)}
-                        />
-                      </td>
-                    </tr>
+                      <p className="text-gray-800">
+                        Further, there is{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.participants?.prmsu?.words}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.participants.prmsu.words', val)}
+                            className="inline"
+                          />
+                        </span>
+                        {" "}(
+                        <span className="inline-block">
+                          <EditableNumber
+                            value={normalized?.cover.participants?.prmsu?.count}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.participants.prmsu.count', val)}
+                            className="inline"
+                          />
+                        </span>
+                        ) the total number of participants from PRMSU, another{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.participants?.partner_agency?.words}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.words', val)}
+                            className="inline"
+                          />
+                        </span>
+                        {" "}(
+                        <span className="inline-block">
+                          <EditableNumber
+                            value={normalized?.cover.participants?.partner_agency?.count}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.count', val)}
+                            className="inline"
+                          />
+                        </span>
+                        ) from the collaborating agency,{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.participants?.partner_agency?.name}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.name', val)}
+                            className="inline"
+                          />
+                        </span>
+                        , and{" "}
+                        <span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover.participants?.trainees?.words}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.participants.trainees.words', val)}
+                            className="inline"
+                          />
+                        </span>
+                        {" "}(
+                        <span className="inline-block">
+                          <EditableNumber
+                            value={normalized?.cover.participants?.trainees?.count}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.participants.trainees.count', val)}
+                            className="inline"
+                          />
+                        </span>
+                        ) trainees from the abovementioned community.
+                      </p>
+                    </div>
 
-                    <tr className="border-b border-black">
-                      <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Members:
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.proponents?.members}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.proponents.members', val)}
-                        />
-                      </td>
-                    </tr>
+                    <p className="">Your favorable response regarding this matter will be highly appreciated.</p>
 
-                    <tr className="border-b border-black">
-                      <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        College/Campus/Mandated Program:
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.college_campus_program}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.college_campus_program', val)}
-                        />
-                      </td>
-                    </tr>
+                    <p className="italic">Prepared by:</p>
+                    <p className="py-1">Proponent</p>
+                    <p className="italic">Noted by:</p>
 
-                    <tr className="border-b border-black">
-                      <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Collaborating Agencies:
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.collaborating_agencies}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.collaborating_agencies', val)}
-                        />
-                      </td>
-                    </tr>
+                    <div className="">
+                      <div className="grid grid-cols-2">
+                        <div className="">
+                          <p className="pt-4">Campus Extension Coordinator</p>
+                          <p className="pt-4 italic">Endorsed by:</p>
+                          <p className="pt-4"></p>
+                          <p className="pt-1">Campus Director</p>
+                          <p className="pt-4 italic">Recommending Approval:</p>
+                          <p className="pt-7 font-bold text-[16px]">MARLON JAMES A. DEDICATORIA, Ph.D.</p>
+                          <p className="pt-1">Vice-President, Research and Development</p>
+                        </div>
 
-                    <tr className="border-b border-black">
-                      <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Community Location:
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.community_location}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.community_location', val)}
-                        />
-                      </td>
-                    </tr>
+                        <div className="">
+                          <p className="pt-4">College Dean</p>
+                          <p className="pt-4"></p>
+                          <p className="pt-4 font-bold text-[16px]">KATHERINE M.UY, MAEd</p>
+                          <p className="pt-1"> Director, Extension Services</p>
+                          <p className="pt-4 italic">Certified Funds Available</p>
+                          <p className="pt-7 font-bold text-[16px]">ROBERTO C. BRIONES JR., CPA</p>
+                          <p className="pt-1">University Accountant IV</p>
+                        </div>
+                      </div>
+                      <p className="pt-10 italic text-center">Approved by:</p>
+                      <p className="pt-5 font-bold text-[16px] text-center">ROY N. VILLALOBOS, DPA</p>
+                      <p className="pt-1 text-center">University President</p>
+                    </div>  
+                  </div>
+                </section>         
 
-                    <tr className="border-b border-black">
-                      <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Target Sector:
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.target_sector}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.target_sector', val)}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr className="border-b border-black">
-                      <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Number of Beneficiaries
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableNumber
-                          value={normalized?.project_profile?.number_of_beneficiaries}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.number_of_beneficiaries', val)}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr className="border-b border-black">
-                      <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Period of Implementation/ Duration:
-                      </td>
-                      <td className="px-4 py-3">
-                        <EditableText
-                          value={normalized?.project_profile?.implementation_period}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.implementation_period', val)}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr className="border-b border-black">
-                      <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
-                        Budgetary Requirements (PhP): 
-                      </td>
-                      <td className="px-4 py-3">
-                        Php{" "}
-                        <EditableNumber
-                          value={normalized?.project_profile?.budgetary_requirements}
-                          onChange={(val) => updateField('reviews_per_docs.project_profile.budgetary_requirements', val)}
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                {/* Reviewer's Comments - Project Profile */}
-                {normalized?.project_profile.reviews?.length > 0 ? (
-                  normalized?.project_profile.reviews.map((review, index) => (
+                {/* ========== REVIEWER'S COMMENTS (Cover page) ========== */}
+                {normalized?.cover.reviews?.length > 0 ? (
+                  normalized?.cover.reviews.map((review, index) => (
                     <ReviewerComment
                       key={review.review_id || index}
                       title={`Reviewer's Comment ${index + 1}`}
@@ -865,36 +753,231 @@ useEffect(() => {
                     reviewerName=""
                   />
                 )}
-              </div>
 
-              {/* Text Sections */}
-              <div className="space-y-6 text-gray-700 leading-relaxed">
-                {/* RATIONALE */}
-                <div className="">
-                  <h3 className="font-bold text-gray-900 pt-10 text-xl">II. RATIONALE</h3>
-                  <div className={isEditing ? "bg-blue-50 rounded-lg p-4 mt-3" : "mt-3"}>
-                    <EditableText
-                      value={normalized?.rationale.content}
-                      onChange={(val) => updateField('reviews_per_docs.rationale.rationale_content', val)}
-                      multiline={true}
-                      className="text-base"
-                    />
+                {/* ========== CONTENT PAGE SECTION ========== */}
+                <section>
+                  <h2 className="text-xl font-bold my-8">I. PROJECT PROFILE</h2>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full border border-black text-sm">
+                      <tbody>
+                        <tr className="border-b border-black">
+                          <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Program Title:
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.program_title}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.program_title', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Project Title:
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.project_title}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.project_title', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Activity Title:
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.activity_title}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.activity_title', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="border-r border-black px-4 py-3 font-bold text-gray-900">
+                            SDG's
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.sdg_alignment}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.sdg_alignment', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Extension Agenda 
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.extension_agenda}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.extension_agenda', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Proponents: Project Leader
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.proponents?.project_leader}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.proponents.project_leader', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Members:
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.proponents?.members}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.proponents.members', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                            College/Campus/Mandated Program:
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.college_campus_program}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.college_campus_program', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Collaborating Agencies:
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.collaborating_agencies}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.collaborating_agencies', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Community Location:
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.community_location}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.community_location', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Target Sector:
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.target_sector}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.target_sector', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Number of Beneficiaries
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableNumber
+                              value={normalized?.project_profile?.number_of_beneficiaries}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.number_of_beneficiaries', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Period of Implementation/ Duration:
+                          </td>
+                          <td className="px-4 py-3">
+                            <EditableText
+                              value={normalized?.project_profile?.implementation_period}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.implementation_period', val)}
+                            />
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-black">
+                          <td className="w-1/4 border-r border-black px-4 py-3 font-bold text-gray-900">
+                            Budgetary Requirements (PhP): 
+                          </td>
+                          <td className="px-4 py-3">
+                            Php{" "}
+                            <EditableNumber
+                              value={normalized?.project_profile?.budgetary_requirements}
+                              onChange={(val) => updateField('reviews_per_docs.project_profile.budgetary_requirements', val)}
+                            />
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    {/* Reviewer's Comments - Project Profile */}
+                    {normalized?.project_profile.reviews?.length > 0 ? (
+                      normalized?.project_profile.reviews.map((review, index) => (
+                        <ReviewerComment
+                          key={review.review_id || index}
+                          title={`Reviewer's Comment ${index + 1}`}
+                          comment={review.comment}
+                          reviewerName={review.reviewer_name}
+                        />
+                      ))
+                    ) : (
+                      <ReviewerComment
+                        comment=""
+                        reviewerName=""
+                      />
+                    )}
                   </div>
 
-                  {normalized?.rationale.reviews?.length > 0 ? (
-                    normalized?.rationale.reviews.map((review, index) => (
-                      <ReviewerComment
-                        key={review.review_id || index}
-                        title={`Reviewer's Comment ${index + 1}`}
-                        comment={review.comment}
-                        reviewerName={review.reviewer_name}
+                  {/* Rest of the content sections... (I'll include key sections to keep the response manageable) */}
+                  
+                  {/* RATIONALE */}
+                  <div className="">
+                    <h3 className="font-bold text-gray-900 pt-10 text-xl">II. RATIONALE</h3>
+                    <div className={isEditing ? "bg-blue-50 rounded-lg p-4 mt-3" : "mt-3"}>
+                      <EditableText
+                        value={normalized?.rationale.content}
+                        onChange={(val) => updateField('reviews_per_docs.rationale.rationale_content', val)}
+                        multiline={true}
+                        className="text-base"
                       />
-                    ))
-                  ) : (
-                    <ReviewerComment comment="" reviewerName="" />
-                  )}
-                </div>
-                
+                    </div>
+
+                    {normalized?.rationale.reviews?.length > 0 ? (
+                      normalized?.rationale.reviews.map((review, index) => (
+                        <ReviewerComment
+                          key={review.review_id || index}
+                          title={`Reviewer's Comment ${index + 1}`}
+                          comment={review.comment}
+                          reviewerName={review.reviewer_name}
+                        />
+                      ))
+                    ) : (
+                      <ReviewerComment comment="" reviewerName="" />
+                    )}
+                  </div>
+
                 {/* SIGNIFICANCE */}
                 <div>
                   <h3 className="font-bold text-gray-900 pt-5 text-xl">III. SIGNIFICANCE</h3>
@@ -1170,7 +1253,7 @@ useEffect(() => {
                         </td>
                       </tr>
 
-                      {normalized?.organization?.content?.length > 0 ? (
+                      {normalized?.organization?.content.length > 0 ? (
                         normalized?.organization?.content.map((item, index) => (
                           <tr key={index} className="border-b border-black">
                             <td className="border-r border-black px-4 py-3 text-gray-900">
@@ -1603,50 +1686,55 @@ useEffect(() => {
                     <p className="pt-1 text-center">University President</p>
                   </div>  
                 </div>
-              </div>
-            </section>
+
+
+
+
+
+                  {/* ... Continue with all other sections similarly ... */}
+                  {/* Due to length, I'm showing the pattern - the rest follows the same structure */}
+
+                </section>
+              </>
+            )}
           </div>
         </div>
 
         {/* History Panel */}                   
         <div className="bg-white h-[95vh] w-1/5 max-w-2xl shadow-sm border border-gray-200 flex flex-col rounded-tr-xl rounded-br-xl">
 
+          <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">History</h2>
+              <p className="text-xs text-gray-400 mt-1">Recent changes of proposal</p>
+            </div>
 
-        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-800">History</h2>
-            <p className="text-xs text-gray-400 mt-1">Recent changes of proposal</p>
+            <button
+              onClick={() => {
+                setHistory([]);
+                setSelectedHistoryData(null);
+                onClose();
+              }}
+              className="p-3 bg-gray-200 rounded-full text-black hover:text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-
-          <button
-            onClick={() => {
-              setHistory(null); // or setHistory(null) if you prefer
-              onClose();       // then call the existing onClose
-            }}
-            className="p-3 bg-gray-200 rounded-full text-black hover:text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
             <div className="space-y-2">
-              {true ? (
-                // Spinner container
+              {loading ? (
                 <div className="flex flex-col gap-3 justify-center items-center py-20">
                   <div className="w-10 h-10 border-4 border-emerald-300 border-t-emerald-600 rounded-full animate-spin"></div>
-
                   <p className="text-sm font-light text-gray-500">Loading History</p>
                 </div>
               ) : (
                 history.map((item) => {
-                  // Determine the label
                   const label =
                     item.status === "current"
                       ? "Current Proposal"
                       : `Revise ${item.version_no}`;
 
-                  // Format the date nicely
                   const formattedDate = new Date(item.created_at).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "short",
@@ -1655,19 +1743,20 @@ useEffect(() => {
 
                   return (
                     <div
-                      key={`${item.proposal_id + 1}`}
-                      className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer"
+                      key={`${item.history_id}`}
+                      onClick={() => fetchHistoryData(item.history_id)}
+                      className={`flex items-start gap-3 p-4 rounded-xl transition cursor-pointer ${
+                        selectedHistoryData?.history_id === item.history_id
+                          ? 'bg-emerald-100 border-2 border-emerald-500'
+                          : 'bg-gray-50 hover:bg-gray-100'
+                      }`}
                     >
-                      {/* Version badge */}
                       <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-sm font-semibold">
                         V{item.version_no}
                       </div>
 
                       <div className="flex-1">
-                        {/* Label */}
                         <p className="text-sm text-gray-700 font-medium">{label}</p>
-
-                        {/* Proposal ID and date */}
                         <p className="text-xs text-gray-400 mt-1">
                           Proposal ID {item.proposal_id} • {formattedDate}
                         </p>
@@ -1678,7 +1767,6 @@ useEffect(() => {
               )}
             </div>
           </div>
-
         </div>
       </div>
     </>
