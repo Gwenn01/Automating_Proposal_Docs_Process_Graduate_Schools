@@ -471,20 +471,30 @@ SELECT * FROM proposal_cover_page_history;
 SELECT * FROM proposal_content_history;
 SELECT * FROM proposal_review_history;
 SELECT * FROM proposal_review_items_history;
+SELECT * FROM notifications;
 
 ALTER TABLE proposal_reviews
 MODIFY review_deadline DATETIME
 DEFAULT (DATE_ADD(NOW(), INTERVAL 7 DAY));
 
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
-ALTER TABLE proposal_reviews
+DELETE FROM proposal_review_items WHERE review_item_id >= 22;
+
+ALTER TABLE proposals_docs
 ADD review_deadline DATETIME,
 ADD is_expired TINYINT DEFAULT 0;
 
 
-UPDATE proposal_cover_page
-SET proposal_id = 1
-WHERE cover_id = 6;
+UPDATE proposals_docs
+SET status = 'for_revision'
+WHERE proposal_id = 6;
 
 DELETE FROM proposal_review_items WHERE review_item_id > 0;
 UPDATE proposals_docs SET status = 'under_review' WHERE proposal_id = 2;

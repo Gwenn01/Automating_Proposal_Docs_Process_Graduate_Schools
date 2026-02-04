@@ -47,6 +47,8 @@ from model.implementor.put_proposals import (
     update_proposal_status
 )
 from model.implementor.put_proposal_deadline import put_proposal_deadline_db
+from model.general.get_review_deadline import get_review_deadline_db
+from services.notification_service import process_review_deadline
 
 def run_tests_controller():
     # data = fetch_user_proposals(7)
@@ -157,4 +159,6 @@ def run_tests_controller():
     # print(get_review_per_docs_mapper(get_history_cover_page_db(18)[0], get_history_content_db(18)[0], get_history_reviews_db(18)))
     
     # print(put_proposal_deadline_db(6, 39))
+    #print(get_review_deadline_db())
+    #process_review_deadline()
     print("Running test controller..")
