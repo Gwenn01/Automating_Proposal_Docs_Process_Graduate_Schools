@@ -73,46 +73,102 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
     fetchHistory();
   }, [proposalId, isOpen]);
 
-  // Function to fetch history data when clicking on a history item
-  const fetchHistoryData = async (historyId) => {
-    try {
-      setLoadingHistoryData(true);
-      
-      const response = await fetch('http://127.0.0.1:5000/api/get-history-data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          history_id: historyId
-        }),
-      });
+// Function to fetch history data when clicking on a history item
+const fetchHistoryData = async (historyId) => {
+  try {
+    setLoadingHistoryData(true);
+    
+    const response = await fetch('http://127.0.0.1:5000/api/get-history-data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        history_id: historyId
+      }),
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server error:", errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      // Structure the data to match the expected format
-      const structuredData = {
-        ...proposalData,
-        history_id: historyId,
-        cover_page: { cover_pages: data.cover_page || {} },
-        full_content: { content_pages: data.project_profile ? data : {} }
-      };
-      
-      setSelectedHistoryData(structuredData);
-      
-    } catch (err) {
-      console.error("Failed to fetch history data:", err);
-      alert("Failed to load history data. Please try again.");
-    } finally {
-      setLoadingHistoryData(false);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error:", errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  };
+
+    const data = await response.json();
+    console.log("Raw history data from API:", data);
+    
+    // Helper function to safely parse JSON strings
+    const safeParse = (value, fallback = {}) => {
+      if (!value) return fallback;
+      if (typeof value === 'object') return value;
+      try {
+        return JSON.parse(value);
+      } catch (e) {
+        console.error("Failed to parse:", value, e);
+        return fallback;
+      }
+    };
+
+    // Structure the data to match the expected format
+    const structuredData = {
+      ...proposalData, // Keep the proposal metadata (id, title, status, etc.)
+      history_id: historyId, // Add history_id for tracking
+      cover_page: {
+        cover_pages: data.cover_page || {}
+      },
+      full_content: {
+        content_pages: {
+          project_profile: {
+            ...data.project_profile,
+            proponents: safeParse(data.project_profile?.proponents, { project_leader: "", members: "" }),
+          },
+          // These are strings, not objects
+          rationale: data.rationale?.rationale_content || "",
+          significance: data.significance?.significance_content || "",
+          objectives: {
+            general: data.objectives?.general_content || "",
+            specific: data.objectives?.specific_content || ""
+          },
+          methodology: data.methodology?.methodology_content || "",
+          expected_output_outcome: {
+            "6ps": safeParse(data.expected_output_outcome?.["6ps"], {})
+          },
+          sustainability_plan: data.sustainability_plan?.sustainability_plan_content || "",
+          organization_and_staffing: safeParse(data.organization_and_staffing?.organization_and_staffing_content, []),
+          plan_of_activities: safeParse(data.plan_of_activities?.plan_of_activities_content, {
+            activity_title: "",
+            activity_date: "",
+            schedule: []
+          }),
+          budgetary_requirement: safeParse(data.budgetary_requirement?.budgetary_requirement, {
+            meals: [],
+            supplies: [],
+            transport: [],
+            totals: {}
+          })
+        }
+      }
+    };
+    
+    console.log("Structured history data:", structuredData);
+    console.log("Cover page:", structuredData.cover_page);
+    console.log("Content pages:", structuredData.full_content.content_pages);
+    console.log("Rationale:", structuredData.full_content.content_pages.rationale);
+    console.log("Objectives:", structuredData.full_content.content_pages.objectives);
+    console.log("Plan of activities:", structuredData.full_content.content_pages.plan_of_activities);
+    console.log("Budgetary requirement:", structuredData.full_content.content_pages.budgetary_requirement);
+    
+    // Set the selected history data which will replace the current view
+    setSelectedHistoryData(structuredData);
+    
+  } catch (err) {
+    console.error("Failed to fetch history data:", err);
+    console.error("Error stack:", err.stack);
+    alert("Failed to load history data. Please try again.");
+  } finally {
+    setLoadingHistoryData(false);
+  }
+};
 
   // Function to go back to current proposal view
   const resetToCurrentProposal = () => {
