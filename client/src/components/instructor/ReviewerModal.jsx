@@ -8,16 +8,14 @@ import axios from "axios";
 
 const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   if (!isOpen || !proposalData) return null;
-  
+  const [canEdit, setCanEdit] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState(null);
-
-const [history, setHistory] = useState([]);
-const [loading, setLoading] = useState(false);
-const [selectedHistoryData, setSelectedHistoryData] = useState(null);
-const [loadingHistoryData, setLoadingHistoryData] = useState(false);
-
-const proposalId = proposalData?.proposal_id;
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedHistoryData, setSelectedHistoryData] = useState(null);
+  const [loadingHistoryData, setLoadingHistoryData] = useState(false);
+  const proposalId = proposalData?.proposal_id;
 
 useEffect(() => {
   if (!proposalId) return;
@@ -98,13 +96,16 @@ useEffect(() => {
       const data = await response.json();
       console.log("Check Update Proposal Response:", data);
 
-      // This endpoint returns {message: string, status: boolean}, not an array
-      // So we don't need to set history here, just log the response
+      // Update the canEdit state based on the API response
+      setCanEdit(data.status);
+      
       if (!data.status) {
         console.log("Note:", data.message);
       }
     } catch (err) {
       console.error("Failed to check update proposal:", err);
+      // On error, disable editing to be safe
+      setCanEdit(false);
     }
   };
 
@@ -477,8 +478,13 @@ const normalized = {
                 ) : !isEditing ? (
                   <button
                     onClick={handleEdit}
-                    className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-md font-semibold
-                              bg-yellow-500 text-white hover:bg-yellow-600 transition text-sm"
+                    disabled={!canEdit}
+                    className={`flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-md font-semibold transition text-sm
+                              ${canEdit 
+                                ? 'bg-yellow-500 text-white hover:bg-yellow-600 cursor-pointer' 
+                                : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                              }`}
+                    title={!canEdit ? "Proposal cannot be edited" : "Edit proposal"}
                   >
                     <Pencil className="w-4 h-4" />
                     Edit
