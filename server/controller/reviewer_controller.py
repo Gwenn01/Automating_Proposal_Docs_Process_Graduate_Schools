@@ -5,6 +5,7 @@ from model.reviewer.get_reviewer import get_reviewer_per_docs
 from controller.mapper.reviewer_get_docs_mapper import get_docs_mapper
 from model.reviewer.put_review_item import put_review_item
 from model.reviewer.put_decision_review import put_decision_review
+from model.general.insert_notification import insert_notification_db
 
 def get_docs_controller():
     try:
@@ -59,14 +60,29 @@ def get_pending_docs_controller():
         return jsonify(data_docs), 200
     except Exception as e:
         return {"error": str(e)}, 500
-    
 
+
+#handle insert data ============================================= 
+def handle_insert_notification(user_id, message, reviewer_name):
+    try:
+        insert_notification_db(
+            user_id,
+            f"{message} {reviewer_name}"
+        )
+        return True
+    except Exception as e:
+        print(e)
+        return False
+    
+    
 def put_reviews_item_docs_controller():
     try:
         data = request.get_json(force=True)  
         review_id = data.get('review_id')
         proposal_id = data.get('proposal_id')
-        user_id = data.get('reviewer_id')
+        reviewer_id = data.get('reviewer_id')
+        reviewer_name = data.get('reviewer_name')
+        user_id = data.get('user_id')
         if not data:
             return {"error": "review data are required"}, 400
 
@@ -74,7 +90,10 @@ def put_reviews_item_docs_controller():
         is_updated = updated_reviewed_count(proposal_id)
         is_reviewed = update_is_reviewed(review_id)
         
-        change_decision = put_decision_review(proposal_id, user_id, 'need_revision')
+        change_decision = put_decision_review(proposal_id, reviewer_id, 'need_revision')
+        
+        if not handle_insert_notification(user_id, "Your proposal has been reviewed by", reviewer_name):
+            return {"error": "Failed to insert notification"}, 500
         
         if not success or not is_updated or not is_reviewed or not change_decision:
             return {"error": "Failed to insert review"}, 500
@@ -108,6 +127,8 @@ def update_review_items_controller():
 
         review_id = data.get("review_id")
         proposal_id = data.get("proposal_id")
+        reviewer_name = data.get('reviewer_name')
+        user_id = data.get('user_id')
         reviews = data.get("reviews")
 
         if not review_id or not proposal_id or not reviews:
@@ -115,6 +136,9 @@ def update_review_items_controller():
 
         success = put_review_item(review_id, reviews)
 
+        if not handle_insert_notification(user_id, "Your proposal has been reviewed by", reviewer_name):
+            return {"error": "Failed to insert notification"}, 500
+        
         if not success:
             return {"error": "No rows updated. Check review_id/proposal_id"}, 404
 

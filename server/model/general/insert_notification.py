@@ -1,6 +1,6 @@
 from utils.execute_query import execute_query
 
-def insert_notification(user_id, message):
+def insert_notification_db(user_id, message):
     try:
         query = """
             INSERT INTO notifications (user_id, message) VALUES (%s, %s)

@@ -1,4 +1,4 @@
-from model.general.insert_notification import insert_notification
+from model.general.insert_notification import insert_notification_db
 from model.general.get_review_deadline import get_review_deadline_db
 from model.general.check_notification import check_notification
 from datetime import datetime
@@ -32,7 +32,7 @@ def process_review_deadline():
             if already_notified:
                 continue
 
-            insert_notification(
+            insert_notification_db(
                 r["user_id"],
                 f"⏰ You have {r['days_left']} day(s) left to review your tasks."
             )
