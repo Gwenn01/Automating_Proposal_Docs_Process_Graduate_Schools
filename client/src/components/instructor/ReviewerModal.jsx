@@ -5,6 +5,8 @@ import ReviewerComment from "./ReviewerComment";
 import { getStatusStyle } from "../../utils/statusStyles";
 import { useEffect } from "react";
 import axios from "axios";
+import EditableText from "./EditableText";
+import EditableNumber from "./EditableNumber";
 
 const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   if (!isOpen || !proposalData) return null;
@@ -385,31 +387,31 @@ const normalized = {
   };
 
   // Editable text component
-  const EditableText = ({ value, onChange, multiline = false, className = "" }) => {
-    if (!isEditing) {
-      return <p className={className}>{value || "N/A"}</p>;
-    }
+  // const EditableText = ({ value, onChange, multiline = false, className = "" }) => {
+  //   if (!isEditing) {
+  //     return <p className={className}>{value || "N/A"}</p>;
+  //   }
 
-    if (multiline) {
-      return (
-        <textarea
-          value={value || ""}
-          onChange={(e) => onChange(e.target.value)}
-          className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
-          rows={4}
-        />
-      );
-    }
+  //   if (multiline) {
+  //     return (
+  //       <textarea
+  //         value={value || ""}
+  //         onChange={(e) => onChange(e.target.value)}
+  //         className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
+  //         rows={4}
+  //       />
+  //     );
+  //   }
 
-    return (
-      <input
-        type="text"
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
-      />
-    );
-  };
+  //   return (
+  //     <input
+  //       type="text"
+  //       value={value || ""}
+  //       onChange={(e) => onChange(e.target.value)}
+  //       className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
+  //     />
+  //   );
+  // };
 
   // Editable date component
   const EditableDate = ({ value, onChange, className = "" }) => {
@@ -428,20 +430,20 @@ const normalized = {
   };
 
   // Editable number component
-  const EditableNumber = ({ value, onChange, className = "" }) => {
-    if (!isEditing) {
-      return <p className={className}>{value || "N/A"}</p>;
-    }
+  // const EditableNumber = ({ value, onChange, className = "" }) => {
+  //   if (!isEditing) {
+  //     return <p className={className}>{value || "N/A"}</p>;
+  //   }
 
-    return (
-      <input
-        type="number"
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
-      />
-    );
-  };
+  //   return (
+  //     <input
+  //       type="number"
+  //       value={value || ""}
+  //       onChange={(e) => onChange(e.target.value)}
+  //       className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
+  //     />
+  //   );
+  // };
 
   return (
     <>
@@ -557,6 +559,7 @@ const normalized = {
                             value={normalized?.cover.proposal_summary?.program_title}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.program_title', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         , with the approved budget of{" "}
@@ -565,6 +568,7 @@ const normalized = {
                             value={normalized?.cover.proposal_summary?.approved_budget?.words}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.approved_budget.words', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         ;{" "}
@@ -573,6 +577,7 @@ const normalized = {
                             value={normalized?.cover.proposal_summary?.approved_budget?.amount}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.approved_budget.amount', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         {" "}with the duration of{" "}
@@ -581,6 +586,7 @@ const normalized = {
                             value={normalized?.cover.proposal_summary?.duration?.words}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.duration.words', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         {" "}years,{" "}
@@ -589,6 +595,7 @@ const normalized = {
                             value={normalized?.cover.proposal_summary?.proposal_coverage_period}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.proposal_summary.proposal_coverage_period', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>.
                       </p>
@@ -600,6 +607,7 @@ const normalized = {
                             value={normalized?.cover.activity_details?.title}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.title', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         {" "}on{" "}
@@ -625,6 +633,7 @@ const normalized = {
                             value={normalized?.cover.activity_details?.venue}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.venue', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         . This activity is valuable{" "}
@@ -633,6 +642,7 @@ const normalized = {
                             value={normalized?.cover.activity_details?.value_statement}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.value_statement', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         . The requested expenses for this activity from the university is{" "}
@@ -641,6 +651,7 @@ const normalized = {
                             value={normalized?.cover.activity_details?.requested_budget}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.activity_details.requested_budget', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         , which will be used to defray expenses for food, transportation, supplies and materials, 
@@ -654,6 +665,7 @@ const normalized = {
                             value={normalized?.cover.participants?.prmsu?.words}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.participants.prmsu.words', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         {" "}(
@@ -662,6 +674,7 @@ const normalized = {
                             value={normalized?.cover.participants?.prmsu?.count}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.participants.prmsu.count', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         ) the total number of participants from PRMSU, another{" "}
@@ -670,6 +683,7 @@ const normalized = {
                             value={normalized?.cover.participants?.partner_agency?.words}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.words', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         {" "}(
@@ -678,6 +692,7 @@ const normalized = {
                             value={normalized?.cover.participants?.partner_agency?.count}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.count', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         ) from the collaborating agency,{" "}
@@ -686,6 +701,7 @@ const normalized = {
                             value={normalized?.cover.participants?.partner_agency?.name}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.participants.partner_agency.name', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         , and{" "}
@@ -694,6 +710,7 @@ const normalized = {
                             value={normalized?.cover.participants?.trainees?.words}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.participants.trainees.words', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         {" "}(
@@ -702,6 +719,7 @@ const normalized = {
                             value={normalized?.cover.participants?.trainees?.count}
                             onChange={(val) => updateField('reviews_per_docs.cover_page.participants.trainees.count', val)}
                             className="inline"
+                            isEditing={isEditing}
                           />
                         </span>
                         ) trainees from the abovementioned community.
@@ -775,6 +793,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.program_title}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.program_title', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -787,6 +806,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.project_title}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.project_title', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -799,6 +819,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.activity_title}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.activity_title', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -811,6 +832,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.sdg_alignment}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.sdg_alignment', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -823,6 +845,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.extension_agenda}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.extension_agenda', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -835,6 +858,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.proponents?.project_leader}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.proponents.project_leader', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -847,6 +871,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.proponents?.members}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.proponents.members', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -859,6 +884,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.college_campus_program}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.college_campus_program', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -871,6 +897,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.collaborating_agencies}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.collaborating_agencies', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -883,6 +910,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.community_location}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.community_location', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -895,6 +923,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.target_sector}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.target_sector', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -907,6 +936,7 @@ const normalized = {
                             <EditableNumber
                               value={normalized?.project_profile?.number_of_beneficiaries}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.number_of_beneficiaries', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -919,6 +949,7 @@ const normalized = {
                             <EditableText
                               value={normalized?.project_profile?.implementation_period}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.implementation_period', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -932,6 +963,7 @@ const normalized = {
                             <EditableNumber
                               value={normalized?.project_profile?.budgetary_requirements}
                               onChange={(val) => updateField('reviews_per_docs.project_profile.budgetary_requirements', val)}
+                              isEditing={isEditing}
                             />
                           </td>
                         </tr>
@@ -967,6 +999,7 @@ const normalized = {
                         onChange={(val) => updateField('reviews_per_docs.rationale.rationale_content', val)}
                         multiline={true}
                         className="text-base"
+                        isEditing={isEditing}
                       />
                     </div>
 
@@ -993,6 +1026,7 @@ const normalized = {
                       onChange={(val) => updateField('reviews_per_docs.significance.significance_content', val)}
                       multiline={true}
                       className="text-base"
+                      isEditing={isEditing}
                     />
                   </div>
 
@@ -1020,6 +1054,7 @@ const normalized = {
                       value={normalized?.objectives?.general}
                       onChange={(val) => updateField('reviews_per_docs.objectives.general_content', val)}
                       multiline={true}
+                      isEditing={isEditing}
                     />
                   </div>
 
@@ -1042,6 +1077,7 @@ const normalized = {
                       value={normalized?.objectives?.specific}
                       onChange={(val) => updateField('reviews_per_docs.objectives.specific_content', val)}
                       multiline={true}
+                      isEditing={isEditing}
                     />
                   </div>
 
@@ -1068,6 +1104,7 @@ const normalized = {
                       onChange={(val) => updateField('reviews_per_docs.methodology.methodology_content', val)}
                       multiline={true}
                       className="text-base"
+                      isEditing={isEditing}
                     />
                   </div>
 
@@ -1108,6 +1145,7 @@ const normalized = {
                           <EditableText
                             value={normalized?.expectedOutput?.content?.publications}
                             onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.publications', val)}
+                            isEditing={isEditing}
                           />
                         </td>
                       </tr>
@@ -1120,6 +1158,7 @@ const normalized = {
                           <EditableText
                             value={normalized?.expectedOutput?.content?.patents}
                             onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.patents', val)}
+                            isEditing={isEditing}
                           />
                         </td>
                       </tr>
@@ -1132,6 +1171,7 @@ const normalized = {
                           <EditableText
                             value={normalized?.expectedOutput?.content?.products}
                             onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.products', val)}
+                            isEditing={isEditing}
                           />
                         </td>
                       </tr>
@@ -1144,6 +1184,7 @@ const normalized = {
                           <EditableText
                             value={normalized?.expectedOutput?.content?.people_services}
                             onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.people_services', val)}
+                            isEditing={isEditing}
                           />
                         </td>
                       </tr>
@@ -1156,6 +1197,7 @@ const normalized = {
                           <EditableText
                             value={normalized?.expectedOutput?.content?.places_partnerships}
                             onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.places_partnerships', val)}
+                            isEditing={isEditing}
                           />
                         </td>
                       </tr>
@@ -1168,6 +1210,7 @@ const normalized = {
                           <EditableText
                             value={normalized?.expectedOutput?.content?.policy}
                             onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.policy', val)}
+                            isEditing={isEditing}
                           />
                         </td>
                       </tr>
@@ -1180,6 +1223,7 @@ const normalized = {
                           <EditableText
                             value={normalized?.expectedOutput?.content?.social_impact}
                             onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.social_impact', val)}
+                            isEditing={isEditing}
                           />
                         </td>
                       </tr>
@@ -1192,6 +1236,7 @@ const normalized = {
                           <EditableText
                             value={normalized?.expectedOutput?.content?.economic_impact}
                             onChange={(val) => updateField('reviews_per_docs.expected_output_outcome.6ps.economic_impact', val)}
+                            isEditing={isEditing}
                           />
                         </td>
                       </tr>
@@ -1221,6 +1266,7 @@ const normalized = {
                       onChange={(val) => updateField('reviews_per_docs.sustainability_plan.sustainability_plan_content', val)}
                       multiline={true}
                       className="text-base"
+                      isEditing={isEditing}
                     />
                   </div>
 
@@ -1332,6 +1378,7 @@ const normalized = {
                       value={normalized?.planOfActivities?.content?.activity_title}
                       onChange={(val) => updateField('reviews_per_docs.plan_of_activities.plan_of_activities_content.activity_title', val)}
                       className="text-xl font-bold text-center"
+                      isEditing={isEditing}
                     />
                   </div>
 
