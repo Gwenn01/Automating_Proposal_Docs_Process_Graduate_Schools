@@ -17,6 +17,8 @@ def format_hostory(history):
 
         data = []
         for h in history_sorted:
+            if h["history_id"] is None:
+                h['history_id'] = h['proposal_id']
             data.append({
                 'proposal_id': h['proposal_id'],
                 'history_id': h['history_id'],
