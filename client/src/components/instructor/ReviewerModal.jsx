@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import EditableText from "./EditableText";
 import EditableNumber from "./EditableNumber";
+import { getHistoryData } from "../../services/api";
 
 const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   if (!isOpen || !proposalData) return null;
@@ -73,6 +74,7 @@ useEffect(() => {
 
  const storedUser = localStorage.getItem("user");
  const userId = storedUser ? JSON.parse(storedUser).user_id : null;
+ console.log("Content ID:", proposalData?.reviews_per_docs?.content_id);
 
 
 useEffect(() => {
@@ -115,43 +117,22 @@ useEffect(() => {
 }, [proposalId, userId]);
 
 
-// Function to fetch history data when clicking on a history item
 const fetchHistoryData = async (historyId) => {
   try {
     setLoadingHistoryData(true);
-    
-    const response = await fetch('http://127.0.0.1:5000/api/get-history-data', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        history_id: historyId
-      }),
-    });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server error:", errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    const res = await getHistoryData(historyId);
 
-    const data = await response.json();
-    
-    // Structure the data to match the expected format
-    // The API returns the raw data, we need to wrap it in the same structure as proposalData
     const structuredData = {
-      ...proposalData, // Keep the proposal metadata
-      history_id: historyId, // Add history_id for tracking
-      reviews_per_docs: data // The fetched data becomes reviews_per_docs
+      ...proposalData,        // keep proposal metadata
+      history_id: historyId,  // track which history is viewed
+      reviews_per_docs: res.data,
     };
-    
-    
-    // Set the selected history data which will replace the current view
+
     setSelectedHistoryData(structuredData);
-    
-  } catch (err) {
-    console.error("Failed to fetch history data:", err);
+
+  } catch (error) {
+    console.error("Failed to fetch history data:", error);
     alert("Failed to load history data. Please try again.");
   } finally {
     setLoadingHistoryData(false);

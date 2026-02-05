@@ -7,22 +7,19 @@ import DocumentReviewModal from "../../components/instructor/DocumentReviewModal
 import DocumentViewerModal from "../../components/instructor/DocumentViewerModal";
 import { useProposals } from "../../context/ProposalContext";
 import ReviewerListStatus from "../../components/instructor/ReviewerListStatus";
+import {  getMyProposals,  getCoverPage,  getProposalContent,  getReviewsPerDocs,} from "../../services/api";
 
 
 const ViewProposal = () => {
   const [documents, setDocuments] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);     // page skeleton
   const [actionLoading, setActionLoading] = useState(false); // view / review
-
   const [user, setUser] = useState(null);
-
   const [showReviewerModal, setShowReviewerModal] = useState(false);
   const [showDocModal, setShowDocModal] = useState(false);
   const [showViewerModal, setShowViewerModal] = useState(false);
-
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [selectedReviewer, setSelectedReviewer] = useState(null);
-  //const { documents, loading } = useProposals();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showReviewerStatus, setShowReviewerStatus] = useState(false);
 
@@ -64,8 +61,7 @@ const ViewProposal = () => {
 useEffect(() => {
   if (!user?.user_id) return;
 
-  axios
-    .get(`http://127.0.0.1:5000/api/my-proposals/${user.user_id}`)
+  getMyProposals(user.user_id)
     .then((res) => {
       const documents = res.data.proposals.map((row) => ({
         proposal_id: row.proposal_id,
@@ -73,7 +69,7 @@ useEffect(() => {
         file_path: row.file_path,
         status: row.status,
         submitted_at: row.submitted_at || row.submission_date || null,
-        reviews: row.reviews, // ✅ STRING ONLY
+        reviews: row.reviews,
       }));
 
       setDocuments(documents);
@@ -83,44 +79,23 @@ useEffect(() => {
 }, [user]);
 
 
-  const fetchCoverPage = async (proposalId) => {
-    try {
-      const res = await axios.get(
-        `http://127.0.0.1:5000/api/my-coverpage-proposals/${proposalId}`
-      );
-      return res.data;
-    } catch (error) {
-      console.error("Error fetching cover page:", error);
-      return null;
-    }
-  };
 
-  const fetchProposalContent = async (proposalId) => {
-    try {
-      const res = await axios.get(
-        `http://127.0.0.1:5000/api/my-content-proposals/${proposalId}`
-      );
-      return res.data;
-    } catch (error) {
-      console.error("Error fetching proposal content:", error);
-      return null;
-    }
-  };
 
-const fetchReviewsPerDocs = async (proposalId) => {
-  try {
-    const res = await axios.post(
-      "http://127.0.0.1:5000/api/get-reviews-per-docs",
-      {
-        proposal_id: proposalId, // ✅ EXACT payload backend expects
-      }
-    );
-    return res.data;
-  } catch (error) {
-    console.error("Error fetching reviews per docs:", error);
-    return null;
-  }
-};
+
+// const fetchReviewsPerDocs = async (proposalId) => {
+//   try {
+//     const res = await axios.post(
+//       "http://127.0.0.1:5000/api/get-reviews-per-docs",
+//       {
+//         proposal_id: proposalId, // ✅ EXACT payload backend expects
+//       }
+//     );
+//     return res.data;
+//   } catch (error) {
+//     console.error("Error fetching reviews per docs:", error);
+//     return null;
+//   }
+// };
 
 
 
@@ -367,21 +342,22 @@ if (pageLoading) {
                   {/* View Column */}
                   <td className="px-6 py-5 text-center align-middle">
                     <button
-                      onClick={async () => {
-                        setActionLoading(true);
+                        onClick={async () => {
+                          setActionLoading(true);
 
-                        const cover = await fetchCoverPage(doc.proposal_id);
-                        const content = await fetchProposalContent(doc.proposal_id);
+                          const cover = await getCoverPage(doc.proposal_id);
+                          const content = await getProposalContent(doc.proposal_id);
 
-                        setSelectedDoc({
-                          ...doc,
-                          cover_page: cover,
-                          full_content: content,
-                        });
+                          setSelectedDoc({
+                            ...doc,
+                            cover_page: cover?.data,
+                            full_content: content?.data,
+                          });
 
-                        setShowViewerModal(true);
-                        setActionLoading(false);
-                      }}
+                          setShowViewerModal(true);
+                          setActionLoading(false);
+                        }}
+
                       className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 text-[#4F46E5] px-5 py-2.5 rounded-lg text-xs font-semibold hover:from-blue-100 hover:to-indigo-100 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                     >
                       <Eye className="w-4 h-4" />
@@ -395,18 +371,17 @@ if (pageLoading) {
                       onClick={async () => {
                         setActionLoading(true);
 
-                        const reviewsPerDocs = await fetchReviewsPerDocs(doc.proposal_id);
+                        const reviewsPerDocs = await getReviewsPerDocs(doc.proposal_id);
 
                         setSelectedDoc({
                           ...doc,
-
-                          // 🔥 THIS is the mapper output
-                          reviews_per_docs: reviewsPerDocs,
+                          reviews_per_docs: reviewsPerDocs?.data,
                         });
 
                         setShowReviewerModal(true);
                         setActionLoading(false);
                       }}
+
 
                       className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 text-[#166534] px-5 py-2.5 rounded-lg text-xs font-semibold hover:from-green-100 hover:to-emerald-100 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                     >
