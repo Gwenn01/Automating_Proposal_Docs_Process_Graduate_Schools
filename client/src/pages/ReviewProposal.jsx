@@ -95,13 +95,16 @@ const ReviewProposal = () => {
         
         // Map backend data to component format
         const mappedProposals = data.map(row => ({
-          id: row.id,
+          proposal_id: row.proposal_id,
           status: row.status,
           title: row.title,
           description: row.name,
           date: row.date,
           name: row.name,
-          review_id: row.review_id
+          review_id: row.review_id,
+          reviewer_id: row.reviewer_id,
+          implementor_id: row.implementor_id
+          
         }));
         
         setProposalsData(mappedProposals);
@@ -192,6 +195,8 @@ const ReviewProposal = () => {
   const handleViewOthers = (proposal) => {
     alert(`Viewing other reviewers for: ${proposal.title}`);
   };
+
+
 
     // ================= LOADING =================
 if (loading) {
@@ -413,8 +418,8 @@ if (loading) {
                       onClick={async () => {
                         setLoading(true);
 
-                        const cover = await fetchCoverPage(proposal.id);
-                        const content = await fetchProposalContent(proposal.id);
+                        const cover = await fetchCoverPage(proposal.proposal_id);
+                        const content = await fetchProposalContent(proposal.proposal_id);
 
                         setSelectedDoc({
                           ...proposal,
@@ -435,8 +440,8 @@ if (loading) {
                       onClick={async () => {
                         setLoading(true);
 
-                        const cover = await fetchCoverPage(proposal.id);
-                        const content = await fetchProposalContent(proposal.id);
+                        const cover = await fetchCoverPage(proposal.proposal_id);
+                        const content = await fetchProposalContent(proposal.proposal_id);
 
                         setSelectedDoc({
                           ...proposal,

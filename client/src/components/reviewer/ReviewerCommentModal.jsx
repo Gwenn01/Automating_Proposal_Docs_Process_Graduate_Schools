@@ -12,7 +12,8 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
   const [selectedHistoryData, setSelectedHistoryData] = useState(null);
   const [loadingHistoryData, setLoadingHistoryData] = useState(false);
 
-  const proposalId = proposalData?.id;
+  const proposalId = proposalData?.proposal_id;
+  
 
   // Debug logging
   useEffect(() => {
@@ -227,9 +228,12 @@ const fetchHistoryData = async (historyId) => {
     const reviewData = {
       proposal_id: proposalId,
       review_id: proposalData.review_id,
-      reviewed_by: reviewe, // Add reviewer ID
+      reviewer_id: proposalData.reviewer_id, // Add reviewer ID
       reviewed_at: new Date().toISOString(), // Add timestamp
-      reviews: allReviews
+      reviews: allReviews,
+      reviewer_name: proposalData.name,
+      user_id: proposalData.implementor_id, // Implementor's user ID
+
     };
 
     // Use post-reviews-item for first review only, then update-review-items for all subsequent reviews

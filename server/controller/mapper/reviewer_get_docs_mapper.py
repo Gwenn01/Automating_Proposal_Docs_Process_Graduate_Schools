@@ -5,7 +5,9 @@ from decimal import Decimal
 
 def get_docs_mapper(row):
     data = {
-        "id": row["proposal_id"],
+        "proposal_id": row["proposal_id"],
+        "reviewer_id": row["reviewer_id"],
+        "implementor_id": row["implementor_id"],
         "review_id": row["review_id"],
         "status": row["status"],
         "name": row["fullname"],
