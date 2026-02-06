@@ -477,7 +477,7 @@ ALTER TABLE proposal_reviews
 MODIFY review_deadline DATETIME
 DEFAULT (DATE_ADD(NOW(), INTERVAL 7 DAY));
 
-DELETE FROM notifications WHERE id >= 0;
+DELETE FROM proposal_review_items WHERE review_item_id = 23;
 
 CREATE TABLE notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -489,14 +489,16 @@ CREATE TABLE notifications (
 
 DELETE FROM proposal_review_items WHERE review_item_id >= 22;
 
+DELETE FROM notifications WHERE id = 11;
+
 ALTER TABLE proposals_docs
 ADD review_deadline DATETIME,
 ADD is_expired TINYINT DEFAULT 0;
 
 
-UPDATE proposals_docs
-SET status = 'for_revision'
-WHERE proposal_id = 6;
+UPDATE proposal_reviews
+SET decision = 'pending'
+WHERE review_id = 51;
 
 DELETE FROM proposal_review_items WHERE review_item_id > 0;
 UPDATE proposals_docs SET status = 'under_review' WHERE proposal_id = 2;
