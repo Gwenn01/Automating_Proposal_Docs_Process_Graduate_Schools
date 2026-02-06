@@ -26,6 +26,12 @@ def format_hostory(history):
                 'version_no': h['edit_version_count'],
                 'created_at': h['changed_at'],
             })
+            
+        data.sort(key=lambda x: x["version_no"], reverse=True)
+        data.sort(
+            key=lambda x: (x["status"] == "current", x["created_at"]),
+            reverse=False
+        )
 
         return data
 
