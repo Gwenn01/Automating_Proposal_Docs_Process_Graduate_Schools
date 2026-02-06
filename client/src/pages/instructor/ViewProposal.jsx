@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { List, Loader2, Eye, ChevronLeft, ChevronRight, Bell } from "lucide-react";
+import {
+  List,
+  Loader2,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  Bell,
+} from "lucide-react";
 import axios from "axios";
 
 import ReviewerModal from "../../components/instructor/ReviewerModal";
@@ -7,13 +14,17 @@ import DocumentReviewModal from "../../components/instructor/DocumentReviewModal
 import DocumentViewerModal from "../../components/instructor/DocumentViewerModal";
 import { useProposals } from "../../context/ProposalContext";
 import ReviewerListStatus from "../../components/instructor/ReviewerListStatus";
-import {  getMyProposals,  getCoverPage,  getProposalContent,  getReviewsPerDocs,} from "../../services/api";
+import {
+  getMyProposals,
+  getCoverPage,
+  getProposalContent,
+  getReviewsPerDocs,
+} from "../../services/api";
 import NotificationBell from "../../components/NotificationBell";
-
 
 const ViewProposal = () => {
   const [documents, setDocuments] = useState([]);
-  const [pageLoading, setPageLoading] = useState(true);     // page skeleton
+  const [pageLoading, setPageLoading] = useState(true); // page skeleton
   const [actionLoading, setActionLoading] = useState(false); // view / review
   const [user, setUser] = useState(null);
   const [showReviewerModal, setShowReviewerModal] = useState(false);
@@ -21,16 +32,11 @@ const ViewProposal = () => {
   const [showViewerModal, setShowViewerModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [selectedReviewer, setSelectedReviewer] = useState(null);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showReviewerStatus, setShowReviewerStatus] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
 
-
-  const notifications = [
-    { id: 1, message: "New proposal assigned to you", time: "2 mins ago" },
-    { id: 2, message: "Proposal review deadline tomorrow", time: "1 day ago" },
-  ];
-
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   const [progress, setProgress] = useState(0);
 
@@ -48,7 +54,6 @@ const ViewProposal = () => {
     return () => clearInterval(interval);
   }, [actionLoading]);
 
-
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
@@ -58,81 +63,155 @@ const ViewProposal = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
+  // =================FETCH NOTIFICATIONS ================
+  // fetch notifications
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchNotifications = async () => {
+      try {
+        const response = await fetch(
+          "http://127.0.0.1:5000/api/get-notifications",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              user_id: user.user_id,
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch notifications");
+        }
+
+        const data = await response.json();
+        setNotifications(data);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    fetchNotifications();
+  }, [user]); // X
+
+  // define the un read comments
+  const unreadCount = notifications.filter((n) => n.is_read === 0).length;
+
+  const handleRead = async (id) => {
+    if (!user) return;
+
+    // Avoid duplicate requests
+    const target = notifications.find((n) => n.id === id);
+    if (!target || target.is_read === 1) return;
+
+    // Optimistic UI update
+    setNotifications((prev) =>
+      prev.map((notif) => (notif.id === id ? { ...notif, is_read: 1 } : notif)),
+    );
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/update-read-notifications",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user.user_id,
+            notification_id: id,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update notification");
+      }
+    } catch (error) {
+      console.error(error);
+
+      // Rollback UI if request fails
+      setNotifications((prev) =>
+        prev.map((notif) =>
+          notif.id === id ? { ...notif, is_read: 0 } : notif,
+        ),
+      );
+    }
+  };
 
   // ================= FETCH PROPOSALS + REVIEWS =================
-useEffect(() => {
-  if (!user?.user_id) return;
+  useEffect(() => {
+    if (!user?.user_id) return;
 
-  getMyProposals(user.user_id)
-    .then((res) => {
-      const documents = res.data.proposals.map((row) => ({
-        proposal_id: row.proposal_id,
-        title: row.title,
-        file_path: row.file_path,
-        status: row.status,
-        submitted_at: row.submitted_at || row.submission_date || null,
-        reviews: row.reviews,
-      }));
+    getMyProposals(user.user_id)
+      .then((res) => {
+        const documents = res.data.proposals.map((row) => ({
+          proposal_id: row.proposal_id,
+          title: row.title,
+          file_path: row.file_path,
+          status: row.status,
+          submitted_at: row.submitted_at || row.submission_date || null,
+          reviews: row.reviews,
+        }));
 
-      setDocuments(documents);
-      setPageLoading(false);
-    })
-    .catch(() => setPageLoading(false));
-}, [user]);
+        setDocuments(documents);
+        setPageLoading(false);
+      })
+      .catch(() => setPageLoading(false));
+  }, [user]);
 
-
-
-
-
-// const fetchReviewsPerDocs = async (proposalId) => {
-//   try {
-//     const res = await axios.post(
-//       "http://127.0.0.1:5000/api/get-reviews-per-docs",
-//       {
-//         proposal_id: proposalId, // ✅ EXACT payload backend expects
-//       }
-//     );
-//     return res.data;
-//   } catch (error) {
-//     console.error("Error fetching reviews per docs:", error);
-//     return null;
-//   }
-// };
-
-
+  // const fetchReviewsPerDocs = async (proposalId) => {
+  //   try {
+  //     const res = await axios.post(
+  //       "http://127.0.0.1:5000/api/get-reviews-per-docs",
+  //       {
+  //         proposal_id: proposalId, // ✅ EXACT payload backend expects
+  //       }
+  //     );
+  //     return res.data;
+  //   } catch (error) {
+  //     console.error("Error fetching reviews per docs:", error);
+  //     return null;
+  //   }
+  // };
 
   // ================= STATUS LABEL STYLE =================
-const getStatusStyle = (status) => {
-  switch (status) {
-    case "submitted":
-      return { label: "Initial Review", className: "bg-[#FFC107] text-white" };
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "submitted":
+        return {
+          label: "Initial Review",
+          className: "bg-[#FFC107] text-white",
+        };
 
-    case "for_review":
-      return { label: "For Review", className: "bg-[#38BDF8] text-white" }; // blue
+      case "for_review":
+        return { label: "For Review", className: "bg-[#38BDF8] text-white" }; // blue
 
-    case "under_review":
-      return { label: "Under Review", className: "bg-[#FFC107] text-white" };
+      case "under_review":
+        return { label: "Under Review", className: "bg-[#FFC107] text-white" };
 
-    case "final_review":
-      return { label: "Final Review", className: "bg-[#FBBF24] text-white" };
+      case "final_review":
+        return { label: "Final Review", className: "bg-[#FBBF24] text-white" };
 
-    case "for_approval":
-      return { label: "For Approval", className: "bg-[#6366F1] text-white" }; // indigo
+      case "for_approval":
+        return { label: "For Approval", className: "bg-[#6366F1] text-white" }; // indigo
 
-    case "approved":
-      return { label: "Completed", className: "bg-[#22C55E] text-white" };
+      case "approved":
+        return { label: "Completed", className: "bg-[#22C55E] text-white" };
 
-    case "for_revision":
-      return { label: "For Revision", className: "bg-[#F97316] text-white" };
+      case "for_revision":
+        return { label: "For Revision", className: "bg-[#F97316] text-white" };
 
-    case "rejected":
-      return { label: "Rejected", className: "bg-[#EF4444] text-white" };
+      case "rejected":
+        return { label: "Rejected", className: "bg-[#EF4444] text-white" };
 
-    default:
-      return { label: status, className: "bg-gray-400 text-white" };
-  }
-};
-
+      default:
+        return { label: status, className: "bg-gray-400 text-white" };
+    }
+  };
 
   // ================= PAGINATION LOGIC =================
   const totalPages = Math.ceil(documents.length / rowsPerPage);
@@ -153,14 +232,13 @@ const getStatusStyle = (status) => {
   };
 
   const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
-
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   // Reset to page 1 when documents change
   useEffect(() => {
@@ -169,46 +247,44 @@ const getStatusStyle = (status) => {
 
   // ================= LOADING =================
 
+  if (pageLoading) {
+    return (
+      <div className="flex-1 bg-white p-10 min-h-screen animate-pulse">
+        {/* Header Skeleton */}
+        <div className="mb-10">
+          <div className="h-8 w-56 bg-gray-200 rounded mb-3"></div>
+          <div className="h-4 w-72 bg-gray-200 rounded"></div>
+        </div>
 
-if (pageLoading) {
-  return (
-    <div className="flex-1 bg-white p-10 min-h-screen animate-pulse">
-      {/* Header Skeleton */}
-      <div className="mb-10">
-        <div className="h-8 w-56 bg-gray-200 rounded mb-3"></div>
-        <div className="h-4 w-72 bg-gray-200 rounded"></div>
-      </div>
-
-      {/* Table Skeleton */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-100">
-            <tr>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <th key={i} className="px-6 py-4">
-                  <div className="h-4 bg-gray-200 rounded w-24"></div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <tr key={i} className="border-b">
-                {Array.from({ length: 5 }).map((_, j) => (
-                  <td key={j} className="px-6 py-5">
-                    <div className="h-4 bg-gray-200 rounded w-full"></div>
-                  </td>
+        {/* Table Skeleton */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-100">
+              <tr>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <th key={i} className="px-6 py-4">
+                    <div className="h-4 bg-gray-200 rounded w-24"></div>
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+            </thead>
 
+            <tbody>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <tr key={i} className="border-b">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <td key={j} className="px-6 py-5">
+                      <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 bg-white p-10 min-h-screen">
@@ -216,7 +292,9 @@ if (pageLoading) {
         <div className="absolute inset-0 bg-white/80 z-[60] flex items-center justify-center backdrop-blur-sm">
           <div className="relative bg-white px-14 py-10 flex flex-col items-center w-[380px] shadow-xl rounded-xl">
             <p className="text-lg font-semibold mb-1">Loading proposal</p>
-            <p className="text-sm text-gray-500 mb-4">Preparing your document…</p>
+            <p className="text-sm text-gray-500 mb-4">
+              Preparing your document…
+            </p>
 
             <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
               <div
@@ -240,11 +318,14 @@ if (pageLoading) {
           </p>
         </div>
 
+        {/* Notification Bell */}
         <NotificationBell
           notifications={notifications}
+          unreadCount={unreadCount}
           show={showNotif}
           onToggle={() => setShowNotif((prev) => !prev)}
           onClose={() => setShowNotif(false)}
+          onRead={handleRead}
         />
       </div>
 
@@ -267,8 +348,8 @@ if (pageLoading) {
               const reviewCountText = `${doc.reviews.length} received`;
 
               return (
-                <tr 
-                  key={doc.proposal_id} 
+                <tr
+                  key={doc.proposal_id}
                   className="hover:bg-gray-50/50 transition-colors duration-150 group border"
                 >
                   {/* Title Column */}
@@ -284,11 +365,14 @@ if (pageLoading) {
                         <p className="text-xs text-gray-500 mt-1">
                           Submitted:{" "}
                           {doc.submitted_at
-                            ? new Date(doc.submitted_at).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })
+                            ? new Date(doc.submitted_at).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                },
+                              )
                             : "N/A"}
                         </p>
                       </div>
@@ -307,22 +391,23 @@ if (pageLoading) {
                   {/* View Column */}
                   <td className="px-6 py-5 text-center align-middle">
                     <button
-                        onClick={async () => {
-                          setActionLoading(true);
+                      onClick={async () => {
+                        setActionLoading(true);
 
-                          const cover = await getCoverPage(doc.proposal_id);
-                          const content = await getProposalContent(doc.proposal_id);
+                        const cover = await getCoverPage(doc.proposal_id);
+                        const content = await getProposalContent(
+                          doc.proposal_id,
+                        );
 
-                          setSelectedDoc({
-                            ...doc,
-                            cover_page: cover?.data,
-                            full_content: content?.data,
-                          });
+                        setSelectedDoc({
+                          ...doc,
+                          cover_page: cover?.data,
+                          full_content: content?.data,
+                        });
 
-                          setShowViewerModal(true);
-                          setActionLoading(false);
-                        }}
-
+                        setShowViewerModal(true);
+                        setActionLoading(false);
+                      }}
                       className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 text-[#4F46E5] px-5 py-2.5 rounded-lg text-xs font-semibold hover:from-blue-100 hover:to-indigo-100 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                     >
                       <Eye className="w-4 h-4" />
@@ -336,7 +421,9 @@ if (pageLoading) {
                       onClick={async () => {
                         setActionLoading(true);
 
-                        const reviewsPerDocs = await getReviewsPerDocs(doc.proposal_id);
+                        const reviewsPerDocs = await getReviewsPerDocs(
+                          doc.proposal_id,
+                        );
 
                         setSelectedDoc({
                           ...doc,
@@ -346,8 +433,6 @@ if (pageLoading) {
                         setShowReviewerModal(true);
                         setActionLoading(false);
                       }}
-
-
                       className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 text-[#166534] px-5 py-2.5 rounded-lg text-xs font-semibold hover:from-green-100 hover:to-emerald-100 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                     >
                       <List className="w-4 h-4" />
@@ -356,21 +441,20 @@ if (pageLoading) {
                   </td>
 
                   {/* Reviews Count Column */}
-                <td className="px-2 py-5 text-center align-middle">
-                  <button
-                    onClick={() => {
-                      setSelectedDoc(doc);
-                      setShowReviewerStatus(true);
-                    }}
-                    className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg hover:bg-green-100 transition"
-                  >
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-green-700 font-semibold text-xs">
-                      {doc.reviews}
-                    </span>
-                  </button>
-                </td>
-
+                  <td className="px-2 py-5 text-center align-middle">
+                    <button
+                      onClick={() => {
+                        setSelectedDoc(doc);
+                        setShowReviewerStatus(true);
+                      }}
+                      className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg hover:bg-green-100 transition"
+                    >
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-green-700 font-semibold text-xs">
+                        {doc.reviews}
+                      </span>
+                    </button>
+                  </td>
                 </tr>
               );
             })}
@@ -382,8 +466,12 @@ if (pageLoading) {
                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
                       <Eye className="w-8 h-8 text-gray-400" />
                     </div>
-                    <p className="text-gray-500 font-medium">No proposals found</p>
-                    <p className="text-sm text-gray-400">Create your first proposal to get started</p>
+                    <p className="text-gray-500 font-medium">
+                      No proposals found
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      Create your first proposal to get started
+                    </p>
                   </div>
                 </td>
               </tr>
@@ -396,8 +484,8 @@ if (pageLoading) {
       {documents.length > 0 && (
         <div className="mt-6 flex items-center justify-between px-8">
           <div className="text-sm text-gray-600">
-            Showing {startIndex + 1} to {Math.min(endIndex, documents.length)} of{" "}
-            {documents.length} proposals
+            Showing {startIndex + 1} to {Math.min(endIndex, documents.length)}{" "}
+            of {documents.length} proposals
           </div>
 
           <div className="flex items-center gap-2">
@@ -443,7 +531,6 @@ if (pageLoading) {
         isOpen={showReviewerModal}
         proposalData={selectedDoc}
         onClose={() => setShowReviewerModal(false)}
-        
       />
 
       {/* Review Document Modal */}
@@ -458,7 +545,6 @@ if (pageLoading) {
         proposalId={selectedDoc?.proposal_id}
         onClose={() => setShowReviewerStatus(false)}
       />
-
     </div>
   );
 };
