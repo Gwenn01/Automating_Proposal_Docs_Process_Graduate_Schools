@@ -61,58 +61,102 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
       };
 
       // Structure the data to match the expected format
-      const structuredData = {
-        ...proposalData, // Keep the proposal metadata (id, title, status, etc.)
-        history_id: historyId, // Add history_id for tracking
-        cover_page: {
-          cover_pages: data.cover_page || {},
+      
+const structuredData = {
+  ...proposalData,
+  status,
+  history_id: historyId,
+  content_id: data?.content_id,
+  cover_id: data?.cover_id,
+
+  cover_page: {
+    cover_pages: data.cover_page || {},
+    reviews: data.cover_page?.reviews || [],
+  },
+
+  full_content: {
+    content_pages: {
+      project_profile: {
+        ...data.project_profile,
+        proponents: safeParse(data.project_profile?.proponents, {
+          project_leader: "",
+          members: "",
+        }),
+        reviews: data.project_profile?.reviews || [],
+      },
+
+      rationale: {
+        content: data.rationale?.rationale_content || "",
+        reviews: data.rationale?.reviews || [],
+      },
+
+      significance: {
+        content: data.significance?.significance_content || "",
+        reviews: data.significance?.reviews || [],
+      },
+
+      objectives: {
+        general: {
+          content: data.objectives?.general_content || "",
+          reviews: data.objectives?.reviews_general || [],
         },
-        full_content: {
-          content_pages: {
-            project_profile: {
-              ...data.project_profile,
-              proponents: safeParse(data.project_profile?.proponents, {
-                project_leader: "",
-                members: "",
-              }),
-            },
-            // These are strings, not objects
-            rationale: data.rationale?.rationale_content || "",
-            significance: data.significance?.significance_content || "",
-            objectives: {
-              general: data.objectives?.general_content || "",
-              specific: data.objectives?.specific_content || "",
-            },
-            methodology: data.methodology?.methodology_content || "",
-            expected_output_outcome: {
-              "6ps": safeParse(data.expected_output_outcome?.["6ps"], {}),
-            },
-            sustainability_plan:
-              data.sustainability_plan?.sustainability_plan_content || "",
-            organization_and_staffing: safeParse(
-              data.organization_and_staffing?.organization_and_staffing_content,
-              [],
-            ),
-            plan_of_activities: safeParse(
-              data.plan_of_activities?.plan_of_activities_content,
-              {
-                activity_title: "",
-                activity_date: "",
-                schedule: [],
-              },
-            ),
-            budgetary_requirement: safeParse(
-              data.budgetary_requirement?.budgetary_requirement,
-              {
-                meals: [],
-                supplies: [],
-                transport: [],
-                totals: {},
-              },
-            ),
-          },
+        specific: {
+          content: data.objectives?.specific_content || "",
+          reviews: data.objectives?.reviews_specific || [],
         },
-      };
+      },
+
+      methodology: {
+        content: data.methodology?.methodology_content || "",
+        reviews: data.methodology?.reviews || [],
+      },
+
+      expected_output_outcome: {
+        "6ps": safeParse(data.expected_output_outcome?.["6ps"], {}),
+        reviews: data.expected_output_outcome?.reviews || [],
+      },
+
+      sustainability_plan: {
+        content: data.sustainability_plan?.sustainability_plan_content || "",
+        reviews: data.sustainability_plan?.reviews || [],
+      },
+
+      organization_and_staffing: {
+        content: safeParse(
+          data.organization_and_staffing?.organization_and_staffing_content,
+          []
+        ),
+        reviews: data.organization_and_staffing?.reviews || [],
+      },
+
+      plan_of_activities: {
+        content: safeParse(
+          data.plan_of_activities?.plan_of_activities_content,
+          {
+            activity_title: "",
+            activity_date: "",
+            schedule: [],
+          }
+        ),
+        reviews: data.plan_of_activities?.reviews || [],
+      },
+
+      budgetary_requirement: {
+        content: safeParse(
+          data.budgetary_requirement?.budgetary_requirement,
+          {
+            meals: [],
+            supplies: [],
+            transport: [],
+            totals: {},
+          }
+        ),
+        reviews: data.budgetary_requirement?.reviews || [],
+      },
+    },
+  },
+};
+
 
       // Set the selected history data which will replace the current view
       setSelectedHistoryData(structuredData);
@@ -124,6 +168,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
       setLoadingHistoryData(false);
     }
   };
+
 
   // Fetch history on mount
   useEffect(() => {
@@ -151,13 +196,16 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
         console.log("Fetched history data:", data);
 
         if (Array.isArray(data)) {
-          const mappedHistory = data.map((item) => ({
-            history_id: item.history_id,
-            proposal_id: item.proposal_id,
-            status: item.status,
-            version_no: item.version_no,
-            created_at: item.created_at,
-          }));
+          const mappedHistory = data
+            .map((item) => ({
+              history_id: item.history_id,
+              proposal_id: item.proposal_id,
+              status: item.status,
+              version_no: item.version_no,
+              created_at: item.created_at,
+            }))
+        .sort((a, b) => a.history_id - b.history_id);
+
 
           setHistory(mappedHistory);
           console.log("Mapped history:", mappedHistory);
@@ -200,6 +248,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
     }
   };
 
+
   if (!isOpen || !proposalData) return null;
 
   // Use selectedHistoryData if available, otherwise use proposalData
@@ -207,7 +256,6 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
   const cover = activeData.cover_page?.cover_pages || {};
   const content = activeData.full_content?.content_pages || {};
 
-  const statusStyle = getStatusStyle(proposalData.status);
 
   const handleCommentChange = (InputValue, commentValue) => {
     setComments((prev) => ({
@@ -297,6 +345,9 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
     }
   };
 
+
+  console.log("history IDDDDDD", selectedHistoryData?.status)
+
   return (
     <>
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md animate-overlay-enter">
@@ -321,7 +372,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                 </h1>
               </div>
 
-              {selectedHistoryData && (
+              {/* {selectedHistoryData && (
                 <button
                   onClick={resetToCurrentProposal}
                   className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-md font-semibold
@@ -329,7 +380,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                 >
                   Back to Current
                 </button>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -337,12 +388,17 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
           <div className="p-14 overflow-auto bg-white">
             {/* Loading indicator for history data */}
             {loadingHistoryData && (
-              <div className="flex flex-col gap-3 justify-center items-center py-20">
-                <div className="w-10 h-10 border-4 border-emerald-300 border-t-emerald-600 rounded-full animate-spin"></div>
-                <p className="text-sm font-light text-gray-500">
-                  Loading Historical Data...
+              <div className="w-full h-full flex flex-col items-center justify-center py-24">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full border-4 border-emerald-200"></div>
+                  <div className="absolute top-0 left-0 w-12 h-12 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin"></div>
+                </div>
+
+                <p className="mt-6 text-sm text-gray-500 animate-pulse tracking-wide">
+                  Loading historical data…
                 </p>
               </div>
+
             )}
 
             {!loadingHistoryData && (
@@ -381,9 +437,9 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                     <p>
                       This program includes an activity entitled{" "}
                       {cover.activity_details?.title || "N/A"} on{" "}
-                      {content.plan_of_activities?.activity_date
+                      {content.plan_of_activities?.content?.activity_date
                         ? new Date(
-                            content.plan_of_activities.activity_date,
+                            content.plan_of_activities.content.activity_date,
                           ).toLocaleDateString("en-US", {
                             year: "numeric",
                             month: "long",
@@ -465,11 +521,17 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                 </section>
 
                 {/* ========== REVIEWER'S COMMENT ========== */}
+              {selectedHistoryData?.status === "current" ? (
                 <CommentInput
                   sectionName="Cover Page"
                   onCommentChange={handleCommentChange}
                   InputValue="cover_letter_feedback"
                 />
+              ) : (
+                <div className="mt-10 p-5 bg-yellow-50 border-l-4 border-yellow-400">
+                  </div>
+              )}
+
 
                 {/* ========== CONTENT PAGE SECTION ========== */}
                 <section>
@@ -628,7 +690,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                         II. RATIONALE
                       </h3>
                       <p className="text-base mt-3">
-                        {content.rationale || "N/A"}
+                        {content.rationale?.content || "N/A"}
                       </p>
 
                       <CommentInput
@@ -643,7 +705,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                         III. SIGNIFICANCE
                       </h3>
                       <p className="text-base mt-3">
-                        {content.significance || "N/A"}
+                        {content.significance?.content || "N/A"}
                       </p>
 
                       <CommentInput
@@ -663,7 +725,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                         General Objectives
                       </p>
                       <p className="p-5 bg-gray-100">
-                        {content.objectives?.general || "N/A"}
+                        {content.objectives?.general?.content || "N/A"}
                       </p>
 
                       <CommentInput
@@ -676,7 +738,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                         Specific Objectives
                       </p>
                       <p className="p-5 bg-gray-100">
-                        {content.objectives?.specific || "N/A"}
+                        {content.objectives?.specific?.content || "N/A"}
                       </p>
 
                       <CommentInput
@@ -691,7 +753,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                         V. METHODOLOGY
                       </h3>
                       <p className="text-base mt-3">
-                        {content.methodology || "N/A"}
+                        {content.methodology?.content || "N/A"}
                       </p>
 
                       <CommentInput
@@ -818,7 +880,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                         VII. SUSTAINABILITY PLAN
                       </h3>
                       <p className="text-base mt-3">
-                        {content.sustainability_plan || "N/A"}
+                        {content.sustainability_plan?.content || "N/A"}
                       </p>
 
                       <CommentInput
@@ -850,8 +912,8 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                             </td>
                           </tr>
 
-                          {content?.organization_and_staffing?.length > 0 ? (
-                            content.organization_and_staffing.map(
+                          {content?.organization_and_staffing?.content?.length > 0 ? (
+                            content.organization_and_staffing.content.map(
                               (item, index) => (
                                 <tr
                                   key={index}
@@ -896,12 +958,12 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                         IX. PLAN OF ACTIVITIES
                       </h3>
                       <p className="text-xl font-bold mt-3 text-center">
-                        {content.plan_of_activities?.activity_title || "N/A"}
+                        {content.plan_of_activities?.content?.activity_title || "N/A"}
                       </p>
                       <p className="text-lg mt-3 text-center">
-                        {content.plan_of_activities?.activity_date
+                        {content.plan_of_activities?.content?.activity_date
                           ? new Date(
-                              content.plan_of_activities.activity_date,
+                              content.plan_of_activities.content.activity_date,
                             ).toLocaleDateString("en-US", {
                               year: "numeric",
                               month: "long",
@@ -925,8 +987,8 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                             </td>
                           </tr>
 
-                          {content?.plan_of_activities?.schedule?.length > 0 ? (
-                            content.plan_of_activities.schedule.map(
+                          {content?.plan_of_activities?.content?.schedule?.length > 0 ? (
+                            content.plan_of_activities.content.schedule.map(
                               (item, index) => (
                                 <tr
                                   key={index}
@@ -988,7 +1050,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                           </tr>
 
                           {/* MEALS */}
-                          {content?.budgetary_requirement?.meals?.map(
+                          {content?.budgetary_requirement?.content?.meals?.map(
                             (row, index) => (
                               <tr
                                 key={`meals-${index}`}
@@ -1014,7 +1076,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                           )}
 
                           {/* TRANSPORT */}
-                          {content?.budgetary_requirement?.transport?.map(
+                          {content?.budgetary_requirement?.content?.transport?.map(
                             (row, index) => (
                               <tr
                                 key={`transport-${index}`}
@@ -1040,7 +1102,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                           )}
 
                           {/* SUPPLIES */}
-                          {content?.budgetary_requirement?.supplies?.map(
+                          {content?.budgetary_requirement?.content?.supplies?.map(
                             (row, index) => (
                               <tr
                                 key={`supplies-${index}`}
@@ -1076,7 +1138,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                             <td className="px-4 py-3 text-right">
                               <p>
                                 ₱{" "}
-                                {content?.budgetary_requirement?.totals
+                                {content?.budgetary_requirement?.content?.totals
                                   ?.grand_total || 0}
                               </p>
                             </td>
@@ -1143,36 +1205,40 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                   </div>
                 </section>
 
+
+                
                 {/* ========== SUBMIT REVIEW BUTTON ========== */}
-                <div className="border mt-10 py-6 bg-gradient-to-t from-white via-white to-transparent">
-                  <div className="max-w-5xl mx-auto flex justify-end gap-4">
-                    <button
-                      onClick={onClose}
-                      className="px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSubmitReview}
-                      disabled={isSubmitting}
-                      className="px-8 py-3 bg-primaryGreen text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Submitting...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-5 h-5" />
-                          {proposalData.review_id
-                            ? "Update Review"
-                            : "Submit Review"}
-                        </>
-                      )}
-                    </button>
+                {selectedHistoryData?.status === "current" && (
+                  <div className="border mt-10 py-6 bg-gradient-to-t from-white via-white to-transparent">
+                    <div className="max-w-5xl mx-auto flex justify-end gap-4">
+                      <button
+                        onClick={onClose}
+                        className="px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmitReview}
+                        disabled={isSubmitting}
+                        className="px-8 py-3 bg-primaryGreen text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Submitting...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-5 h-5" />
+                            {proposalData.review_id
+                              ? "Update Review"
+                              : "Submit Review"}
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </>
             )}
           </div>
