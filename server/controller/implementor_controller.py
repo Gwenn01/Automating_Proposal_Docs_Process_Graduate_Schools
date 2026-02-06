@@ -36,6 +36,7 @@ from model.implementor.put_proposals import (
 from middleware.proposal_validator import validate_proposal_data, validate_proposal_cover_page_data, validate_proposal_content_data
 from model.implementor.handle_check_edit_proposal import handle_check_edit_proposal
 from model.implementor.put_proposal_deadline import put_proposal_deadline_db
+from model.general.insert_notification import insert_notification_db
 # creating or inserting proposal into database
 def save_proposal():
     data = request.get_json()
@@ -95,6 +96,17 @@ def update_proposal_content(proposal_id, data):
     }), 200
     
 # FOR REVISION PROPOSAL CONTROLLER ONLY ==================================================================================================
+def handle_insert_notification(user_id, message):
+    try:
+        insert_notification_db(
+            user_id,
+            f"{message}"
+        )
+        return True
+    except Exception as e:
+        print(e)
+        return False
+    
 def handle_insertion_history(proposal_id, user_id):
     try:
        #get the version
@@ -111,10 +123,16 @@ def handle_insertion_history(proposal_id, user_id):
         #insert the review data
         reviewer_id = get_reviewer_id(proposal_id)
         for reviewer in reviewer_id:
+            #inserting history for the reviewer
             review_history_id = insert_review_history(history_id, reviewer["user_id"], version_no)
+            #get the current review data
             review_item = get_review_base_proposal_user_id(proposal_id, reviewer["user_id"])
-            reset_review = put_proposal_deadline_db(proposal_id, reviewer["user_id"])
+            # put the proposal deadline
+            put_proposal_deadline_db(proposal_id, reviewer["user_id"])
+            # put notification to reviewer after the implementor revise the docs
+            handle_insert_notification(user_id, "The proposal is already revised", )
             if review_item:
+                #insert review
                 insert_review_items_history(review_history_id, review_item)
         
         
