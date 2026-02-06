@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Grid, Table, MoreVertical, Eye, FileText, Users, X } from 'lucide-react';
-import DocumentViewerModal from '../components/instructor/DocumentViewerModal';
+import DocumentViewerModal from '../../components/instructor/DocumentViewerModal';
 import axios from 'axios';
 import { Bell } from "lucide-react";
-import { getStatusStyle } from '../utils/statusStyles';
-import ReviewerCommentModal from '../components/reviewer/ReviewerCommentModal';
-import ReviewerList from '../components/reviewer/ReviewerList';
+import { getStatusStyle } from '../../utils/statusStyles';
+import ReviewerCommentModal from '../../components/reviewer/ReviewerCommentModal';
+import ReviewerList from '../../components/reviewer/ReviewerList';
+import NotificationBell from '../../components/NotificationBell';
 
 const ReviewProposal = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,6 +23,7 @@ const ReviewProposal = () => {
   const [progress, setProgress] = useState(0);
   const [showReviewerList, setShowReviewerList] = useState(false);
   const [selectedProposalId, setSelectedProposalId] = useState(null);
+  const [showNotif, setShowNotif] = useState(false);
 
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -120,10 +122,6 @@ const ReviewProposal = () => {
     fetchProposals();
   }, [user]);
   
- 
-
-
-
 
   const fetchCoverPage = async (proposalId) => {
     try {
@@ -268,48 +266,12 @@ if (loading) {
             <h1 className="text-[32px] font-bold text-gray-900">Review Proposal</h1>
 
             {/* Notification Bell */}
-            <div className="relative">
-              <button
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-3 rounded-full hover:bg-gray-100 transition"
-              >
-                <p className="flex font-sans gap-2 text-gray-500 font-semibold">Notifications <Bell className="w-6 h-6 text-gray-700" /></p>
-
-                {/* Badge */}
-                {notifications.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                    {notifications.length}
-                  </span>
-                )}
-              </button>
-
-              {/* Dropdown */}
-              {showNotifications && (
-                <div className="absolute right-0 mt-3 w-80 bg-white border border-black rounded-2xl shadow-lg z-50 px-2">
-                  <div className="px-4 py-3 border-b font-bold text-gray-700">
-                    Notifications
-                  </div>
-
-                  {notifications.length === 0 ? (
-                    <p className="px-4 py-6 text-sm text-gray-400 text-center">
-                      No new notifications
-                    </p>
-                  ) : (
-                    <ul className="max-h-72 overflow-y-auto">
-                      {notifications.map((notif) => (
-                        <li
-                          key={notif.id}
-                          className="px-4 py-3 hover:bg-gray-50 transition cursor-pointer"
-                        >
-                          <p className="text-sm text-gray-700">{notif.message}</p>
-                          <span className="text-xs text-gray-400">{notif.time}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
-            </div>
+            <NotificationBell
+              notifications={notifications}
+              show={showNotif}
+              onToggle={() => setShowNotif((prev) => !prev)}
+              onClose={() => setShowNotif(false)}
+            />
           </div>
 
 

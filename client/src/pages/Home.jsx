@@ -9,8 +9,9 @@ import {
   ViewReview,
 } from "./admin";
 import { CreateProposal, EditProposal, ViewProposal } from "./instructor";
-import ReviewProposal from "./ReviewProposal";
+
 import ProfileOverview from "./ProfileOverview";
+import ReviewProposal from "./reviewer/ReviewProposal";
 
 const Home = () => {
   const navigate = useNavigate();
