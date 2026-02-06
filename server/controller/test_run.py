@@ -160,5 +160,5 @@ def run_tests_controller():
     
     # print(put_proposal_deadline_db(6, 39))
     #print(get_review_deadline_db())
-    #process_review_deadline()
+    process_review_deadline()
     print("Running test controller..")

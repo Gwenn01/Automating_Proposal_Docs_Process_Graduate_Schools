@@ -477,6 +477,8 @@ ALTER TABLE proposal_reviews
 MODIFY review_deadline DATETIME
 DEFAULT (DATE_ADD(NOW(), INTERVAL 7 DAY));
 
+DELETE FROM notifications WHERE id >= 0;
+
 CREATE TABLE notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
