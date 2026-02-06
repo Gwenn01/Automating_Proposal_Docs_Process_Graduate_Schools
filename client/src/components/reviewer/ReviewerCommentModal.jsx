@@ -22,58 +22,8 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
     console.log("Is First Review:", !proposalData?.review_id);
   }, [proposalData, reviewe]);
 
-  // Fetch history on mount
-  useEffect(() => {
-    if (!proposalId || !isOpen) return;
-
-    const fetchHistory = async () => {
-      try {
-        setLoading(true);
-
-        const response = await fetch("http://127.0.0.1:5000/api/get-history", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            proposal_id: proposalId,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("Fetched history data:", data);
-
-        if (Array.isArray(data)) {
-          const mappedHistory = data.map((item) => ({
-            history_id: item.history_id,
-            proposal_id: item.proposal_id,
-            status: item.status,
-            version_no: item.version_no,
-            created_at: item.created_at,
-          }));
-
-          setHistory(mappedHistory);
-          console.log("Mapped history:", mappedHistory);
-        } else {
-          console.error("Expected array but got:", typeof data);
-          setHistory([]);
-        }
-      } catch (err) {
-        console.error("Failed to fetch history:", err);
-        setHistory([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHistory();
-  }, [proposalId, isOpen]);
-
   // Function to fetch history data when clicking on a history item
+  
   const fetchHistoryData = async (historyId, status) => {
     try {
       setLoadingHistoryData(true);
@@ -164,26 +114,6 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
         },
       };
 
-      console.log("Structured history data:", structuredData);
-      console.log("Cover page:", structuredData.cover_page);
-      console.log("Content pages:", structuredData.full_content.content_pages);
-      console.log(
-        "Rationale:",
-        structuredData.full_content.content_pages.rationale,
-      );
-      console.log(
-        "Objectives:",
-        structuredData.full_content.content_pages.objectives,
-      );
-      console.log(
-        "Plan of activities:",
-        structuredData.full_content.content_pages.plan_of_activities,
-      );
-      console.log(
-        "Budgetary requirement:",
-        structuredData.full_content.content_pages.budgetary_requirement,
-      );
-
       // Set the selected history data which will replace the current view
       setSelectedHistoryData(structuredData);
     } catch (err) {
@@ -195,11 +125,79 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
     }
   };
 
-  console.log("Selected history data:", selectedHistoryData);
+  // Fetch history on mount
+  useEffect(() => {
+    if (!proposalId || !isOpen) return;
+
+    const fetchHistory = async () => {
+      try {
+        setLoading(true);
+
+        const response = await fetch("http://127.0.0.1:5000/api/get-history", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            proposal_id: proposalId,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Fetched history data:", data);
+
+        if (Array.isArray(data)) {
+          const mappedHistory = data.map((item) => ({
+            history_id: item.history_id,
+            proposal_id: item.proposal_id,
+            status: item.status,
+            version_no: item.version_no,
+            created_at: item.created_at,
+          }));
+
+          setHistory(mappedHistory);
+          console.log("Mapped history:", mappedHistory);
+        } else {
+          console.error("Expected array but got:", typeof data);
+          setHistory([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch history:", err);
+        setHistory([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, [proposalId, isOpen]);
+
+  // Auto-load current version when history is available
+  useEffect(() => {
+    if (!isOpen || !history.length || selectedHistoryData) return;
+
+    // Find the current version in history
+    const currentVersion = history.find(item => item.status === "current");
+    
+    if (currentVersion) {
+      console.log("Auto-loading current version:", currentVersion);
+      // Automatically fetch and display the current version
+      fetchHistoryData(currentVersion.history_id, currentVersion.status);
+    }
+  }, [history, isOpen]);
 
   // Function to go back to current proposal view
   const resetToCurrentProposal = () => {
     setSelectedHistoryData(null);
+    // Re-fetch current version
+    const currentVersion = history.find(item => item.status === "current");
+    if (currentVersion) {
+      fetchHistoryData(currentVersion.history_id, currentVersion.status);
+    }
   };
 
   if (!isOpen || !proposalData) return null;
@@ -471,13 +469,6 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                   sectionName="Cover Page"
                   onCommentChange={handleCommentChange}
                   InputValue="cover_letter_feedback"
-                />
-
-                {/* ========== FORM 1 PROPOSAL FEEDBACK ========== */}
-                <CommentInput
-                  sectionName="Form 1 Proposal"
-                  onCommentChange={handleCommentChange}
-                  InputValue="form1_proposal_feedback"
                 />
 
                 {/* ========== CONTENT PAGE SECTION ========== */}
