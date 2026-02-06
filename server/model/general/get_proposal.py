@@ -57,3 +57,19 @@ def fetch_proposal_content(proposal_id):
     finally:
         cursor.close()
         conn.close()
+
+def fetch_proposal_title(proposal_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT title
+            FROM proposals_docs
+            WHERE proposal_id = %s
+        """, (proposal_id,))
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        conn.close()

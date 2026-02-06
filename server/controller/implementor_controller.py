@@ -12,6 +12,7 @@ from model.implementor.insert_history import (
 from model.general.get_proposal import (
     fetch_proposal_cover_page,
     fetch_proposal_content,
+    fetch_proposal_title
 )
 from model.general.get_reviews import (
     get_reviews,
@@ -96,11 +97,11 @@ def update_proposal_content(proposal_id, data):
     }), 200
     
 # FOR REVISION PROPOSAL CONTROLLER ONLY ==================================================================================================
-def handle_insert_notification(user_id, message):
+def handle_insert_notification(user_id, message, title):
     try:
         insert_notification_db(
             user_id,
-            f"{message}"
+            f"{message} {title}"
         )
         return True
     except Exception as e:
@@ -113,6 +114,8 @@ def handle_insertion_history(proposal_id, user_id):
         version_no = put_version_count(proposal_id)
         #insert the proposal history
         history_id = insert_proposal_history(proposal_id, user_id, version_no)
+        # get the title of proposal to put in notification
+        title = fetch_proposal_title(proposal_id)[0]
         # get the current data from the backend before updating
         proposal_cover_data = fetch_proposal_cover_page(proposal_id)
         proposal_content_data = fetch_proposal_content(proposal_id)
@@ -130,7 +133,7 @@ def handle_insertion_history(proposal_id, user_id):
             # put the proposal deadline
             put_proposal_deadline_db(proposal_id, reviewer["user_id"])
             # put notification to reviewer after the implementor revise the docs
-            handle_insert_notification(user_id, "The proposal is already revised", )
+            handle_insert_notification(reviewer["user_id"], "The proposal has already been revised.", title)
             if review_item:
                 #insert review
                 insert_review_items_history(review_history_id, review_item)
