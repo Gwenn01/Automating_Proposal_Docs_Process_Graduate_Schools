@@ -8,6 +8,7 @@ import axios from "axios";
 import EditableText from "./EditableText";
 import EditableNumber from "./EditableNumber";
 import { getHistoryData } from "../../services/api";
+import ReviewList from "./ReviewList";
 
 const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   if (!isOpen || !proposalData) return null;
@@ -18,6 +19,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   const [loading, setLoading] = useState(false);
   const [selectedHistoryData, setSelectedHistoryData] = useState(null);
   const [loadingHistoryData, setLoadingHistoryData] = useState(false);
+  const [isDocumentReady, setIsDocumentReady] = useState(false);
   const proposalId = proposalData?.proposal_id;
 
 useEffect(() => {
@@ -52,7 +54,7 @@ useEffect(() => {
           status: item.status,          // "current" | "history"
           version_no: item.version_no,
           created_at: item.created_at,
-        }));
+        })).sort((a, b) => a.history_id - b.history_id);
 
         setHistory(mappedHistory);
         console.log("Mapped history:", mappedHistory);
@@ -117,42 +119,200 @@ useEffect(() => {
 }, [proposalId, userId]);
 
 
-const fetchHistoryData = async (historyId) => {
+const fetchHistoryData = async (historyId, status) => {
   try {
     setLoadingHistoryData(true);
+    setIsDocumentReady(false);
 
-    const res = await getHistoryData(historyId);
+    const response = await fetch("http://127.0.0.1:5000/api/get-data", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        history_id: historyId,
+        status: status,
+      }),
+    });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error:", errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Helper function to safely parse JSON strings
+    const safeParse = (value, fallback = {}) => {
+      if (!value) return fallback;
+      if (typeof value === "object") return value;
+      try {
+        return JSON.parse(value);
+      } catch (e) {
+        console.error("Failed to parse:", value, e);
+        return fallback;
+      }
+    };
+
+    // Structure the data to match the expected format
     const structuredData = {
-      ...proposalData,        // keep proposal metadata
-      history_id: historyId,  // track which history is viewed
-      reviews_per_docs: res.data,
+      ...proposalData,
+      status,
+      history_id: historyId,
+      content_id: data?.content_id,
+      cover_id: data?.cover_id,
+
+      reviews_per_docs: {
+        cover_page: {
+          submission_date: data.cover_page?.submission_date,
+          board_resolution_no: data.cover_page?.board_resolution_no,
+          proposal_summary: {
+            program_title: data.cover_page?.proposal_summary?.program_title,
+            approved_budget: safeParse(data.cover_page?.proposal_summary?.approved_budget, {
+              words: "",
+              amount: "",
+            }),
+            duration: safeParse(data.cover_page?.proposal_summary?.duration, {
+              words: "",
+              years: "",
+            }),
+            proposal_coverage_period: data.cover_page?.proposal_summary?.proposal_coverage_period,
+          },
+          activity_details: {
+            title: data.cover_page?.activity_details?.title,
+            date: data.cover_page?.activity_details?.date,
+            venue: data.cover_page?.activity_details?.venue,
+            value_statement: data.cover_page?.activity_details?.value_statement,
+            requested_budget: data.cover_page?.activity_details?.requested_budget,
+          },
+          participants: {
+            prmsu: safeParse(data.cover_page?.participants?.prmsu, {
+              words: "",
+              count: "",
+            }),
+            partner_agency: safeParse(data.cover_page?.participants?.partner_agency, {
+              words: "",
+              count: "",
+              name: "",
+            }),
+            trainees: safeParse(data.cover_page?.participants?.trainees, {
+              words: "",
+              count: "",
+            }),
+          },
+          reviews: data.cover_page?.reviews || [],
+        },
+
+        project_profile: {
+          ...data.project_profile,
+          proponents: safeParse(data.project_profile?.proponents, {
+            project_leader: "",
+            members: "",
+          }),
+          reviews: data.project_profile?.reviews || [],
+        },
+
+        rationale: {
+          rationale_content: data.rationale?.rationale_content || "",
+          reviews: data.rationale?.reviews || [],
+        },
+
+        significance: {
+          significance_content: data.significance?.significance_content || "",
+          reviews: data.significance?.reviews || [],
+        },
+
+        objectives: {
+          general_content: data.objectives?.general_content || "",
+          specific_content: data.objectives?.specific_content || "",
+          reviews_general: data.objectives?.reviews_general || [],
+          reviews_specific: data.objectives?.reviews_specific || [],
+        },
+
+        methodology: {
+          methodology_content: data.methodology?.methodology_content || "",
+          reviews: data.methodology?.reviews || [],
+        },
+
+        expected_output_outcome: {
+          "6ps": safeParse(data.expected_output_outcome?.["6ps"], {}),
+          reviews: data.expected_output_outcome?.reviews || [],
+        },
+
+        sustainability_plan: {
+          sustainability_plan_content: data.sustainability_plan?.sustainability_plan_content || "",
+          reviews: data.sustainability_plan?.reviews || [],
+        },
+
+        organization_and_staffing: {
+          organization_and_staffing_content: safeParse(
+            data.organization_and_staffing?.organization_and_staffing_content,
+            []
+          ),
+          reviews: data.organization_and_staffing?.reviews || [],
+        },
+
+        plan_of_activities: {
+          plan_of_activities_content: safeParse(
+            data.plan_of_activities?.plan_of_activities_content,
+            {
+              activity_title: "",
+              activity_date: "",
+              schedule: [],
+            }
+          ),
+          reviews: data.plan_of_activities?.reviews || [],
+        },
+
+        budgetary_requirement: {
+          budgetary_requirement: safeParse(
+            data.budgetary_requirement?.budgetary_requirement,
+            {
+              meals: [],
+              supplies: [],
+              transport: [],
+              totals: {},
+            }
+          ),
+          reviews: data.budgetary_requirement?.reviews || [],
+        },
+      },
     };
 
     setSelectedHistoryData(structuredData);
-
+    setIsDocumentReady(true);
   } catch (error) {
     console.error("Failed to fetch history data:", error);
+    console.error("Error stack:", error.stack);
     alert("Failed to load history data. Please try again.");
   } finally {
     setLoadingHistoryData(false);
   }
 };
 
-// Function to go back to current proposal view
-const resetToCurrentProposal = () => {
-  setSelectedHistoryData(null);
-};
+// Auto-load current version when history is available
+useEffect(() => {
+  if (!isOpen || !history.length || selectedHistoryData) return;
 
-
-
+  // Find the current version in history
+  const currentVersion = history.find(item => item.status === "current");
+  
+  if (currentVersion) {
+    console.log("Auto-loading current version:", currentVersion);
+    // Automatically fetch and display the current version
+    fetchHistoryData(currentVersion.history_id, currentVersion.status);
+  }
+}, [history, isOpen]);
 
   const rpd = proposalData?.reviews_per_docs;
-  if (!rpd) return null;
+  if (!rpd && !selectedHistoryData) return null;
 
-  // Use editedData when in edit mode, otherwise use proposalData
-  // If selectedHistoryData exists, use it instead
-  const activeData = selectedHistoryData || (isEditing ? editedData : proposalData);
+  // Determine which data to display:
+  // 1. If editing, use editedData
+  // 2. Otherwise, if viewing history, use selectedHistoryData
+  // 3. Otherwise, use proposalData
+  const activeData = isEditing && editedData ? editedData : (selectedHistoryData || proposalData);
   const activeRpd = activeData?.reviews_per_docs;
 
   // Add safety check for activeRpd
@@ -162,8 +322,6 @@ const resetToCurrentProposal = () => {
   }
 
   // Normalize data from the active source
-// Replace the normalization section (around line 235-265) with this:
-
 const normalized = {
   cover: activeRpd.cover_page || {},
   project_profile: activeRpd.project_profile || {},
@@ -227,8 +385,9 @@ const normalized = {
 };
 
   const handleEdit = () => {
-    // Deep clone the proposal data for editing
-    setEditedData(JSON.parse(JSON.stringify(proposalData)));
+    // Deep clone the current displayed data (which could be selectedHistoryData or proposalData)
+    const dataToEdit = selectedHistoryData || proposalData;
+    setEditedData(JSON.parse(JSON.stringify(dataToEdit)));
     setIsEditing(true);
   };
 
@@ -367,33 +526,6 @@ const normalized = {
     });
   };
 
-  // Editable text component
-  // const EditableText = ({ value, onChange, multiline = false, className = "" }) => {
-  //   if (!isEditing) {
-  //     return <p className={className}>{value || "N/A"}</p>;
-  //   }
-
-  //   if (multiline) {
-  //     return (
-  //       <textarea
-  //         value={value || ""}
-  //         onChange={(e) => onChange(e.target.value)}
-  //         className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
-  //         rows={4}
-  //       />
-  //     );
-  //   }
-
-  //   return (
-  //     <input
-  //       type="text"
-  //       value={value || ""}
-  //       onChange={(e) => onChange(e.target.value)}
-  //       className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
-  //     />
-  //   );
-  // };
-
   // Editable date component
   const EditableDate = ({ value, onChange, className = "" }) => {
     if (!isEditing) {
@@ -410,27 +542,11 @@ const normalized = {
     );
   };
 
-  // Editable number component
-  // const EditableNumber = ({ value, onChange, className = "" }) => {
-  //   if (!isEditing) {
-  //     return <p className={className}>{value || "N/A"}</p>;
-  //   }
-
-  //   return (
-  //     <input
-  //       type="number"
-  //       value={value || ""}
-  //       onChange={(e) => onChange(e.target.value)}
-  //       className={`w-full border-2 border-blue-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 outline-none ${className}`}
-  //     />
-  //   );
-  // };
-
   return (
     <>
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-6 animate-overlay-enter">
         
-        <div className="bg-white w-full max-w-5xl h-[95vh] rounded-bl-xl rounded-tl-xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="bg-white w-full max-w-6xl h-[95vh] rounded-bl-xl rounded-tl-xl shadow-2xl flex flex-col overflow-hidden">
           
           {/* Header */}
           <div className="flex justify-between items-center px-8 py-5 border-b bg-primaryGreen text-white">
@@ -441,7 +557,7 @@ const normalized = {
                 <div className="flex items-center gap-3 ">
                   <div className="w-1 h-5 bg-white/80 rounded-full"></div>
                   <h3 className="font-semibold text-xs uppercase tracking-wider text-emerald-100">
-                    {selectedHistoryData ? "Historical Version" : "Reviewer's Evaluation on Proposal"}
+                    {selectedHistoryData?.status === "history" ? "Historical Version" : "Reviewer's Evaluation on Proposal"}
                   </h3>
                 </div>
                 <h1 className="text-xl font-bold leading-tight text-white drop-shadow-sm">
@@ -450,24 +566,16 @@ const normalized = {
               </div>
 
               <div className="">
-                {selectedHistoryData ? (
-                  <button
-                    onClick={resetToCurrentProposal}
-                    className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-md font-semibold
-                              bg-blue-500 text-white hover:bg-blue-600 transition text-sm"
-                  >
-                    Back to Current
-                  </button>
-                ) : !isEditing ? (
+                {!isEditing ? (
                   <button
                     onClick={handleEdit}
-                    disabled={!canEdit}
+                    disabled={!canEdit || !isDocumentReady}
                     className={`flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-md font-semibold transition text-sm
-                              ${canEdit 
+                              ${canEdit && isDocumentReady
                                 ? 'bg-yellow-500 text-white hover:bg-yellow-600 cursor-pointer' 
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
                               }`}
-                    title={!canEdit ? "Proposal cannot be edited" : "Edit proposal"}
+                    title={!canEdit ? "Proposal cannot be edited" : !isDocumentReady ? "Loading data..." : "Edit proposal"}
                   >
                     <Pencil className="w-4 h-4" />
                     Edit
@@ -501,14 +609,30 @@ const normalized = {
           <div className="p-14 overflow-auto bg-white">
 
             {/* Loading indicator for history data */}
-            {loadingHistoryData && (
-              <div className="flex flex-col gap-3 justify-center items-center py-20">
-                <div className="w-10 h-10 border-4 border-emerald-300 border-t-emerald-600 rounded-full animate-spin"></div>
-                <p className="text-sm font-light text-gray-500">Loading Historical Data...</p>
-              </div>
-            )}
+            {!isDocumentReady ? (
+              <div className="w-full h-full px-20 py-5 space-y-6 animate-pulse">
+                <div className="h-6 w-1/3 bg-gray-200 rounded"></div>
+                <div className="h-4 w-2/3 bg-gray-200 rounded"></div>
 
-            {!loadingHistoryData && (
+                <div className="space-y-3 pt-6">
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+                </div>
+
+                <div className="space-y-3 pt-6">
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+                </div>
+
+                <div className="space-y-3 pt-6">
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+                </div>
+              </div>
+            ) : (
               <>
                 {/* ========== COVER PAGE SECTION ========== */}
                 <section className="max-w-5xl mx-auto px-5 rounded-sm shadow-sm font-sans text-gray-900 leading-relaxed">
@@ -743,21 +867,9 @@ const normalized = {
                 </section>         
 
                 {/* ========== REVIEWER'S COMMENTS (Cover page) ========== */}
-                {normalized?.cover.reviews?.length > 0 ? (
-                  normalized?.cover.reviews.map((review, index) => (
-                    <ReviewerComment
-                      key={review.review_id || index}
-                      title={`Reviewer's Comment ${index + 1}`}
-                      comment={review.comment}
-                      reviewerName={review.reviewer_name}
-                    />
-                  ))
-                ) : (
-                  <ReviewerComment
-                    comment=""
-                    reviewerName=""
-                  />
-                )}
+                <ReviewList reviews={normalized?.cover.reviews} />
+
+
 
                 {/* ========== CONTENT PAGE SECTION ========== */}
                 <section>
@@ -952,25 +1064,9 @@ const normalized = {
                     </table>
 
                     {/* Reviewer's Comments - Project Profile */}
-                    {normalized?.project_profile.reviews?.length > 0 ? (
-                      normalized?.project_profile.reviews.map((review, index) => (
-                        <ReviewerComment
-                          key={review.review_id || index}
-                          title={`Reviewer's Comment ${index + 1}`}
-                          comment={review.comment}
-                          reviewerName={review.reviewer_name}
-                        />
-                      ))
-                    ) : (
-                      <ReviewerComment
-                        comment=""
-                        reviewerName=""
-                      />
-                    )}
+                    <ReviewList reviews={normalized?.project_profile.reviews} />
                   </div>
 
-                  {/* Rest of the content sections... (I'll include key sections to keep the response manageable) */}
-                  
                   {/* RATIONALE */}
                   <div className="">
                     <h3 className="font-bold text-gray-900 pt-10 text-xl">II. RATIONALE</h3>
@@ -984,18 +1080,7 @@ const normalized = {
                       />
                     </div>
 
-                    {normalized?.rationale.reviews?.length > 0 ? (
-                      normalized?.rationale.reviews.map((review, index) => (
-                        <ReviewerComment
-                          key={review.review_id || index}
-                          title={`Reviewer's Comment ${index + 1}`}
-                          comment={review.comment}
-                          reviewerName={review.reviewer_name}
-                        />
-                      ))
-                    ) : (
-                      <ReviewerComment comment="" reviewerName="" />
-                    )}
+                    <ReviewList reviews={normalized?.rationale.reviews} />
                   </div>
 
                 {/* SIGNIFICANCE */}
@@ -1011,18 +1096,7 @@ const normalized = {
                     />
                   </div>
 
-                  {normalized?.significance.reviews?.length > 0 ? (
-                    normalized?.significance.reviews.map((review, index) => (
-                      <ReviewerComment
-                        key={review.review_id || index}
-                        title={`Reviewer's Comment ${index + 1}`}
-                        comment={review.comment}
-                        reviewerName={review.reviewer_name}
-                      />
-                    ))
-                  ) : (
-                    <ReviewerComment comment="" reviewerName="" />
-                  )}
+                  <ReviewList reviews={normalized?.significance.reviews} />
                 </div>
 
                 {/* OBJECTIVES */}
@@ -1039,18 +1113,7 @@ const normalized = {
                     />
                   </div>
 
-                  {normalized?.objectives.reviewsGeneral?.length > 0 ? (
-                    normalized?.objectives.reviewsGeneral.map((review, index) => (
-                      <ReviewerComment
-                        key={review.review_id || index}
-                        title={`Reviewer's Comment ${index + 1}`}
-                        comment={review.comment}
-                        reviewerName={review.reviewer_name}
-                      />
-                    ))
-                  ) : (
-                    <ReviewerComment comment="" reviewerName="" />
-                  )}
+                  <ReviewList reviews={normalized?.objectives.reviewsGeneral} />
 
                   <p className="text-base font-semibold mb-2 mt-3">Specific Objectives</p>
                   <div className={isEditing ? "bg-blue-50 rounded-lg p-4" : "p-5 bg-gray-100"}>
@@ -1062,18 +1125,7 @@ const normalized = {
                     />
                   </div>
 
-                  {normalized?.objectives.reviewsSpecific?.length > 0 ? (
-                    normalized?.objectives.reviewsSpecific.map((review, index) => (
-                      <ReviewerComment
-                        key={review.review_id || index}
-                        title={`Reviewer's Comment ${index + 1}`}
-                        comment={review.comment}
-                        reviewerName={review.reviewer_name}
-                      />
-                    ))
-                  ) : (
-                    <ReviewerComment comment="" reviewerName="" />
-                  )}
+                  <ReviewList reviews={normalized?.objectives.reviewsSpecific} />
                 </div>
 
                 {/* METHODOLOGY */}
@@ -1089,18 +1141,7 @@ const normalized = {
                     />
                   </div>
 
-                  {normalized?.methodology.reviews?.length > 0 ? (
-                    normalized?.methodology.reviews.map((review, index) => (
-                      <ReviewerComment
-                        key={review.review_id || index}
-                        title={`Reviewer's Comment ${index + 1}`}
-                        comment={review.comment}
-                        reviewerName={review.reviewer_name}
-                      />
-                    ))
-                  ) : (
-                    <ReviewerComment comment="" reviewerName="" />
-                  )}
+                  <ReviewList reviews={normalized?.methodology.reviews} />
                 </div>
 
                 {/* EXPECTED OUTPUT */}
@@ -1224,18 +1265,7 @@ const normalized = {
                     </tbody>
                   </table>
 
-                  {normalized?.expectedOutput.reviews?.length > 0 ? (
-                    normalized?.expectedOutput.reviews.map((review, index) => (
-                      <ReviewerComment
-                        key={review.review_id || index}
-                        title={`Reviewer's Comment ${index + 1}`}
-                        comment={review.comment}
-                        reviewerName={review.reviewer_name}
-                      />
-                    ))
-                  ) : (
-                    <ReviewerComment comment="" reviewerName="" />
-                  )}
+                  <ReviewList reviews={normalized?.expectedOutput.reviews} />
                 </div>
 
                 {/* SUSTAINABILITY PLAN */}
@@ -1251,18 +1281,7 @@ const normalized = {
                     />
                   </div>
 
-                  {normalized?.sustainability.reviews?.length > 0 ? (
-                    normalized?.sustainability.reviews.map((review, index) => (
-                      <ReviewerComment
-                        key={review.review_id || index}
-                        title={`Reviewer's Comment ${index + 1}`}
-                        comment={review.comment}
-                        reviewerName={review.reviewer_name}
-                      />
-                    ))
-                  ) : (
-                    <ReviewerComment comment="" reviewerName="" />
-                  )}
+                  <ReviewList reviews={normalized?.sustainability.reviews} />
                 </div>
 
                 {/* ORGANIZATION AND STAFFING */}
@@ -1336,18 +1355,7 @@ const normalized = {
                     </tbody>
                   </table>
 
-                  {normalized?.organization.reviews?.length > 0 ? (
-                    normalized?.organization.reviews.map((review, index) => (
-                      <ReviewerComment
-                        key={review.review_id || index}
-                        title={`Reviewer's Comment ${index + 1}`}
-                        comment={review.comment}
-                        reviewerName={review.reviewer_name}
-                      />
-                    ))
-                  ) : (
-                    <ReviewerComment comment="" reviewerName="" />
-                  )}
+                  <ReviewList reviews={normalized?.organization.reviews} />
                 </div>
 
                 {/* PLAN OF ACTIVITIES */}
@@ -1456,18 +1464,7 @@ const normalized = {
                     </tbody>
                   </table>
 
-                  {normalized?.planOfActivities.reviews?.length > 0 ? (
-                    normalized?.planOfActivities.reviews.map((review, index) => (
-                      <ReviewerComment
-                        key={review.review_id || index}
-                        title={`Reviewer's Comment ${index + 1}`}
-                        comment={review.comment}
-                        reviewerName={review.reviewer_name}
-                      />
-                    ))
-                  ) : (
-                    <ReviewerComment comment="" reviewerName="" />
-                  )}
+                  <ReviewList reviews={normalized?.planOfActivities.reviews} />
                 </div>
 
                 {/* BUDGETARY REQUIREMENT */}
@@ -1667,24 +1664,13 @@ const normalized = {
                           Grand Total
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <p>₱ {proposalData?.full_content?.content_pages?.budgetary_requirement?.totals?.grand_total || 0}</p>
+                          <p>₱ {normalized?.budget?.content?.totals?.grand_total || 0}</p>
                         </td>
                       </tr>
                     </tbody>
                   </table>
 
-                  {normalized?.budget.reviews?.length > 0 ? (
-                    normalized?.budget.reviews.map((review, index) => (
-                      <ReviewerComment
-                        key={review.review_id || index}
-                        title={`Reviewer's Comment ${index + 1}`}
-                        comment={review.comment}
-                        reviewerName={review.reviewer_name}
-                      />
-                    ))
-                  ) : (
-                    <ReviewerComment comment="" reviewerName="" />
-                  )}
+                  <ReviewList reviews={normalized?.budget.reviews} />
                 </div>
 
                 {/* Footer Signatures */}
@@ -1721,13 +1707,6 @@ const normalized = {
                   </div>  
                 </div>
 
-
-
-
-
-                  {/* ... Continue with all other sections similarly ... */}
-                  {/* Due to length, I'm showing the pattern - the rest follows the same structure */}
-
                 </section>
               </>
             )}
@@ -1756,14 +1735,28 @@ const normalized = {
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-            <div className="space-y-2">
-              {loading ? (
-                <div className="flex flex-col gap-3 justify-center items-center py-20">
-                  <div className="w-10 h-10 border-4 border-emerald-300 border-t-emerald-600 rounded-full animate-spin"></div>
-                  <p className="text-sm font-light text-gray-500">Loading History</p>
-                </div>
-              ) : (
-                history.map((item) => {
+            {loading ? (
+              <div className="px-2 py-2 space-y-4 animate-pulse">
+                {[...Array(5)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-3 p-2 rounded-xl bg-gray-100"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-gray-300" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-2/3 bg-gray-300 rounded"></div>
+                      <div className="h-3 w-1/3 bg-gray-200 rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : history.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-10">
+                No history available
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {history.map((item) => {
                   const label =
                     item.status === "current"
                       ? "Current Proposal"
@@ -1778,7 +1771,7 @@ const normalized = {
                   return (
                     <div
                       key={`${item.history_id}`}
-                      onClick={() => fetchHistoryData(item.history_id)}
+                      onClick={() => fetchHistoryData(item.history_id, item.status)}
                       className={`flex items-start gap-3 p-4 rounded-xl transition cursor-pointer ${
                         selectedHistoryData?.history_id === item.history_id
                           ? 'bg-emerald-100 border-2 border-emerald-500'
@@ -1797,9 +1790,9 @@ const normalized = {
                       </div>
                     </div>
                   );
-                })
-              )}
-            </div>
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
