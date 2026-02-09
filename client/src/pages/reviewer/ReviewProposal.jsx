@@ -33,7 +33,7 @@ const ReviewProposal = () => {
   const [showReviewerList, setShowReviewerList] = useState(false);
   const [selectedProposalId, setSelectedProposalId] = useState(null);
   const [showNotif, setShowNotif] = useState(false);
-
+  const [history, setHistory] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
@@ -223,6 +223,45 @@ const ReviewProposal = () => {
       return res.data;
     } catch (error) {
       console.error("Error fetching proposal content:", error);
+      return null;
+    }
+  };
+
+    const fetchHistory   = async (proposalId) => {
+    try {
+             const response = await fetch("http://127.0.0.1:5000/api/get-history", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            proposal_id: proposalId,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Fetched history data:", data);
+
+        if (Array.isArray(data)) {
+          const mappedHistory = data
+            .map((item) => ({
+              history_id: item.history_id,
+              proposal_id: item.proposal_id,
+              status: item.status,
+              version_no: item.version_no,
+              created_at: item.created_at,
+            }))
+        .sort((a, b) => a.history_id - b.history_id);
+
+
+          setHistory(mappedHistory);
+        }
+    } catch (error) {
+      console.error("Error fetching proposal history:", error);
       return null;
     }
   };
@@ -510,11 +549,10 @@ const ReviewProposal = () => {
                             const content = await fetchProposalContent(
                               proposal.proposal_id,
                             );
+                            const historyData = await fetchHistory(proposal.proposal_id);
 
                             setSelectedDoc({
-                              ...proposal,
-                              cover_page: cover,
-                              full_content: content,
+                              ...proposal
                             });
 
                             setShowReviewerModal(true);
