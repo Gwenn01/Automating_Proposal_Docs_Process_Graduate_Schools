@@ -9,45 +9,51 @@ const InputField = ({
   type = "text",
   placeholder = "",
 }) => (
-  <div className="mb-6">
-    {/* Label */}
-    <label className="block mb-2 text-sm font-medium text-gray-700 transition-colors">
+  <div className="relative mb-7">
+    {/* Input */}
+    <input
+      type={type}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder || " "}
+      className="
+        peer w-full px-4 pt-5 pb-2 text-sm
+        bg-white
+        border border-gray-300
+        rounded-xl
+        shadow-sm
+        outline-none
+        transition-all duration-200 ease-out
+
+        focus:border-emerald-600
+        focus:ring-2 focus:ring-emerald-500/20
+        focus:shadow-md
+
+        hover:border-gray-400
+      "
+    />
+
+    {/* Floating Label */}
+    <label
+      className="
+        absolute left-4 top-3 text-sm text-gray-500
+        transition-all duration-200 ease-out
+        pointer-events-none
+
+        peer-placeholder-shown:top-4
+        peer-placeholder-shown:text-sm
+        peer-placeholder-shown:text-gray-400
+
+        peer-focus:top-1.5
+        peer-focus:text-xs
+        peer-focus:text-emerald-600
+      "
+    >
       {label}
     </label>
-
-    {/* Input Wrapper */}
-    <div className="relative">
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="
-          w-full px-4 py-3 text-sm
-          bg-white
-          border border-gray-300
-          rounded-lg
-          shadow-sm
-          outline-none
-          transition-all duration-200 ease-out
-
-          focus:border-green-600
-          focus:ring-2 focus:ring-green-500/20
-          focus:shadow-md
-
-          hover:border-gray-400
-        "
-      />
-
-      {/* Focus Glow */}
-      <span className="
-        pointer-events-none absolute inset-0 rounded-lg
-        transition-all duration-200
-        group-focus-within:shadow-[0_0_0_4px_rgba(34,197,94,0.15)]
-      " />
-    </div>
   </div>
 );
+
 
 
 const TextAreaField = ({ label, value, onChange, rows = 6 }) => (
@@ -305,44 +311,96 @@ const CreateProposal = () => {
   const totalAmount = (category) =>
     rows[category].reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
 
-  const renderRows = (category) =>
-    rows[category].map((row, i) => (
-      <tr key={i} className="h-10 border-[1px] border-black">
-        <td className="p-3 border-[1px] border-black">
-          <input
-            placeholder='Input Data Here'
-            className="w-full bg-transparent border-b-[2px] outline-none text-center border-secondary"
-            value={row.item}
-            onChange={(e) => handleChange(category, i, "item", e.target.value)}
-          />
-        </td>
-        <td className='p-3 border-[1px] border-black'>
-          <input
-            placeholder='Input Data Here'
-            type="number"
-            className="w-full bg-transparent border-b-[2px] outline-none text-center border-secondary"
-            value={row.cost}
-            onChange={(e) => handleChange(category, i, "cost", e.target.value)}
-          />
-        </td>
-        <td className='p-3 border-[1px] border-black'>
-          <input
-            placeholder='Input Data Here'
-            type="number"
-            className="w-full bg-transparent border-b-[2px] outline-none text-center border-secondary"
-            value={row.qty}
-            onChange={(e) => handleChange(category, i, "qty", e.target.value)}
-          />
-        </td>
-        <td className='p-3 border-[1px] border-black'>
-          <input
-            readOnly
-            className="w-full border outline-none text-center"
-            value={row.amount}
-          />
-        </td>
-      </tr>
-    ));
+const renderRows = (category) =>
+  rows[category].map((row, i) => (
+    <tr
+      key={i}
+      className="group border border-gray-200 hover:bg-gray-50 transition-colors"
+    >
+      {/* ITEM */}
+      <td className="px-4 py-3">
+        <input
+          placeholder="Item description"
+          className="
+            w-full bg-transparent
+            border-b border-gray-300
+            focus:border-emerald-500
+            focus:ring-0
+            outline-none
+            text-sm text-center
+            placeholder:text-gray-400
+            transition-colors
+          "
+          value={row.item}
+          onChange={(e) =>
+            handleChange(category, i, "item", e.target.value)
+          }
+        />
+      </td>
+
+      {/* COST */}
+      <td className="px-4 py-3">
+        <input
+          type="number"
+          placeholder="0.00"
+          className="
+            w-full bg-transparent
+            border-b border-gray-300
+            focus:border-emerald-500
+            outline-none
+            text-sm text-center
+            placeholder:text-gray-400
+            transition-colors
+            appearance-none
+          "
+          value={row.cost}
+          onChange={(e) =>
+            handleChange(category, i, "cost", e.target.value)
+          }
+        />
+      </td>
+
+      {/* QTY */}
+      <td className="px-4 py-3">
+        <input
+          type="number"
+          placeholder="0"
+          className="
+            w-full bg-transparent
+            border-b border-gray-300
+            focus:border-emerald-500
+            outline-none
+            text-sm text-center
+            placeholder:text-gray-400
+            transition-colors
+            appearance-none
+          "
+          value={row.qty}
+          onChange={(e) =>
+            handleChange(category, i, "qty", e.target.value)
+          }
+        />
+      </td>
+
+      {/* AMOUNT */}
+      <td className="px-4 py-3">
+        <input
+          readOnly
+          className="
+            w-full bg-gray-100
+            border border-gray-200
+            rounded-md
+            text-sm text-center
+            font-medium
+            text-gray-700
+            cursor-not-allowed
+          "
+          value={row.amount}
+        />
+      </td>
+    </tr>
+  ));
+
 
   const toNumber = (value) => {
     if (value === "" || value === null || value === undefined) return null;
@@ -583,50 +641,7 @@ const CreateProposal = () => {
             </p>
           </div>
         </div>
-          {/* Modern Tab Navigation */}
-          <div className="mb-8 bg-white rounded-2xl shadow-md border border-gray-200 p-2">
-            <div className="flex flex-wrap gap-2">
-              <button 
-                onClick={() => setActiveTab('program')}
-                className={`flex-1 min-w-[200px] px-6 py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                  activeTab === 'program' 
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/30 scale-[1.02]' 
-                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${activeTab === 'program' ? 'bg-white' : 'bg-green-600'}`} />
-                  Program Proposal
-                </div>
-              </button>
-              <button 
-                onClick={() => setActiveTab('iba')}
-                className={`flex-1 min-w-[200px] px-6 py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                  activeTab === 'iba' 
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/30 scale-[1.02]' 
-                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${activeTab === 'iba' ? 'bg-white' : 'bg-green-600'}`} />
-                  Activity Proposal Iba Main
-                </div>
-              </button>
-              <button 
-                onClick={() => setActiveTab('satellite')}
-                className={`flex-1 min-w-[200px] px-6 py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                  activeTab === 'satellite' 
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/30 scale-[1.02]' 
-                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${activeTab === 'satellite' ? 'bg-white' : 'bg-green-600'}`} />
-                  Activity Proposal Satellite
-                </div>
-              </button>
-            </div>
-          </div>
+
 
           {/* Main Form Container */}
           <div className="space-y-6">
