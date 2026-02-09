@@ -39,7 +39,7 @@ const ViewProposal = () => {
   const [selectedReviewer, setSelectedReviewer] = useState(null);
   const [showReviewerStatus, setShowReviewerStatus] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
-  const [viewMode, setViewMode] = useState("table"); // Add view mode state
+  const [viewMode, setViewMode] = useState("grid"); // Add view mode state
   const [searchQuery, setSearchQuery] = useState(""); // Add search state
 
   const [showNotifications, setShowNotifications] = useState(false);
