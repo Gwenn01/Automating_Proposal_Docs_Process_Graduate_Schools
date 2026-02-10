@@ -546,7 +546,7 @@ const normalized = {
     <>
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-6 animate-overlay-enter">
         
-        <div className="bg-white w-full max-w-6xl h-[95vh] rounded-bl-xl rounded-tl-xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="bg-white w-full max-w-5xl h-[95vh] rounded-bl-xl rounded-tl-xl shadow-2xl flex flex-col overflow-hidden">
           
           {/* Header */}
           <div className="flex justify-between items-center px-8 py-5 border-b bg-primaryGreen text-white">
