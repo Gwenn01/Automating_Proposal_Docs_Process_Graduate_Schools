@@ -177,61 +177,61 @@ const handleLogout = () => {
 
       {/* ================= LOGOUT MODAL ================= */}
       {showLogoutModal && (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-md">
-      <div
-        className="
-          relative w-[380px] rounded-2xl bg-white p-8
-          shadow-[0_20px_50px_rgba(0,0,0,0.25)]
-          ring-1 ring-black/5
-          animate-[scaleIn_0.35s_ease-out]
-        "
-      >
-        {/* Icon */}
-        <div className="mb-5 flex justify-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
-            <LogOut className="h-7 w-7 text-red-500" />
-          </div>
-        </div>
-
-        {/* Title */}
-        <h2 className="text-center text-xl font-semibold text-gray-900">
-          Confirm Logout
-        </h2>
-
-        {/* Description */}
-        <p className="mt-2 text-center text-sm text-gray-500">
-          You will be signed out of your account. This action cannot be undone.
-        </p>
-
-        {/* Actions */}
-        <div className="mt-8 flex gap-3">
-          <button
-            onClick={() => setShowLogoutModal(false)}
-            className="
-              flex-1 rounded-xl border border-gray-200
-              px-4 py-2.5 text-sm font-medium text-gray-700
-              hover:bg-gray-100 transition
-            "
-          >
-            Cancel
-          </button>
-
-          <button
-            onClick={handleLogout}
-            className="
-              flex-1 rounded-xl
-              bg-gradient-to-r from-red-500 to-red-600
-              px-4 py-2.5 text-sm font-medium text-white
-              hover:from-red-600 hover:to-red-700
-              shadow-lg shadow-red-500/30
-              transition
-            "
-          >
-            Logout
-          </button>
+  <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-md">
+    <div
+      className="
+        relative w-[380px] rounded-2xl bg-white p-8
+        shadow-[0_20px_50px_rgba(0,0,0,0.25)]
+        ring-1 ring-black/5
+        animate-[scaleIn_0.35s_ease-out]
+      "
+    >
+      {/* Icon */}
+      <div className="mb-5 flex justify-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
+          <LogOut className="h-7 w-7 text-red-500" />
         </div>
       </div>
+
+      {/* Title */}
+      <h2 className="text-center text-xl font-semibold text-gray-900">
+        Confirm Logout
+      </h2>
+
+      {/* Description */}
+      <p className="mt-2 text-center text-sm text-gray-500">
+        You will be signed out of your account. This action cannot be undone.
+      </p>
+
+      {/* Actions */}
+      <div className="mt-8 flex gap-3">
+        <button
+          onClick={() => setShowLogoutModal(false)}
+          className="
+            flex-1 rounded-xl border border-gray-200
+            px-4 py-2.5 text-sm font-medium text-gray-700
+            hover:bg-gray-100 transition
+          "
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleLogout}
+          className="
+            flex-1 rounded-xl
+            bg-gradient-to-r from-red-500 to-red-600
+            px-4 py-2.5 text-sm font-medium text-white
+            hover:from-red-600 hover:to-red-700
+            shadow-lg shadow-red-500/30
+            transition
+          "
+        >
+          Logout
+        </button>
+      </div>
     </div>
+  </div>
       )}
 
       {/* Modal Animation */}

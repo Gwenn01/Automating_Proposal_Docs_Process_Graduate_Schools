@@ -13,13 +13,14 @@ import ReviewList from "./ReviewList";
 const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   if (!isOpen || !proposalData) return null;
   const [canEdit, setCanEdit] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
   const [editedData, setEditedData] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedHistoryData, setSelectedHistoryData] = useState(null);
   const [loadingHistoryData, setLoadingHistoryData] = useState(false);
   const [isDocumentReady, setIsDocumentReady] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const proposalId = proposalData?.proposal_id;
 
 useEffect(() => {
@@ -167,7 +168,7 @@ const fetchHistoryData = async (historyId, status) => {
       reviews_per_docs: {
         cover_page: {
           submission_date: data.cover_page?.submission_date,
-          board_resolution_no: data.cover_page?.board_resolution_no,
+          board_resolution: data.cover_page?.proposal_summary?.board_resolution,
           proposal_summary: {
             program_title: data.cover_page?.proposal_summary?.program_title,
             approved_budget: safeParse(data.cover_page?.proposal_summary?.approved_budget, {
@@ -431,113 +432,228 @@ const handleEdit = () => {
 
 
 
-  const handleSave = async () => {
-    try {
-      // Prepare clean data structure excluding reviews
-      const cleanedData = {
-        proposal_id: editedData.proposal_id,
-        user_id: userId,
-        content_id: selectedHistoryData?.content_id,
-        cover_id: selectedHistoryData?.cover_id,
-        
-        // Cover page data (excluding reviews)
-        cover: {
-          submission_date: editedData.reviews_per_docs?.cover_page?.submission_date,
-          board_resolution_title: editedData.reviews_per_docs?.cover_page?.proposal_summary?.program_title,
-          board_resolution_no: editedData.reviews_per_docs?.cover_page?.board_resolution_no,
-          approved_budget_words: editedData.reviews_per_docs?.cover_page?.proposal_summary?.approved_budget?.words,
-          approved_budget_amount: editedData.reviews_per_docs?.cover_page?.proposal_summary?.approved_budget?.amount,
-          duration_words: editedData.reviews_per_docs?.cover_page?.proposal_summary?.duration?.words,
-          duration_years: editedData.reviews_per_docs?.cover_page?.proposal_summary?.duration?.years,
-          date_from_to: editedData.reviews_per_docs?.cover_page?.proposal_summary?.proposal_coverage_period,
-          activity_title: editedData.reviews_per_docs?.cover_page?.activity_details?.title,
-          activity_date: editedData.reviews_per_docs?.cover_page?.activity_details?.date,
-          activity_venue: editedData.reviews_per_docs?.cover_page?.activity_details?.venue,
-          activity_value_statement: editedData.reviews_per_docs?.cover_page?.activity_details?.value_statement,
-          requested_activity_budget: editedData.reviews_per_docs?.cover_page?.activity_details?.requested_budget,
-          prmsu_participants_words: editedData.reviews_per_docs?.cover_page?.participants?.prmsu?.words,
-          prmsu_participants_num: editedData.reviews_per_docs?.cover_page?.participants?.prmsu?.count,
-          partner_agency_participants_words: editedData.reviews_per_docs?.cover_page?.participants?.partner_agency?.words,
-          partner_agency_participants_num: editedData.reviews_per_docs?.cover_page?.participants?.partner_agency?.count,
-          partner_agency_name: editedData.reviews_per_docs?.cover_page?.participants?.partner_agency?.name,
-          trainees_words: editedData.reviews_per_docs?.cover_page?.participants?.trainees?.words,
-          trainees_num: editedData.reviews_per_docs?.cover_page?.participants?.trainees?.count,
-        },
-        
-        // Content page data (excluding reviews)
-        content: {
-          program_title: editedData.reviews_per_docs?.project_profile?.program_title,
-          project_title: editedData.reviews_per_docs?.project_profile?.project_title,
-          activity_title: editedData.reviews_per_docs?.project_profile?.activity_title,
-          sdg_alignment: editedData.reviews_per_docs?.project_profile?.sdg_alignment,
-          extension_agenda: editedData.reviews_per_docs?.project_profile?.extension_agenda,
-          project_leader: editedData.reviews_per_docs?.project_profile?.proponents?.project_leader,
-          members: editedData.reviews_per_docs?.project_profile?.proponents?.members,
-          college_campus_program: editedData.reviews_per_docs?.project_profile?.college_campus_program,
-          collaborating_agencies: editedData.reviews_per_docs?.project_profile?.collaborating_agencies,
-          community_location: editedData.reviews_per_docs?.project_profile?.community_location,
-          target_sector: editedData.reviews_per_docs?.project_profile?.target_sector,
-          number_of_beneficiaries: editedData.reviews_per_docs?.project_profile?.number_of_beneficiaries,
-          implementation_period: editedData.reviews_per_docs?.project_profile?.implementation_period,
-          total_budget_requested: editedData.reviews_per_docs?.project_profile?.budgetary_requirements,
-          
-          rationale: editedData.reviews_per_docs?.rationale?.rationale_content,
-          significance: editedData.reviews_per_docs?.significance?.significance_content,
-          general_objectives: editedData.reviews_per_docs?.objectives?.general_content,
-          specific_objectives: editedData.reviews_per_docs?.objectives?.specific_content,
-          methodology: editedData.reviews_per_docs?.methodology?.methodology_content,
-          
-          expected_output_6ps: {
-            publications: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.publications,
-            patents: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.patents,
-            products: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.products,
-            people_services: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.people_services,
-            places_partnerships: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.places_partnerships,
-            policy: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.policy,
-          },
-          
-          social_impact: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.social_impact,
-          economic_impact: editedData.reviews_per_docs?.expected_output_outcome?.["6ps"]?.economic_impact,
-          
-          sustainability_plan: editedData.reviews_per_docs?.sustainability_plan?.sustainability_plan_content,
-          
-          org_and_staffing_json: editedData.reviews_per_docs?.organization_and_staffing?.organization_and_staffing_content,
-          
-          activity_schedule_json: {
-            activity_title: editedData.reviews_per_docs?.plan_of_activities?.plan_of_activities_content?.activity_title,
-            activity_date: editedData.reviews_per_docs?.plan_of_activities?.plan_of_activities_content?.activity_date,
-            schedule: editedData.reviews_per_docs?.plan_of_activities?.plan_of_activities_content?.schedule,
-          },
-          
-          budget_breakdown_json: {
-            meals: editedData.reviews_per_docs?.budgetary_requirement?.budgetary_requirement?.meals,
-            supplies: editedData.reviews_per_docs?.budgetary_requirement?.budgetary_requirement?.supplies,
-            transport: editedData.reviews_per_docs?.budgetary_requirement?.budgetary_requirement?.transport,
-            totals: editedData.reviews_per_docs?.budgetary_requirement?.budgetary_requirement?.totals,
-          },
-        },
-      };
-      
-      console.log("Saving cleaned data:", cleanedData);
-      
-      // 🔥 Call API here to save changes
-      // await axios.put(`/api/proposals/${proposalData.proposal_id}`, cleanedData);
-      
-      // Exit edit mode
-      setIsEditing(false);
-      
-      // Optional: Show success message
-      // toast.success("Changes saved successfully!");
-      
-      // Optional: Refresh parent component data
-      // onRefresh();
-      
-    } catch (err) {
-      console.error("Save error:", err);
-      // Optional: Show error message
-      // toast.error("Failed to save changes");
+const handleSave = async () => {
+  try {
+     setIsSaving(true);
+    // Validate that we have the required IDs
+    if (!editedData?.proposal_id) {
+      alert("Error: Missing proposal ID");
+      return;
     }
-  };
+
+    if (!userId) {
+      alert("Error: User not logged in");
+      return;
+    }
+
+    // Ensure we have content_id and cover_id from selectedHistoryData
+    const contentId = selectedHistoryData?.content_id || editedData?.content_id;
+    const coverId = selectedHistoryData?.cover_id || editedData?.cover_id;
+
+    if (!contentId || !coverId) {
+      alert("Error: Missing content or cover ID. Please reload the document.");
+      return;
+    }
+
+    // Helper function to clean numeric strings (remove commas, convert to number or null)
+    const cleanNumeric = (value) => {
+      if (!value || value === "") return null;
+      // Remove commas and convert to string, then parse as float
+      const cleaned = String(value).replace(/,/g, '');
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) ? null : parsed;
+    };
+
+    const cleanedData = {
+      proposal_id: editedData.proposal_id,
+      user_id: userId,
+      content_id: contentId,
+      cover_id: coverId,
+
+      cover: {
+        submission_date:
+          editedData.reviews_per_docs?.cover_page?.submission_date || null,
+        board_resolution_title:
+          editedData.reviews_per_docs?.cover_page?.proposal_summary?.program_title || null,
+        board_resolution_no:
+          editedData.reviews_per_docs?.cover_page?.board_resolution || null,
+        approved_budget_words:
+          editedData.reviews_per_docs?.cover_page?.proposal_summary?.approved_budget?.words || null,
+        approved_budget_amount:
+          cleanNumeric(editedData.reviews_per_docs?.cover_page?.proposal_summary?.approved_budget?.amount),
+        duration_words:
+          editedData.reviews_per_docs?.cover_page?.proposal_summary?.duration?.words || null,
+        duration_years:
+          cleanNumeric(editedData.reviews_per_docs?.cover_page?.proposal_summary?.duration?.years),
+        date_from_to:
+          editedData.reviews_per_docs?.cover_page?.proposal_summary?.proposal_coverage_period || null,
+        activity_title:
+          editedData.reviews_per_docs?.cover_page?.activity_details?.title || null,
+        activity_date:
+          editedData.reviews_per_docs?.cover_page?.activity_details?.date || null,
+        activity_venue:
+          editedData.reviews_per_docs?.cover_page?.activity_details?.venue || null,
+        activity_value_statement:
+          editedData.reviews_per_docs?.cover_page?.activity_details?.value_statement || null,
+        requested_activity_budget:
+          cleanNumeric(editedData.reviews_per_docs?.cover_page?.activity_details?.requested_budget),
+        prmsu_participants_words:
+          editedData.reviews_per_docs?.cover_page?.participants?.prmsu?.words || null,
+        prmsu_participants_num:
+          cleanNumeric(editedData.reviews_per_docs?.cover_page?.participants?.prmsu?.count),
+        partner_agency_participants_words:
+          editedData.reviews_per_docs?.cover_page?.participants?.partner_agency?.words || null,
+        partner_agency_participants_num:
+          cleanNumeric(editedData.reviews_per_docs?.cover_page?.participants?.partner_agency?.count),
+        partner_agency_name:
+          editedData.reviews_per_docs?.cover_page?.participants?.partner_agency?.name || null,
+        trainees_words:
+          editedData.reviews_per_docs?.cover_page?.participants?.trainees?.words || null,
+        trainees_num:
+          cleanNumeric(editedData.reviews_per_docs?.cover_page?.participants?.trainees?.count),
+      },
+
+      content: {
+        program_title:
+          editedData.reviews_per_docs?.project_profile?.program_title || null,
+        project_title:
+          editedData.reviews_per_docs?.project_profile?.project_title || null,
+        activity_title:
+          editedData.reviews_per_docs?.project_profile?.activity_title || null,
+        sdg_alignment:
+          editedData.reviews_per_docs?.project_profile?.sdg_alignment || null,
+        extension_agenda:
+          editedData.reviews_per_docs?.project_profile?.extension_agenda || null,
+        project_leader:
+          editedData.reviews_per_docs?.project_profile?.proponents?.project_leader || null,
+        members:
+          editedData.reviews_per_docs?.project_profile?.proponents?.members || null,
+        college_campus_program:
+          editedData.reviews_per_docs?.project_profile?.college_campus_program || null,
+        collaborating_agencies:
+          editedData.reviews_per_docs?.project_profile?.collaborating_agencies || null,
+        community_location:
+          editedData.reviews_per_docs?.project_profile?.community_location || null,
+        target_sector:
+          editedData.reviews_per_docs?.project_profile?.target_sector || null,
+        number_of_beneficiaries:
+          cleanNumeric(editedData.reviews_per_docs?.project_profile?.number_of_beneficiaries),
+        implementation_period:
+          editedData.reviews_per_docs?.project_profile?.implementation_period || null,
+        total_budget_requested:
+          cleanNumeric(editedData.reviews_per_docs?.project_profile?.budgetary_requirements),
+        rationale:
+          editedData.reviews_per_docs?.rationale?.rationale_content || null,
+        significance:
+          editedData.reviews_per_docs?.significance?.significance_content || null,
+        general_objectives:
+          editedData.reviews_per_docs?.objectives?.general_content || null,
+        specific_objectives:
+          editedData.reviews_per_docs?.objectives?.specific_content || null,
+        methodology:
+          editedData.reviews_per_docs?.methodology?.methodology_content || null,
+        expected_output_6ps:
+          editedData.reviews_per_docs?.expected_output_outcome?.["6ps"] || null,
+        social_impact:
+          editedData.reviews_per_docs?.expected_output_outcome?.social_impact || null,
+        economic_impact:
+          editedData.reviews_per_docs?.expected_output_outcome?.economic_impact || null,
+        sustainability_plan:
+          editedData.reviews_per_docs?.sustainability_plan?.sustainability_plan_content || null,
+        org_and_staffing_json:
+          editedData.reviews_per_docs?.organization_and_staffing?.organization_and_staffing_content || null,
+        activity_schedule_json:
+          editedData.reviews_per_docs?.plan_of_activities?.plan_of_activities_content || null,
+        budget_breakdown_json:
+          editedData.reviews_per_docs?.budgetary_requirement?.budgetary_requirement || null,
+
+        prmsu_participants_count:
+          cleanNumeric(editedData.reviews_per_docs?.cover_page?.participants?.prmsu?.count),
+        partner_agency_participants_count:
+          cleanNumeric(editedData.reviews_per_docs?.cover_page?.participants?.partner_agency?.count),
+        trainees_count:
+          cleanNumeric(editedData.reviews_per_docs?.cover_page?.participants?.trainees?.count),
+      },
+    };
+
+    console.log("✅ Saving cleaned data:", cleanedData);
+
+    const response = await fetch(
+      "http://127.0.0.1:5000/api/update-proposal-docs",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(cleanedData),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Server error response:", errorText);
+      
+      // Try to parse as JSON for better error message
+      try {
+        const errorJson = JSON.parse(errorText);
+        alert(`Save failed: ${errorJson.message || errorText}`);
+      } catch {
+        alert(`Save failed: ${errorText}`);
+      }
+      
+      throw new Error(errorText);
+    }
+
+    const result = await response.json();
+    console.log("✅ Update success:", result);
+
+    alert("Changes saved successfully!");
+    
+    // Reset editing state
+    setIsEditing(false);
+    setEditedData(null);
+    
+    // Reload the history to show the new version
+    const historyResponse = await fetch('http://127.0.0.1:5000/api/get-history', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        proposal_id: editedData.proposal_id
+      }),
+    });
+
+    if (historyResponse.ok) {
+      const historyData = await historyResponse.json();
+      if (Array.isArray(historyData)) {
+        const mappedHistory = historyData.map(item => ({
+          history_id: item.history_id,
+          proposal_id: item.proposal_id,
+          status: item.status,
+          version_no: item.version_no,
+          created_at: item.created_at,
+        })).sort((a, b) => a.history_id - b.history_id);
+
+        setHistory(mappedHistory);
+        
+        // Auto-load the new current version
+        const currentVersion = mappedHistory.find(item => item.status === "current");
+        if (currentVersion) {
+          await fetchHistoryData(currentVersion.history_id, currentVersion.status);
+        }
+      }
+    }
+
+  } catch (error) {
+    console.error("❌ Save error:", error);
+    // Error alert already shown above
+  }finally {
+    setIsSaving(false);
+  }
+};
+
+
 
   // Helper function to update nested fields
 const updateField = (path, value) => {
@@ -583,6 +699,31 @@ const updateField = (path, value) => {
   return (
     <>
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-6 animate-overlay-enter">
+
+        {isSaving && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-xl px-8 py-6 
+                            shadow-lg 
+                            flex items-center gap-4
+                            animate-[fadeIn_0.25s_ease-out]">
+
+              {/* Minimal Spinner */}
+              <div className="w-6 h-6 rounded-full border-2 border-gray-200 
+                              border-t-emerald-600 animate-spin"></div>
+
+              {/* Text */}
+              <div>
+                <p className="text-sm font-medium text-gray-900">
+                  Saving changes
+                </p>
+                <p className="text-xs text-gray-500">
+                  Please wait…
+                </p>
+              </div>
+            </div>
+          </div>
+
+        )}
         
         <div className="bg-white w-full max-w-5xl h-[95vh] rounded-bl-xl rounded-tl-xl shadow-2xl flex flex-col overflow-hidden">
           
@@ -619,25 +760,42 @@ const updateField = (path, value) => {
                     Edit
                   </button>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleSave}
-                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-semibold
-                                bg-green-500 text-white hover:bg-green-700 transition"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      Save
-                    </button>
+              <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-semibold transition
+                              ${isSaving 
+                                ? 'bg-gray-400 cursor-not-allowed' 
+                                : 'bg-green-500 text-white hover:bg-green-700'
+                              }`}
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        Save
+                      </>
+                    )}
+                  </button>
 
-                    <button
-                      onClick={handleCancel}
-                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-semibold
-                                bg-red-600 text-white hover:bg-red-800 transition"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                      Cancel
-                    </button>
-                  </div>
+                  <button
+                    onClick={handleCancel}
+                    disabled={isSaving}
+                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-semibold transition
+                              ${isSaving 
+                                ? 'bg-gray-300 cursor-not-allowed opacity-50' 
+                                : 'bg-red-600 text-white hover:bg-red-800'
+                              }`}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    Cancel
+                  </button>
+                </div>
                 )}
               </div>
 
@@ -706,7 +864,14 @@ const updateField = (path, value) => {
                             isEditing={isEditing}
                           />
                         </span>
-                        , with the approved budget of{" "}
+                        ,<span className="inline-block">
+                          <EditableText
+                            value={normalized?.cover?.board_resolution}
+                            onChange={(val) => updateField('reviews_per_docs.cover_page.board_resolution', val)}
+                            className="inline"
+                            isEditing={isEditing}
+                          />
+                        </span> with the approved budget of{" "}
                         <span className="inline-block">
                           <EditableText
                             value={normalized?.cover.proposal_summary?.approved_budget?.words}
