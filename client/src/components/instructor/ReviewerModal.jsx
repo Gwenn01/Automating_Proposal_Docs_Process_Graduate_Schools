@@ -168,7 +168,7 @@ const fetchHistoryData = async (historyId, status) => {
       reviews_per_docs: {
         cover_page: {
           submission_date: data.cover_page?.submission_date,
-          board_resolution: data.cover_page?.proposal_summary?.board_resolution,
+          board_resolution: data.cover_page?.board_resolution,
           proposal_summary: {
             program_title: data.cover_page?.proposal_summary?.program_title,
             approved_budget: safeParse(data.cover_page?.proposal_summary?.approved_budget, {
@@ -837,6 +837,7 @@ const updateField = (path, value) => {
                   <div className="space-y-4 font-normal text-base">
                     <div className={isEditing ? "bg-blue-50 rounded-lg p-3" : ""}>
                       <label className="block text-xs font-semibold text-gray-600 mb-1">Submission Date:</label>
+
                       <EditableDate
                         value={normalized?.cover.submission_date}
                         onChange={(val) => updateField('reviews_per_docs.cover_page.submission_date', val)}
@@ -2039,3 +2040,4 @@ const updateField = (path, value) => {
 };
 
 export default ReviewerModal;
+
