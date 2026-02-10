@@ -77,6 +77,7 @@ useEffect(() => {
  const storedUser = localStorage.getItem("user");
  const userId = storedUser ? JSON.parse(storedUser).user_id : null;
  console.log("Content ID:", proposalData?.reviews_per_docs?.content_id);
+ console.log("User ID:", userId);
 
 
 useEffect(() => {
@@ -291,6 +292,8 @@ const fetchHistoryData = async (historyId, status) => {
   }
 };
 
+console.log("Selected History Data:", selectedHistoryData);
+
 // Auto-load current version when history is available
 useEffect(() => {
   if (!isOpen || !history.length || selectedHistoryData) return;
@@ -305,22 +308,40 @@ useEffect(() => {
   }
 }, [history, isOpen]);
 
+// Add this useEffect after line 260 (after the auto-load useEffect)
+useEffect(() => {
+  if (isEditing && !editedData && (selectedHistoryData || proposalData)) {
+    const dataToEdit = selectedHistoryData || proposalData;
+    const clonedData = JSON.parse(JSON.stringify(dataToEdit));
+    console.log("Auto-initializing editedData:", clonedData);
+    setEditedData(clonedData);
+  }
+}, [isEditing, editedData, selectedHistoryData, proposalData]);
+
   const rpd = proposalData?.reviews_per_docs;
   if (!rpd && !selectedHistoryData) return null;
 
-  // Determine which data to display:
-  // 1. If editing, use editedData
-  // 2. Otherwise, if viewing history, use selectedHistoryData
-  // 3. Otherwise, use proposalData
-  const activeData = isEditing && editedData ? editedData : (selectedHistoryData || proposalData);
-  const activeRpd = activeData?.reviews_per_docs;
+// Determine which data to display:
+// 1. If editing AND editedData exists, use editedData
+// 2. Otherwise, if viewing history, use selectedHistoryData
+// 3. Otherwise, use proposalData
+const activeData = (isEditing && editedData) 
+  ? editedData 
+  : (selectedHistoryData || proposalData);
 
-  // Add safety check for activeRpd
-  if (!activeRpd) {
-    console.error("activeRpd is undefined", { activeData, selectedHistoryData, isEditing, editedData, proposalData });
-    return null;
-  }
+// Safety check - if activeData is null, return early
+if (!activeData) {
+  console.error("activeData is null", { isEditing, editedData, selectedHistoryData, proposalData });
+  return null;
+}
 
+const activeRpd = activeData.reviews_per_docs;
+
+// Add safety check for activeRpd
+if (!activeRpd) {
+  console.error("activeRpd is undefined", { activeData, selectedHistoryData, isEditing, editedData, proposalData });
+  return null;
+}
   // Normalize data from the active source
 const normalized = {
   cover: activeRpd.cover_page || {},
@@ -384,26 +405,40 @@ const normalized = {
   },
 };
 
-  const handleEdit = () => {
-    // Deep clone the current displayed data (which could be selectedHistoryData or proposalData)
-    const dataToEdit = selectedHistoryData || proposalData;
-    setEditedData(JSON.parse(JSON.stringify(dataToEdit)));
-    setIsEditing(true);
-  };
+const handleEdit = () => {
+  // Deep clone the current displayed data (which could be selectedHistoryData or proposalData)
+  const dataToEdit = selectedHistoryData || proposalData;
+  
+  if (!dataToEdit) {
+    console.error("No data available to edit");
+    return;
+  }
+  
+  // Use JSON parse/stringify for deep clone to ensure no reference issues
+  const clonedData = JSON.parse(JSON.stringify(dataToEdit));
+  
+  console.log("Setting editedData with:", clonedData);
+  
+  // IMPORTANT: Set editedData FIRST, then set isEditing
+  setEditedData(clonedData);
+  setIsEditing(true);
+};
 
   const handleCancel = () => {
     setEditedData(null);
     setIsEditing(false);
   };
 
+
+
   const handleSave = async () => {
     try {
       // Prepare clean data structure excluding reviews
       const cleanedData = {
         proposal_id: editedData.proposal_id,
-        user_id: editedData.user_id,
-        content_id: editedData.content_id,
-        cover_id: editedData.cover_id,
+        user_id: userId,
+        content_id: selectedHistoryData?.content_id,
+        cover_id: selectedHistoryData?.cover_id,
         
         // Cover page data (excluding reviews)
         cover: {
@@ -505,26 +540,27 @@ const normalized = {
   };
 
   // Helper function to update nested fields
-  const updateField = (path, value) => {
-    setEditedData(prev => {
-      const newData = { ...prev };
-      const keys = path.split('.');
-      let current = newData;
-      
-      // Navigate to the parent of the target field
-      for (let i = 0; i < keys.length - 1; i++) {
-        if (!current[keys[i]]) {
-          current[keys[i]] = {};
-        }
-        current = current[keys[i]];
+const updateField = (path, value) => {
+  setEditedData(prev => {
+    // Deep clone to avoid mutation
+    const newData = JSON.parse(JSON.stringify(prev));
+    const keys = path.split('.');
+    let current = newData;
+    
+    // Navigate to the parent of the target field
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (!current[keys[i]]) {
+        current[keys[i]] = {};
       }
-      
-      // Set the value
-      current[keys[keys.length - 1]] = value;
-      
-      return newData;
-    });
-  };
+      current = current[keys[i]];
+    }
+    
+    // Set the value
+    current[keys[keys.length - 1]] = value;
+    
+    return newData;
+  });
+};
 
   // Editable date component
   const EditableDate = ({ value, onChange, className = "" }) => {
@@ -541,6 +577,8 @@ const normalized = {
       />
     );
   };
+
+  
 
   return (
     <>
@@ -565,8 +603,8 @@ const normalized = {
                 </h1>
               </div>
 
-              <div className="">
-                {!isEditing ? (
+              <div className={`${selectedHistoryData?.status === "history" ? "hidden" : ""} relative z-10 flex items-center gap-3`}>
+                {!isEditing? ( 
                   <button
                     onClick={handleEdit}
                     disabled={!canEdit || !isDocumentReady}
@@ -602,6 +640,7 @@ const normalized = {
                   </div>
                 )}
               </div>
+
             </div>
           </div>
 
@@ -1316,9 +1355,14 @@ const normalized = {
                                 <textarea
                                   value={item.designation || ""}
                                   onChange={(e) => {
-                                    const newContent = [...normalized.organization.content];
-                                    newContent[index].designation = e.target.value;
-                                    updateField('reviews_per_docs.organization_and_staffing.organization_and_staffing_content', newContent);
+                                    setEditedData(prev => {
+                                      const newData = JSON.parse(JSON.stringify(prev));
+                                      if (!newData.reviews_per_docs.organization_and_staffing.organization_and_staffing_content[index]) {
+                                        newData.reviews_per_docs.organization_and_staffing.organization_and_staffing_content[index] = {};
+                                      }
+                                      newData.reviews_per_docs.organization_and_staffing.organization_and_staffing_content[index].designation = e.target.value;
+                                      return newData;
+                                    });
                                   }}
                                   className="w-full border-2 border-blue-500 rounded-lg px-2 py-1"
                                   rows={3}
@@ -1332,9 +1376,14 @@ const normalized = {
                                 <textarea
                                   value={item.terms || ""}
                                   onChange={(e) => {
-                                    const newContent = [...normalized.organization.content];
-                                    newContent[index].terms = e.target.value;
-                                    updateField('reviews_per_docs.organization_and_staffing.organization_and_staffing_content', newContent);
+                                    setEditedData(prev => {
+                                      const newData = JSON.parse(JSON.stringify(prev));
+                                      if (!newData.reviews_per_docs.organization_and_staffing.organization_and_staffing_content[index]) {
+                                        newData.reviews_per_docs.organization_and_staffing.organization_and_staffing_content[index] = {};
+                                      }
+                                      newData.reviews_per_docs.organization_and_staffing.organization_and_staffing_content[index].terms = e.target.value;
+                                      return newData;
+                                    });
                                   }}
                                   className="w-full border-2 border-blue-500 rounded-lg px-2 py-1"
                                   rows={3}
@@ -1409,9 +1458,11 @@ const normalized = {
                                   type="text"
                                   value={item.time || ""}
                                   onChange={(e) => {
-                                    const newSchedule = [...normalized.planOfActivities.content.schedule];
-                                    newSchedule[index].time = e.target.value;
-                                    updateField('reviews_per_docs.plan_of_activities.plan_of_activities_content.schedule', newSchedule);
+                                    setEditedData(prev => {
+                                      const newData = JSON.parse(JSON.stringify(prev));
+                                      newData.reviews_per_docs.plan_of_activities.plan_of_activities_content.schedule[index].time = e.target.value;
+                                      return newData;
+                                    });
                                   }}
                                   className="w-full border-2 border-blue-500 rounded-lg px-2 py-1"
                                 />
@@ -1426,9 +1477,11 @@ const normalized = {
                                     type="text"
                                     value={item.activity || ""}
                                     onChange={(e) => {
-                                      const newSchedule = [...normalized.planOfActivities.content.schedule];
-                                      newSchedule[index].activity = e.target.value;
-                                      updateField('reviews_per_docs.plan_of_activities.plan_of_activities_content.schedule', newSchedule);
+                                      setEditedData(prev => {
+                                        const newData = JSON.parse(JSON.stringify(prev));
+                                        newData.reviews_per_docs.plan_of_activities.plan_of_activities_content.schedule[index].activity = e.target.value;
+                                        return newData;
+                                      });
                                     }}
                                     placeholder="Activity"
                                     className="w-full border-2 border-blue-500 rounded-lg px-2 py-1"
@@ -1437,9 +1490,11 @@ const normalized = {
                                     type="text"
                                     value={item.speaker || ""}
                                     onChange={(e) => {
-                                      const newSchedule = [...normalized.planOfActivities.content.schedule];
-                                      newSchedule[index].speaker = e.target.value;
-                                      updateField('reviews_per_docs.plan_of_activities.plan_of_activities_content.schedule', newSchedule);
+                                      setEditedData(prev => {
+                                        const newData = JSON.parse(JSON.stringify(prev));
+                                        newData.reviews_per_docs.plan_of_activities.plan_of_activities_content.schedule[index].speaker = e.target.value;
+                                        return newData;
+                                      });
                                     }}
                                     placeholder="Speaker"
                                     className="w-full border-2 border-blue-500 rounded-lg px-2 py-1"
@@ -1500,9 +1555,11 @@ const normalized = {
                                 type="text"
                                 value={row.item || ""}
                                 onChange={(e) => {
-                                  const newMeals = [...normalized.budget.content.meals];
-                                  newMeals[index].item = e.target.value;
-                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.meals', newMeals);
+                                  setEditedData(prev => {
+                                    const newData = JSON.parse(JSON.stringify(prev));
+                                    newData.reviews_per_docs.budgetary_requirement.budgetary_requirement.meals[index].item = e.target.value;
+                                    return newData;
+                                  });
                                 }}
                                 className="w-full border-2 border-blue-500 rounded px-2 py-1"
                               />
@@ -1516,9 +1573,11 @@ const normalized = {
                                 type="number"
                                 value={row.cost || ""}
                                 onChange={(e) => {
-                                  const newMeals = [...normalized.budget.content.meals];
-                                  newMeals[index].cost = e.target.value;
-                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.meals', newMeals);
+                                  setEditedData(prev => {
+                                    const newData = JSON.parse(JSON.stringify(prev));
+                                    newData.reviews_per_docs.budgetary_requirement.budgetary_requirement.meals[index].cost = e.target.value;
+                                    return newData;
+                                  });
                                 }}
                                 className="w-full border-2 border-blue-500 rounded px-2 py-1"
                               />
@@ -1532,9 +1591,11 @@ const normalized = {
                                 type="number"
                                 value={row.qty || ""}
                                 onChange={(e) => {
-                                  const newMeals = [...normalized.budget.content.meals];
-                                  newMeals[index].qty = e.target.value;
-                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.meals', newMeals);
+                                  setEditedData(prev => {
+                                    const newData = JSON.parse(JSON.stringify(prev));
+                                    newData.reviews_per_docs.budgetary_requirement.budgetary_requirement.meals[index].qty = e.target.value;
+                                    return newData;
+                                  });
                                 }}
                                 className="w-full border-2 border-blue-500 rounded px-2 py-1"
                               />
@@ -1556,9 +1617,11 @@ const normalized = {
                                 type="text"
                                 value={row.item || ""}
                                 onChange={(e) => {
-                                  const newTransport = [...normalized.budget.content.transport];
-                                  newTransport[index].item = e.target.value;
-                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.transport', newTransport);
+                                  setEditedData(prev => {
+                                    const newData = JSON.parse(JSON.stringify(prev));
+                                    newData.reviews_per_docs.budgetary_requirement.budgetary_requirement.transport[index].item = e.target.value;
+                                    return newData;
+                                  });
                                 }}
                                 className="w-full border-2 border-blue-500 rounded px-2 py-1"
                               />
@@ -1572,9 +1635,11 @@ const normalized = {
                                 type="number"
                                 value={row.cost || ""}
                                 onChange={(e) => {
-                                  const newTransport = [...normalized.budget.content.transport];
-                                  newTransport[index].cost = e.target.value;
-                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.transport', newTransport);
+                                  setEditedData(prev => {
+                                    const newData = JSON.parse(JSON.stringify(prev));
+                                    newData.reviews_per_docs.budgetary_requirement.budgetary_requirement.transport[index].cost = e.target.value;
+                                    return newData;
+                                  });
                                 }}
                                 className="w-full border-2 border-blue-500 rounded px-2 py-1"
                               />
@@ -1588,9 +1653,11 @@ const normalized = {
                                 type="number"
                                 value={row.qty || ""}
                                 onChange={(e) => {
-                                  const newTransport = [...normalized.budget.content.transport];
-                                  newTransport[index].qty = e.target.value;
-                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.transport', newTransport);
+                                  setEditedData(prev => {
+                                    const newData = JSON.parse(JSON.stringify(prev));
+                                    newData.reviews_per_docs.budgetary_requirement.budgetary_requirement.transport[index].qty = e.target.value;
+                                    return newData;
+                                  });
                                 }}
                                 className="w-full border-2 border-blue-500 rounded px-2 py-1"
                               />
@@ -1612,9 +1679,11 @@ const normalized = {
                                 type="text"
                                 value={row.item || ""}
                                 onChange={(e) => {
-                                  const newSupplies = [...normalized.budget.content.supplies];
-                                  newSupplies[index].item = e.target.value;
-                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.supplies', newSupplies);
+                                  setEditedData(prev => {
+                                    const newData = JSON.parse(JSON.stringify(prev));
+                                    newData.reviews_per_docs.budgetary_requirement.budgetary_requirement.supplies[index].item = e.target.value;
+                                    return newData;
+                                  });
                                 }}
                                 className="w-full border-2 border-blue-500 rounded px-2 py-1"
                               />
@@ -1628,9 +1697,11 @@ const normalized = {
                                 type="number"
                                 value={row.cost || ""}
                                 onChange={(e) => {
-                                  const newSupplies = [...normalized.budget.content.supplies];
-                                  newSupplies[index].cost = e.target.value;
-                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.supplies', newSupplies);
+                                  setEditedData(prev => {
+                                    const newData = JSON.parse(JSON.stringify(prev));
+                                    newData.reviews_per_docs.budgetary_requirement.budgetary_requirement.supplies[index].cost = e.target.value;
+                                    return newData;
+                                  });
                                 }}
                                 className="w-full border-2 border-blue-500 rounded px-2 py-1"
                               />
@@ -1644,9 +1715,11 @@ const normalized = {
                                 type="number"
                                 value={row.qty || ""}
                                 onChange={(e) => {
-                                  const newSupplies = [...normalized.budget.content.supplies];
-                                  newSupplies[index].qty = e.target.value;
-                                  updateField('reviews_per_docs.budgetary_requirement.budgetary_requirement.supplies', newSupplies);
+                                  setEditedData(prev => {
+                                    const newData = JSON.parse(JSON.stringify(prev));
+                                    newData.reviews_per_docs.budgetary_requirement.budgetary_requirement.supplies[index].qty = e.target.value;
+                                    return newData;
+                                  });
                                 }}
                                 className="w-full border-2 border-blue-500 rounded px-2 py-1"
                               />
