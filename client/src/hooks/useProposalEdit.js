@@ -4,7 +4,7 @@ import { proposalApi } from '../services/proposalApi';
 import { preparePayloadForSave } from '../utils/dataTransformers';
 
 export const useProposalEdit = (proposalId, userId) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
   const [editedData, setEditedData] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
