@@ -38,6 +38,7 @@ from routes.general.get_proposal_routes import proposals_bp
 from routes.general.get_review_docs_routes import reviews_bp
 from routes.general.notifications_routes import notifications_bp
 from routes.general.get_data_routes import data_bp
+from routes.general.profile_routes import profile_bp
 # implementor
 #history
 from routes.general.get_history_routes import history_bp
@@ -64,6 +65,7 @@ app.register_blueprint(proposals_bp, url_prefix="/api")
 app.register_blueprint(reviews_bp, url_prefix="/api")
 app.register_blueprint(notifications_bp, url_prefix="/api")
 app.register_blueprint(data_bp, url_prefix="/api")
+app.register_blueprint(profile_bp, url_prefix="/api")
 # implementor
 #history
 app.register_blueprint(history_bp, url_prefix="/api")

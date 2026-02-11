@@ -489,7 +489,7 @@ CREATE TABLE notifications (
 
 DELETE FROM proposal_review_items WHERE review_item_id >= 22;
 
-DELETE FROM notifications WHERE id = 11;
+DELETE FROM notifications WHERE id = 17;
 
 ALTER TABLE proposals_docs
 ADD review_deadline DATETIME,
