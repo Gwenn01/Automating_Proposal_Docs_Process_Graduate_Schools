@@ -108,18 +108,24 @@ def update_is_reviewed(review_id):
         cursor = db.cursor()
 
         query = """
-            UPDATE proposal_reviews SET is_reviewed = 1 WHERE review_id = %s
+            UPDATE proposal_reviews 
+            SET is_reviewed = 1 
+            WHERE review_id = %s
         """
-        values = (review_id,)
 
-        cursor.execute(query, values)
+        cursor.execute(query, (review_id,))
         db.commit()
 
+        updated = cursor.rowcount 
+
+        return updated == 1
+
+    except Exception as e:
+        print("Update Error:", e)
+        return False
+
+    finally:
         cursor.close()
         db.close()
 
-        return cursor.rowcount == 1
-    except Exception as e:
-        print(e)
-        return False
         

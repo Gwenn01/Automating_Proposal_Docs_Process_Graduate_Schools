@@ -112,19 +112,28 @@ def handle_insertion_history(proposal_id, user_id):
     try:
        #get the version
         version_no = put_version_count(proposal_id)
+        if not version_no:
+            return False, "Failed to generate version number"
         #insert the proposal history
         history_id = insert_proposal_history(proposal_id, user_id, version_no)
+        if not history_id:
+            return False, "Failed to insert proposal history"
         # get the title of proposal to put in notification
         title = fetch_proposal_title(proposal_id)[0]
         # get the current data from the backend before updating
         proposal_cover_data = fetch_proposal_cover_page(proposal_id)
         proposal_content_data = fetch_proposal_content(proposal_id)
+        if not proposal_cover_data or not proposal_content_data:
+            return False, "Failed to fetch proposal data"
         # insert the cover and content data
         success_cover = insert_cover_page_history(history_id, proposal_cover_data[0])
         success_content= insert_proposal_content_history(history_id, proposal_content_data[0])
-        
+        if not success_cover or not success_content:
+            return False, "Failed to insert history content"
+
         #insert the review data
         reviewer_id = get_reviewer_id(proposal_id)
+        
         for reviewer in reviewer_id:
             #inserting history for the reviewer
             review_history_id = insert_review_history(history_id, reviewer["user_id"], version_no)
@@ -137,12 +146,9 @@ def handle_insertion_history(proposal_id, user_id):
             if review_item:
                 #insert review
                 insert_review_items_history(review_history_id, review_item)
-        
-        
-        if success_cover and success_content:
-            return True
-        else:
-            return False
+                
+        return True, None
+
     except Exception as e:
         print(e)
         return False
@@ -164,8 +170,13 @@ def handle_clean_reviews(proposal_id):
 
 def handle_update_status(proposal_id):
     try:
-        updated_reviewed_count_zero(proposal_id)
-        update_proposal_status(proposal_id)
+        is_update_zero = updated_reviewed_count_zero(proposal_id)
+        if not is_update_zero:
+            return False, "Failed to update reviewed count to zero"
+        is_update_status = update_proposal_status(proposal_id)
+        if not is_update_status:
+            return False, "Failed to update proposal status"
+        return True, None
     except  Exception as e:
         print(e)
         return False
@@ -175,17 +186,14 @@ def handle_updating_proposals(proposal_id, cover_id, content_id, data):
     try:
         ...
         success_cover = update_proposal_cover_page_db(cover_id, proposal_id, data["cover"])
-        if success_cover:
-            print("Cover page updated successfully")
+        if not success_cover:
+            return False, "Cover page not updated"
                 
         success_content = update_proposal_content_db(content_id, proposal_id, data["content"])
-        if success_content:
-            print("Content updated successfully")
+        if not success_content:
+            return True, "Content page not updated"
         
-        if success_cover and success_content:
-            return True
-        else:
-            return False
+        return True, "Proposal updated successfully"
     except Exception as e:
         print(e)
         return False
@@ -201,18 +209,29 @@ def revise_proposals_controller():
         cover_id = data.get("cover_id")
       
         
-        if not handle_insertion_history(proposal_id, user_id):
-            return jsonify({
-                "message": "Proposal insert history failed"
-            }), 500
+        # Step 1: Insert history
+        success, error = handle_insertion_history(proposal_id, user_id)
+        if not success:
+            return jsonify({"error": error}), 500
         
-        #after inserting the data update the proposal and other status
-        if handle_updating_proposals(proposal_id, cover_id, content_id, data):
-            handle_clean_reviews(proposal_id)
-            handle_update_status(proposal_id)
-            return jsonify({"message": "Proposal revised successfully"}), 200
-        else:
-            return jsonify({"message": "Proposal revision failed"}), 500
+         # Step 2: Update proposal
+        success, error = handle_updating_proposals(
+            proposal_id, cover_id, content_id, data
+        )
+        if not success:
+            return jsonify({"error": error}), 500
+        
+        # Step 3: Clean reviews
+        success, error = handle_clean_reviews(proposal_id)
+        if not success:
+            return jsonify({"error": error}), 500
+
+        # Step 4: Update status
+        success, error = handle_update_status(proposal_id)
+        if not success:
+            return jsonify({"error": error}), 500
+
+        return jsonify({"message": "Proposal revised successfully"}), 200
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
