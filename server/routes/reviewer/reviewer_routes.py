@@ -3,7 +3,7 @@ from controller.reviewer_controller import (
     get_docs_controller,
     get_completed_docs_controller,
     get_pending_docs_controller,
-    put_reviews_item_docs_controller,
+    post_reviews_item_docs_controller,
     get_reviewer_per_docs_controller,
     update_review_items_controller,
     approve_proposal_controller
@@ -26,7 +26,7 @@ def get_pending_docs():
 
 @reviewer_db.route('/post-reviews-item', methods=['POST'])
 def post_review_item():
-    return put_reviews_item_docs_controller()
+    return post_reviews_item_docs_controller()
 
 @reviewer_db.route('/get-reviewer-per-docs', methods=['POST'])
 def get_reviewer_per_docs():
