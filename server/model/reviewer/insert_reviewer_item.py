@@ -1,6 +1,27 @@
 from database.connection import get_db_connection
 from flask import json
 
+# check if the reviews item is already exist
+def check_reviews_item(review_id):
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    try:
+        query = """
+            SELECT 1 FROM proposal_review_items 
+            WHERE review_id = %s 
+            LIMIT 1
+        """
+        cursor.execute(query, (review_id,))
+        result = cursor.fetchone()
+
+        return result is not None
+
+    finally:
+        cursor.close()
+        db.close()
+
+
 def insert_review_item(review_id, data):
     db = get_db_connection()
     cursor = db.cursor()

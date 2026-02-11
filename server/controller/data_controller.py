@@ -25,13 +25,13 @@ def get_data_controller():
         if status == 'history':
             cover_history = get_history_cover_page_db(history_id)
             if not cover_history:
-                return jsonify({'error': 'history not found'}), 404
+                return jsonify({'error': 'cover history not found'}), 404
             content_history = get_history_content_db(history_id)
             if not content_history:
-                return jsonify({'error': 'history not found'}), 404
+                return jsonify({'error': 'content history not found'}), 404
             review_history = get_history_reviews_db(history_id)
             if not review_history:
-                return jsonify({'error': 'history not found'}), 404
+                return jsonify({'error': 'reviews history not found'}), 404
         # format the data
             result = get_review_per_docs_mapper(cover_history[0], content_history[0], review_history)
             result['status'] = status
@@ -40,13 +40,13 @@ def get_data_controller():
             proposal_id = history_id
             proposal_cover = fetch_proposal_cover_page(proposal_id)
             if not proposal_cover:
-                return jsonify({'error': 'proposal not found'}), 404
+                return jsonify({'error': 'cover not found'}), 404
             proposal_content = fetch_proposal_content(proposal_id)
             if not proposal_content:
-                return jsonify({'error': 'proposal not found'}), 404
+                return jsonify({'error': 'content not found'}), 404
             proposal_review = get_reviews(proposal_id)
             if not proposal_review:
-                return jsonify({'error': 'proposal not found'}), 404
+                return jsonify({'error': 'reviews not found'}), 404
             result = get_review_per_docs_mapper(proposal_cover[0], proposal_content[0], proposal_review)
             result['status'] = status
             return jsonify(result), 200
