@@ -3,6 +3,31 @@ from textwrap import dedent
 import json
 from decimal import Decimal
 
+#normalization 
+def normalize_money(value, prefix="Php"):
+    if value is None:
+        return None              # or "N/A" or "Php 0.00" (your choice)
+    try:
+        return f"{prefix} {value:,.2f}"
+    except Exception:
+        return None
+    
+def normalize_date(value, fmt="%B %d, %Y"):
+    if not value:
+        return None
+    try:
+        return value.strftime(fmt)
+    except Exception:
+        return str(value)
+    
+def normalize_number(value):
+    if value is None:
+        return None
+    if isinstance(value, Decimal):
+        return float(value)
+    return value
+
+
 def get_docs_mapper(row):
     data = {
         "proposal_id": row["proposal_id"],
@@ -115,12 +140,14 @@ def get_review_per_docs_mapper(proposal_cover, proposal_content, proposal_review
         "cover_id": proposal_cover['cover_id'],
         "content_id": proposal_content['content_id'],
         "cover_page": {
-            "submission_date": proposal_cover["submission_date"].strftime("%B %d, %Y"),
+            "submission_date":normalize_date(
+                proposal_cover.get("submission_date")
+            ),
             "proposal_summary": {
                 "program_title": proposal_cover["board_resolution_title"],
                 "approved_budget": {
                     "words": proposal_cover["approved_budget_words"],
-                    "amount": f"Php {proposal_cover['approved_budget_amount']:,.2f}"
+                    "amount": normalize_money(proposal_cover.get("approved_budget_amount"))
                 },
                 "duration": {
                     "words": proposal_cover["duration_words"],
@@ -135,7 +162,9 @@ def get_review_per_docs_mapper(proposal_cover, proposal_content, proposal_review
                 "date": str(proposal_cover["activity_date"]),
                 "venue": proposal_cover["activity_venue"],
                 "value_statement": proposal_cover["activity_value_statement"],
-                "requested_budget": f"Php {proposal_cover['requested_activity_budget']:,.2f}"
+                "requested_budget": normalize_money(
+                    proposal_cover.get("requested_activity_budget")
+                )
             },
 
             "participants": {
@@ -172,7 +201,9 @@ def get_review_per_docs_mapper(proposal_cover, proposal_content, proposal_review
             "target_sector": proposal_content["target_sector"],
             "number_of_beneficiaries": proposal_content["number_of_beneficiaries"],
             "implementation_period": proposal_content["implementation_period"],
-            "budgetary_requirements": float(proposal_content["total_budget_requested"])
+            "budgetary_requirements": normalize_number(
+                proposal_content.get("total_budget_requested")
+            )
             if isinstance(proposal_content["total_budget_requested"], Decimal)
             else proposal_content["total_budget_requested"],
             "reviews": review_for_project_profile
