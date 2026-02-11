@@ -8,13 +8,36 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import axios from "axios";
+import NotificationBell from "../../components/NotificationBell";
 
 const ManageDocuments = () => {
+  const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [showNotif, setShowNotif] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+
+    useEffect(() => {
+      // Get user from localStorage
+      const storedUser = localStorage.getItem("user");
+  
+      if (!storedUser) {
+        console.log("No user found, would redirect to login");
+        setLoading(false);
+        return;
+      }
+  
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        setLoading(false);
+      }
+    }, []);
 
   useEffect(() => {
     let interval;
@@ -58,6 +81,83 @@ const ManageDocuments = () => {
 
     fetchDocuments();
   }, []);
+
+    // fetch notifications
+    useEffect(() => {
+      if (!user) return;
+  
+      const fetchNotifications = async () => {
+        try {
+          const response = await fetch(
+            "http://127.0.0.1:5000/api/get-notifications",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                user_id: user.user_id,
+              }),
+            },
+          );
+  
+          if (!response.ok) {
+            throw new Error("Failed to fetch notifications");
+          }
+  
+          const data = await response.json();
+          setNotifications(data);
+        } catch (error) {
+          console.error("Error fetching notifications:", error);
+        }
+      };
+  
+      fetchNotifications();
+    }, [user]); // X
+
+    const unreadCount = notifications.filter((n) => n.is_read === 0).length;
+
+  const handleRead = async (id) => {
+    if (!user) return;
+
+    // Avoid duplicate requests
+    const target = notifications.find((n) => n.id === id);
+    if (!target || target.is_read === 1) return;
+
+    // Optimistic UI update
+    setNotifications((prev) =>
+      prev.map((notif) => (notif.id === id ? { ...notif, is_read: 1 } : notif)),
+    );
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/update-read-notifications",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user.user_id,
+            notification_id: id,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update notification");
+      }
+    } catch (error) {
+      console.error(error);
+
+      // Rollback UI if request fails
+      setNotifications((prev) =>
+        prev.map((notif) =>
+          notif.id === id ? { ...notif, is_read: 0 } : notif,
+        ),
+      );
+    }
+  };
 
   if (loading) {
     return (
@@ -120,35 +220,51 @@ const ManageDocuments = () => {
     <div className="p-8 lg:p-10 space-y-10 bg-[#fbfcfb] h-auto animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
         <div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight leading-tight">
+          <h1 className="text-3xl font-bold tracking-tight leading-tight">
             Manage Documents
           </h1>
-          <p className="text-slate-500 text-sm font-semibold">
+          <p className="text-gray-500 text-sm">
             Audit, track, and manage all intellectual property submissions.
           </p>
         </div>
+
+        <div className="flex items-center justify-center gap-5">
+          <div className="">
+            <div className="relative w-full max-w-2xl">
+              <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+                <Search
+                  className="text-slate-400 group-focus-within:text-[#1cb35a] transition-all duration-300"
+                  size={18}
+                />
+              </div>
+              <input
+                type="text"
+                placeholder="Search by author or title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 h-14 rounded-[20px] border border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-[#1cb35a]/10 focus:border-[#1cb35a]/30 transition-all outline-none text-sm font-semibold text-slate-700 placeholder:text-slate-400/80 shadow-sm"
+              />
+            </div>
+          </div>
+
+          {/* Notification Bell */}
+            <NotificationBell
+              notifications={notifications}
+              unreadCount={unreadCount}
+              show={showNotif}
+              onToggle={() => setShowNotif((prev) => !prev)}
+              onClose={() => setShowNotif(false)}
+              onRead={handleRead}
+            />
+        </div>
+
+
       </div>
 
       {/* Main Content Container - Soft-UI matching Manage Accounts */}
-      <div className="bg-white p-8 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/80 overflow-hidden relative">
+      <div className="bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/80 overflow-hidden relative">
         {/* Action Row */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 relative z-10">
-          <div className="relative w-full max-w-md group">
-            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-              <Search
-                className="text-slate-400 group-focus-within:text-[#1cb35a] transition-all duration-300"
-                size={18}
-              />
-            </div>
-            <input
-              type="text"
-              placeholder="Search by author or title..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 h-14 rounded-[20px] border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-[#1cb35a]/10 focus:border-[#1cb35a]/30 transition-all outline-none text-sm font-semibold text-slate-700 placeholder:text-slate-400/80 shadow-sm"
-            />
-          </div>
-        </div>
+
 
         {/* Table Section - Professional & Modern Layout */}
         <div className="overflow-x-auto pb-4 custom-scrollbar">
