@@ -92,7 +92,7 @@ def post_reviews_item_docs_controller():
         
         change_decision = put_decision_review(proposal_id, reviewer_id, 'need_revision')
         
-        success_notif = handle_insert_notification(reviewer_id, "Your proposal has been reviewed by", reviewer_name)
+        success_notif = handle_insert_notification(user_id, "Your proposal has been reviewed by", reviewer_name)
         if not success_notif:
             return {"error": "Failed to insert notification"}, 500
         
@@ -138,7 +138,7 @@ def update_review_items_controller():
 
         success = put_review_item(review_id, reviews)
 
-        success_notif = handle_insert_notification(reviewer_id, "Your proposal has been reviewed by", reviewer_name)
+        success_notif = handle_insert_notification(user_id, "Your proposal has been reviewed by", reviewer_name)
         if not success_notif:
             return {"error": "Failed to insert notification"}, 500
         
