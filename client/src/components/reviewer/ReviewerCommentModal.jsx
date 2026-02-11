@@ -23,6 +23,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
 
 
   const proposalId = proposalData?.proposal_id;
+  
 
 
   // Debug logging
@@ -234,6 +235,8 @@ const structuredData = {
     fetchHistory();
   }, [proposalId, isOpen]);
 
+  console.log("History", history[0]?.version_no)
+
   // Auto-load current version when history is available
   useEffect(() => {
     if (!isOpen || !history.length || selectedHistoryData) return;
@@ -264,14 +267,14 @@ const structuredData = {
     }));
   };
 
-  console.log("userid", user?.fullname);
+   console.log("First Review",proposalData.implementor_id )
 
   const handleSubmitReview = async () => {
     setIsSubmitting(true);
 
-    // Check if this is the first review or an update
-    // First review: when review_id doesn't exist or is null
-    const isFirstReview = !proposalData.review_id;
+    // Find the current version in history to check if it's the first review
+    const currentVersion = history.find(item => item.status === "current");
+    const isFirstReview = currentVersion?.version_no === 0;
 
     // Ensure all required fields are present with defaults
     const allReviews = {
@@ -309,7 +312,7 @@ const structuredData = {
       user_id: proposalData.implementor_id, // Implementor's user ID
     };
 
-    // Use post-reviews-item for first review only, then update-review-items for all subsequent reviews
+    // Use post-reviews-item for first review (version_no === 0), then update-review-items for subsequent reviews
     const apiEndpoint = isFirstReview
       ? "http://127.0.0.1:5000/api/post-reviews-item"
       : "http://127.0.0.1:5000/api/update-review-items";
@@ -320,6 +323,8 @@ const structuredData = {
     );
     console.log("API Endpoint:", apiEndpoint);
     console.log("Reviewer ID:", reviewe);
+    console.log("Current Version:", currentVersion);
+    console.log("Is First Review (version_no === 0):", isFirstReview);
 
     try {
       const res = await axios.post(apiEndpoint, reviewData, {
@@ -347,6 +352,10 @@ const structuredData = {
     }
   };
 
+  // Determine button text based on whether it's first review
+  const currentVersion = history.find(item => item.status === "current");
+  const isFirstReview = currentVersion?.version_no === 0;
+  const buttonText = isFirstReview ? "Submit Review" : "Update Review";
 
   return (
     <>
@@ -1403,9 +1412,7 @@ const structuredData = {
                                       ) : (
                                         <>
                                           <Send className="w-5 h-5" />
-                                          {proposalData.review_id
-                                            ? "Update Review"
-                                            : "Submit Review"}
+                                          {buttonText}
                                         </>
                                       )}
                                     </button>
