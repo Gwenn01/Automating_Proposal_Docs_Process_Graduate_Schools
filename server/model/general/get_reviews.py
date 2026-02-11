@@ -9,6 +9,7 @@ def get_reviews(proposal_id):
             SELECT 
                 pr.review_id,
                 pr.user_id,
+                pr.decision,
                 u.fullname,
                 pri.*
             FROM proposal_reviews pr

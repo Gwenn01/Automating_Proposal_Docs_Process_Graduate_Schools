@@ -6,6 +6,9 @@ from controller.mapper.reviewer_get_docs_mapper import get_docs_mapper
 from model.reviewer.put_review_item import put_review_item
 from model.reviewer.put_decision_review import put_decision_review
 from model.general.insert_notification import insert_notification_db
+from model.admin.get_admin import get_admin
+from model.implementor.put_proposals import update_proposal_status_for_approval
+from model.general.get_reviews import get_reviews
 
 def get_docs_controller():
     try:
@@ -152,6 +155,29 @@ def update_review_items_controller():
 
     except Exception as e:
         return {"error": str(e)}, 500
+    
+def handle_admin_notification(reviewer_name, title):
+     admin_data = get_admin()
+     
+     for a in admin_data:
+        success_notif = handle_insert_notification(
+            a['user_id'],
+            f'The proposal titled "{title}" has been approved by the reviewer.',
+            reviewer_name
+        )
+        if not success_notif:
+            return False
+
+     return True  
+    
+def check_all_reviewer_approved(proposal_id):
+    ...
+    reviews = get_reviews(proposal_id)
+    
+    for r in reviews:
+        if r['decision'] != "approved":
+            return
+    update_proposal_status_for_approval(proposal_id)
 
 def approve_proposal_controller():
     try:
@@ -160,13 +186,18 @@ def approve_proposal_controller():
 
         proposal_id = data.get("proposal_id")
         user_id = data.get("user_id")
+        reviewer_name = data.get("reviewer_name")
+        title = data.get("title")
         
         if not proposal_id or not user_id:
             return {"error": "Invalid payload"}, 400
 
         success = put_decision_review(proposal_id, user_id, "approved")
+        success_insert = handle_admin_notification(reviewer_name, title)
+
+        check_all_reviewer_approved(proposal_id)
         
-        if not success:
+        if not success and not success_insert:
             return {"error": "No rows updated. Check proposal_id/user_id"}, 404
 
         return jsonify({"message": "Proposal approved successfully"}), 200

@@ -273,5 +273,27 @@ def update_proposal_status(proposal_id):
     except Exception as e:
         print(e)
         return False
+    
+    
+def update_proposal_status_for_approval(proposal_id):
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        query = """
+            UPDATE proposals_docs SET status = 'for_approval' WHERE proposal_id = %s
+        """
+        values = (proposal_id,)
+
+        cursor.execute(query, values)
+        db.commit()
+
+        cursor.close()
+        db.close()
+
+        return cursor.rowcount >= 1
+    except Exception as e:
+        print(e)
+        return False
 
             
