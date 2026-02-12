@@ -188,7 +188,7 @@ const ManageAccount = () => {
       document.body
     )}
 
-    <div className="relative min-h-screen p-8 lg:p-10 bg-[#fbfcfb] animate-in fade-in duration-700">
+    <div className="relative h-auto p-8 lg:p-10 bg-[#fbfcfb] animate-in fade-in duration-700">
 
       {loading && (
         <div className="fixed inset-0 lg:left-72 z-[999] flex items-center justify-center bg-[#fbfcfb]">
@@ -240,7 +240,7 @@ const ManageAccount = () => {
       </div>
 
       {/* Main Content Card - Matching Chart Card Style */}
-      <div className="bg-white p-8 rounded-[32px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-slate-100 overflow-hidden">
+      <div className="bg-white p-8 mt-12 rounded-[32px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-slate-100 overflow-hidden">
         {/* Action Row */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
           {/* Search Bar - Modern Soft Style */}

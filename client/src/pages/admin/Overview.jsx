@@ -42,7 +42,7 @@ const STATUS_LOOKUP = {
   "Rejected": { icon: XCircle, color: "text-red-600", bg: "bg-red-50" },
 };
 
-const PIE_COLORS = ["#16a34a", "#4ade80"];
+const PIE_COLORS = ["#f59e0b", "#4ade80"];
 
 /* ================= MAIN COMPONENT ================= */
 
@@ -106,10 +106,10 @@ const Overview = () => {
       {/* HEADER SECTION - Matched to Manage Accounts */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2 mb-10">
         <div>
-          <h1 className="text-3xl font-black text-gray-800 tracking-tight">
+          <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
             Overview Dashboard
           </h1>
-          <p className="text-gray-500 text-sm font-medium">
+          <p className="text-gray-500 text-sm font-normal">
             Monitoring proposal metrics and workflow status.
           </p>
         </div>
@@ -127,12 +127,12 @@ const Overview = () => {
           {/* Optional: Add a small "Quick Action" or "System Status" card here to fill the 4th slot of the grid if you have 3 cards */}
           <div className="group relative overflow-hidden bg-gradient-to-br from-[#00923f] to-[#1cb35a] p-8 rounded-[32px] shadow-lg flex flex-col justify-between">
             <div className="relative z-10">
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/70">System Status</span>
-              <h3 className="text-xl font-black text-white mt-1">Operational</h3>
+              <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/70">System Status</span>
+              <h3 className="text-xl font-bold text-white mt-1">Operational</h3>
             </div>
             <div className="relative z-10 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              <span className="text-[11px] font-bold text-white/90">All nodes synced</span>
+              <span className="text-[11px] text-white/90">All nodes synced</span>
             </div>
             {/* Abstract Background Pattern */}
             <div className="absolute top-0 right-0 -translate-y-4 translate-x-4 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
@@ -140,25 +140,41 @@ const Overview = () => {
         </div>
 
         {/* RIGHT: PREMIUM PIE CHART CARD */}
-        <div className="lg:col-span-4 bg-white p-8 rounded-[32px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-slate-100 flex flex-col justify-between relative overflow-hidden h-full min-h-[420px]">
+        <div className="lg:col-span-4 bg-white p-8 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between relative overflow-hidden h-full min-h-[460px]">
           
+          {/* Gradient Defs for Recharts - Add this inside your SVG or PieChart component */}
+          <svg style={{ height: 0, width: 0, position: 'absolute' }}>
+            <defs>
+              {PIE_COLORS.map((color, i) => (
+                <linearGradient key={`grad-${i}`} id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={color} stopOpacity={1} />
+                  <stop offset="100%" stopColor={color} stopOpacity={0.8} />
+                </linearGradient>
+              ))}
+            </defs>
+          </svg>
+
           {/* Header Section */}
           <div className="relative z-10">
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 block mb-1">
-              Platform Analytics
-            </span>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">User Distribution</h2>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 block">
+                Platform Analytics
+              </span>
+            </div>
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight">User Distribution</h2>
           </div>
 
           {/* Chart Container */}
-          <div className="flex-grow relative flex items-center justify-center min-h-[240px]">
-            {/* Center Label: Total Count - Main Focus */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">Total</span>
-              <span className="text-4xl font-black text-slate-800 tracking-tighter">
+          <div className="flex-grow relative flex items-center justify-center min-h-[260px]">
+            {/* Dynamic Center Label */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 translate-y-[-4px]">
+              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] mb-1">Total</span>
+              <span className="text-5xl font-bold text-slate-800 tracking-tighter drop-shadow-sm">
                 {totalUsers}
               </span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Users</span>
+              <div className="mt-1 px-2 py-0.5 bg-slate-50 rounded-full border border-slate-100">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Active Users</span>
+              </div>
             </div>
 
             <ResponsiveContainer width="100%" height="100%">
@@ -166,73 +182,60 @@ const Overview = () => {
                 <Pie
                   data={pieData}
                   dataKey="value"
-                  innerRadius={75}
-                  outerRadius={95}
-                  paddingAngle={10}
+                  innerRadius={82}
+                  outerRadius={102}
+                  paddingAngle={8}
                   stroke="none"
                   startAngle={90}
                   endAngle={450}
-                  cornerRadius={40} // Modern rounded edges for each segment
+                  cornerRadius={12}
+                  /* Mouse Follow & Scale Effect */
+                  activeShape={{ stroke: '#fff', strokeWidth: 5, outerRadius: 108 }}
+                  isAnimationActive={true}
+                  animationBegin={0}
+                  animationDuration={1200}
                 >
                   {pieData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={PIE_COLORS[index % PIE_COLORS.length]}
-                      className="hover:opacity-90 transition-all duration-300 cursor-pointer outline-none"
+                      fill={`url(#grad-${index % PIE_COLORS.length})`}
+                      className="hover:opacity-100 transition-all duration-500 cursor-pointer outline-none"
+                      style={{ filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.05))' }}
                     />
                   ))}
                 </Pie>
-                
-                {/* Glassmorphic Tooltip */}
-                <Tooltip 
-                  cursor={false}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      return (
-                        <div className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-white/50 animate-in fade-in zoom-in duration-200">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: payload[0].payload.fill || PIE_COLORS[0] }} />
-                            <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">{data.name}</span>
-                          </div>
-                          <div className="mt-1 ml-5">
-                            <span className="text-lg font-black text-slate-800">{data.value}</span>
-                            <span className="text-[10px] font-bold text-slate-400 ml-1 uppercase">Accounts</span>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
               </PieChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Legend: Sleek Vertical or Row Layout */}
-          <div className="mt-4 pt-6 border-t border-slate-50">
-            <div className="grid grid-cols-2 gap-y-3 gap-x-6">
-              {pieData.map((entry, i) => (
-                <div key={i} className="flex items-center justify-between group cursor-default">
-                  <div className="flex items-center gap-2.5">
-                    <div 
-                      className="w-2 h-2 rounded-full transition-transform duration-300 group-hover:scale-125" 
-                      style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} 
-                    />
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider group-hover:text-slate-800 transition-colors">
+          {/* Premium Legend Layout */}
+          <div className="mt-2 grid grid-cols-2 gap-3 relative z-10">
+            {pieData.map((entry, i) => (
+              <div 
+                key={i} 
+                className="group relative flex items-center justify-between p-3 rounded-2xl border border-slate-50 hover:border-slate-200 hover:bg-slate-50/50 hover:shadow-sm transition-all duration-300 cursor-default"
+              >
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-1.5 h-6 rounded-full transition-all duration-300 group-hover:h-8" 
+                    style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} 
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">
                       {entry.name}
                     </span>
+                    <span className="text-sm font-bold text-slate-800 leading-none">
+                      {entry.value.toLocaleString()}
+                    </span>
                   </div>
-                  <span className="text-[11px] font-black text-slate-700">
-                    {Math.round((entry.value / totalUsers) * 100)}%
-                  </span>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
 
-          {/* Decorative Apple-style Blur */}
-          <div className="absolute -right-10 -top-10 w-32 h-32 bg-slate-50 rounded-full blur-3xl opacity-50 pointer-events-none" />
+          {/* Sophisticated Background Elements */}
+          <div className="absolute -right-16 -top-16 w-64 h-64 bg-indigo-50/30 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute -left-16 -bottom-16 w-64 h-64 bg-emerald-50/30 rounded-full blur-[80px] pointer-events-none" />
         </div>
       </div>
 
@@ -242,95 +245,95 @@ const Overview = () => {
         {/* BAR CHART CARD */}
         <div className="flex-1 bg-white p-8 rounded-[32px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-slate-100 flex flex-col">
           <div className="flex flex-col mb-8 shrink-0">
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 block mb-1">
-              Proposal Status Report
+            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 block mb-1">
+              Monthly Tracking
             </span>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">Workflow Metrics</h2>
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Proposal Progress</h2>
           </div>
 
           <div className="flex-grow w-full min-h-[500px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={barData} 
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="8 8" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}}
-                  dy={10}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}} 
-                />
-                <Tooltip 
-                  cursor={{ fill: '#f8fafc', radius: 12 }} 
-                  trigger="axis"
-                  content={({ active, payload, label }) => {
-                    if (active) {
-                      // MATCHED TO API RESPONSE KEYS
-                      const allStatusKeys = [
-                        { key: "ForReview", label: "For Review", color: "#3b82f6" },
-                        { key: "UnderReview", label: "Under Review", color: "#6366f1" },
-                        { key: "Revisions", label: "Revisions", color: "#f59e0b" },
-                        { key: "Approval", label: "For Approval", color: "#a855f7" },
-                        { key: "Completed", label: "Completed", color: "#10b981" },
-                        { key: "Rejected", label: "Rejected", color: "#ef4444" },
-                      ];
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart 
+              data={barData} 
+              margin={{ top: 20, right: 30, left: -20, bottom: 0 }}
+              barGap={8} 
+            >
+              <CartesianGrid strokeDasharray="8 8" vertical={false} stroke="#f1f5f9" />
+              
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}}
+                dy={10}
+              />
 
-                      const currentData = payload && payload.length ? payload[0].payload : {};
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}}
+                domain={[0, 'auto']} 
+                allowDecimals={false}
+                nice={true} 
+              />
 
-                      return (
-                        <div className="bg-white/70 backdrop-blur-md px-4 py-4 rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/40 min-w-[210px] animate-in fade-in zoom-in duration-200">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-3 border-b border-slate-100/50 pb-2">
-                            {label} Report
-                          </p>
-                          
-                          <div className="flex flex-col gap-3">
-                            {allStatusKeys.map((status) => {
-                              const value = currentData[status.key] || 0;
-                              return (
-                                <div key={status.key} className="flex items-center justify-between gap-4">
-                                  <div className="flex items-center gap-2.5">
-                                    <div className="relative">
-                                      <div 
-                                        className="w-2.5 h-2.5 rounded-full shadow-sm" 
-                                        style={{ backgroundColor: status.color }} 
-                                      />
-                                      <div className="absolute inset-0 rounded-full bg-white/20" />
-                                    </div>
-                                    <span className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">
-                                      {status.label}
-                                    </span>
-                                  </div>
-                                  <span className={`text-sm font-black ${value > 0 ? 'text-slate-800' : 'text-slate-400'}`}>
-                                    {value}
+              <Tooltip 
+                isAnimationActive={false}
+                cursor={{ fill: '#f8fafc', radius: 12 }} 
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    const allStatusKeys = [
+                      { key: "ForReview", label: "For Review", color: "#3b82f6" },
+                      { key: "UnderReview", label: "Under Review", color: "#6366f1" },
+                      { key: "Revisions", label: "Revisions", color: "#f59e0b" },
+                      { key: "Approval", label: "For Approval", color: "#a855f7" },
+                      { key: "Completed", label: "Completed", color: "#10b981" },
+                      { key: "Rejected", label: "Rejected", color: "#ef4444" },
+                    ];
+
+                    const currentData = payload[0].payload;
+
+                    return (
+                      <div className="bg-white/90 backdrop-blur-md px-4 py-4 rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/40 min-w-[210px] animate-in fade-in zoom-in duration-200 pointer-events-none">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-3 border-b border-slate-100/50 pb-2">
+                          {label} Overview
+                        </p>
+                        
+                        <div className="flex flex-col gap-2.5">
+                          {allStatusKeys.map((status) => {
+                            const value = currentData[status.key] || 0;
+                            return (
+                              <div key={status.key} className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: status.color }} />
+                                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+                                    {status.label}
                                   </span>
                                 </div>
-                              );
-                            })}
-                          </div>
+                                <span className={`text-xs font-black ${value > 0 ? 'text-slate-800' : 'text-slate-300'}`}>
+                                  {value.toLocaleString()}
+                                </span>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
 
-                {/* DATA KEYS MATCHED TO API RESPONSE */}
-                <Bar dataKey="ForReview" fill="#3b82f6" radius={[6,6,0,0]} barSize={16} />
-                <Bar dataKey="UnderReview" fill="#6366f1" radius={[6,6,0,0]} barSize={16} />
-                <Bar dataKey="Revisions" fill="#f59e0b" radius={[6,6,0,0]} barSize={16} />
-                <Bar dataKey="Approval" fill="#a855f7" radius={[6,6,0,0]} barSize={16} />
-                <Bar dataKey="Completed" fill="#10b981" radius={[6,6,0,0]} barSize={16} />
-                <Bar dataKey="Rejected" fill="#ef4444" radius={[6,6,0,0]} barSize={16} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+              {/* Bar implementation with rounded tops and hover effects */}
+              <Bar dataKey="ForReview" fill="#3b82f6" radius={[4,4,0,0]} barSize={12} />
+              <Bar dataKey="UnderReview" fill="#6366f1" radius={[4,4,0,0]} barSize={12} />
+              <Bar dataKey="Revisions" fill="#f59e0b" radius={[4,4,0,0]} barSize={12} />
+              <Bar dataKey="Approval" fill="#a855f7" radius={[4,4,0,0]} barSize={12} />
+              <Bar dataKey="Completed" fill="#10b981" radius={[4,4,0,0]} barSize={12} />
+              <Bar dataKey="Rejected" fill="#ef4444" radius={[4,4,0,0]} barSize={12} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
         </div>
 
         {/* STATUS GRID CARD - Premium 2-Column Layout */}
@@ -338,10 +341,10 @@ const Overview = () => {
           
           {/* Header Section - Fixed Height */}
           <div className="mb-8 shrink-0">
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 block mb-1">
-              Lifecycle Tracking
+            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 block mb-1">
+              Real-time Status
             </span>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">Active States</h2>
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Proposal Summary</h2>
           </div>
 
           {/* Main Grid - Flexible but grows to fill available space */}
@@ -366,11 +369,11 @@ const Overview = () => {
 
                   {/* Bottom: Label & Value */}
                   <div className="mt-4 relative z-10">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 truncate">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 truncate">
                       {status.label}
                     </p>
                     <div className="flex items-baseline gap-1">
-                      <h4 className="text-3xl font-black text-slate-800 tracking-tight">
+                      <h4 className="text-2xl font-bold text-slate-800 tracking-tight">
                         {status.value}
                       </h4>
                       <span className="text-[9px] font-bold text-slate-300 uppercase">Items</span>
@@ -391,8 +394,8 @@ const Overview = () => {
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">System Updated</span>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-[9px] font-black text-slate-400 uppercase">Total:</span>
-              <span className="text-lg font-black text-slate-800">
+              <span className="text-[9px] font-bold text-slate-400 uppercase">Total:</span>
+              <span className="text-lg font-bold text-slate-800">
                 {statusCycle.reduce((acc, curr) => acc + curr.value, 0)}
               </span>
             </div>
@@ -441,7 +444,7 @@ const StatCard = ({ card }) => {
       {/* 4. Text Content */}
       <div className="relative z-10 mt-10">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">
             {card.label}
           </span>
           {/* Pulsing "Live" dot */}
@@ -449,7 +452,7 @@ const StatCard = ({ card }) => {
         </div>
 
         <div className="flex items-baseline gap-1 mt-1">
-          <h3 className="text-5xl font-black text-slate-800 tracking-tighter transition-all duration-500 group-hover:text-black">
+          <h3 className="text-3xl font-bold text-slate-800 tracking-tighter transition-all duration-500 group-hover:text-black">
             {card.value}
           </h3>
           <span className="text-[10px] font-bold text-slate-400">Total</span>
