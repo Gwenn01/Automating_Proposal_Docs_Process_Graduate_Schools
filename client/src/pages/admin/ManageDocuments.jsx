@@ -383,7 +383,7 @@ const ManageDocuments = () => {
                         {/* Typography - Editorial Layout */}
                         <div className="flex flex-col min-w-0">
                           <div className="flex items-center gap-3 mb-1">
-                            <span className="text-[15px] font-black text-slate-900 truncate tracking-tight group-hover:text-emerald-950 transition-colors">
+                            <span className="text-[18px] font-bold text-slate-900 truncate tracking-tight group-hover:text-emerald-950 transition-colors">
                               {doc.name}
                             </span>
                             <span className="opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-500 text-[8px] font-black bg-emerald-600 text-white px-2 py-0.5 rounded-md uppercase tracking-widest shadow-lg shadow-emerald-200/50">
@@ -501,7 +501,7 @@ const ManageDocuments = () => {
                           </div>
 
                           {/* Date Text */}
-                          <span className="text-[11px] font-black text-slate-700 tracking-tight leading-none group-hover:text-slate-900 transition-colors">
+                          <span className="text-[12px] font-black text-slate-700 tracking-tight leading-none group-hover:text-slate-900 transition-colors">
                             {formatDate(doc.submissionDate)}
                           </span>
 
