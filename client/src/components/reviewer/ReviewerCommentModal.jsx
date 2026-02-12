@@ -15,6 +15,10 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
   const [isDocumentReady, setIsDocumentReady] = useState(false);
   const [user, setUser] = useState(null);
   const [alreadyReviewed, setAlreadyReviewed] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+
+
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -189,6 +193,8 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
     }
   };
 
+  console.log("Selected History Data", selectedHistoryData)
+
   // Fetch history on mount
   useEffect(() => {
     if (!proposalId || !isOpen) return;
@@ -269,6 +275,11 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
       [InputValue]: commentValue,
     }));
   };
+  const hasAnyComment = Object.values(comments).some(
+  (comment) => comment && comment.trim() !== ""
+);
+
+console.log("has Comment", hasAnyComment)
 
   console.log("First Review", proposalData.implementor_id);
 
@@ -355,10 +366,55 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
     }
   };
 
+  const handleApprove = async () => {
+  try {
+    setIsApproving(true);
+
+    const approveData = {
+      proposal_id: proposalData?.proposal_id,
+      user_id: user?.user_id, // implementor user
+      reviewer_name: user?.fullname,
+      decision: "approved",
+      title: proposalData?.title,
+    };
+
+    console.log("Approving proposal:", approveData);
+
+    const response = await axios.post(
+      "http://127.0.0.1:5000/api/approve-proposal",
+      approveData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    alert(response.data.message || "Proposal approved successfully!");
+
+    onClose(); // close modal after approve
+  } catch (error) {
+    console.error("Error approving proposal:", error);
+
+    const errorMessage =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "Failed to approve proposal";
+
+    alert(errorMessage);
+  } finally {
+    setIsApproving(false);
+  }
+};
+
+
   // Determine button text based on whether it's first review
   const currentVersion = history.find((item) => item.status === "current");
   const isFirstReview = currentVersion?.version_no === 0;
   const buttonText = isFirstReview ? "Submit Review" : "Update Review";
+
+  const disableButton = selectedHistoryData?.review_status === "Already reviewed. Please wait for revision before reviewing again." ? true : false;
+
+  console.log("button", disableButton)
 
   return (
     <>
@@ -433,13 +489,13 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                       consideration and appropriate action for the proposed
                       extension program entitled{" "}
                       {cover.proposal_summary?.program_title || "N/A"}
-                      ,with the approved budget of{" "}
+                      , {cover.proposal_summary?.board_resolution || "N/A"} with the approved budget of{" "}
                       {cover.proposal_summary?.approved_budget?.words ||
                         "N/A"};{" "}
-                      {cover.proposal_summary?.approved_budget?.amount || "N/A"}{" "}
+                      Php {cover.proposal_summary?.approved_budget?.amount || "N/A"}{" "}
                       with the duration of{" "}
                       {cover.proposal_summary?.duration?.words || "N/A"} years,{" "}
-                      {cover.proposal_summary?.coverage_period || "N/A"}.
+                      {cover.proposal_summary?.proposal_coverage_period || "N/A"}.
                     </p>
 
                     <p>
@@ -458,7 +514,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                       is valuable{" "}
                       {cover.activity_details?.value_statement || "N/A"}. The
                       requested expenses for this activity from the university
-                      is {cover.activity_details?.requested_budget || "N/A"},
+                      is Php {cover.activity_details?.requested_budget || "N/A"},
                       which will be used to defray expenses for food,
                       transportation, supplies and materials, and other expenses
                       related to these activities.
@@ -624,8 +680,30 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                             Members:
                           </td>
                           <td className="px-4 py-3">
-                            {content.project_profile?.proponents?.members ||
-                              "N/A"}
+                            {(() => {
+                              const rawMembers = content.project_profile?.proponents?.members;
+
+                              if (!rawMembers) return "N/A";
+
+                              try {
+                                // First parse
+                                const parsed = JSON.parse(rawMembers);
+
+                                // Remove extra quotes from each name
+                                const cleaned = parsed.map((name) =>
+                                  name.replace(/"/g, "")
+                                );
+
+                                return cleaned.map((member, index) => (
+                                  <div key={index}>
+                                    <p>{member}</p>
+                                  </div>
+                                ));
+                              } catch (error) {
+                                return "N/A";
+                              }
+                            })()}
+
                           </td>
                         </tr>
 
@@ -1562,7 +1640,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
 
                 {/* ========== SUBMIT REVIEW BUTTON ========== */}
                 {selectedHistoryData?.status === "current" && (
-                  <div className="border mt-10 py-6 bg-gradient-to-t from-white via-white to-transparent">
+                  <div className="mt-10 py-6 bg-gradient-to-t from-white via-white to-transparent">
                     <div className="max-w-5xl mx-auto flex justify-end gap-4">
                       <button
                         onClick={onClose}
@@ -1572,7 +1650,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                       </button>
                       <button
                         onClick={handleSubmitReview}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || disableButton}
                         className="px-8 py-3 bg-primaryGreen text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
                       >
                         {isSubmitting ? (
@@ -1587,6 +1665,16 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                           </>
                         )}
                       </button>
+
+                      <button
+                        onClick={() => setShowApproveConfirm(true)}
+                        disabled={disableButton || hasAnyComment}
+                        className="px-8 py-3 bg-primaryGreen text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        Approve
+                      </button>
+
+
                     </div>
                   </div>
                 )}
@@ -1689,6 +1777,56 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
           </div>
         </div>
       </div>
+
+      {showApproveConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl w-[420px] p-6 shadow-2xl animate-[scaleIn_0.2s_ease-out]">
+            
+            <h2 className="text-lg font-bold text-gray-800 mb-3">
+              Confirm Approval
+            </h2>
+
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Do you want to approve the proposal entitled{" "}
+              <span className="font-semibold text-gray-800">
+                "{proposalData?.title}"
+              </span>?
+            </p>
+
+            <p className="text-sm text-red-500 mt-2">
+              Are you sure there are no comments to add?
+            </p>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowApproveConfirm(false)}
+                className="px-5 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 transition"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowApproveConfirm(false);
+                  handleApprove();
+                }}
+                disabled={isApproving}
+                className="px-6 py-2 bg-primaryGreen text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+              >
+                {isApproving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Approving...
+                  </>
+                ) : (
+                  "Yes, Approve"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </>
   );
 };
