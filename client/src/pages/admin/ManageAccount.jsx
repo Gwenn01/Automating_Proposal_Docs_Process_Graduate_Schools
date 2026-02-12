@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Trash2, Search, UserPlus, CheckCircle2 } from "lucide-react";
+import { Edit, Trash2, Search, UserPlus, CheckCircle2, Table, Grid } from "lucide-react";
 import EditModal from "../../components/Admin/EditModal";
 import DeleteConfirmationModal from "../../components/Admin/DeleteConfirmationModal";
 import AddAccountModal from "../../components/Admin/AddAccountModal";
@@ -18,6 +18,7 @@ const ManageAccount = () => {
   const [progress, setProgress] = useState(0);
   const [loadingAction, setLoadingAction] = useState("");
   const [toast, setToast] = useState({ show: false, visible: false, message: "", type: "success" })
+  const [viewMode, setViewMode] = useState("table");
 
   useEffect(() => {
     if (!loading) return;
@@ -104,9 +105,24 @@ const ManageAccount = () => {
     try {
       setLoading(true);
       const res = await axios.get("http://127.0.0.1:5000/api/get-all-accounts");
-      setUsers(res.data);
-    } catch {
+
+      const data = res.data;
+
+      if (Array.isArray(data)) {
+        setUsers(data);
+      } else if (Array.isArray(data.users)) {
+        setUsers(data.users);
+      } else if (Array.isArray(data.data)) {
+        setUsers(data.data);
+      } else {
+        console.warn("Unexpected API response:", data);
+        setUsers([]); // fallback to prevent crash
+      }
+
+    } catch (err) {
+      console.error(err);
       setError("Failed to fetch users");
+      setUsers([]); // prevent filter crash
     } finally {
       setLoading(false);
     }
@@ -227,70 +243,72 @@ const ManageAccount = () => {
         </div>
       </div>
       )}
-      {/* Header Section - Identical to Overview */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
-        <div>
-          <h1 className="text-3xl font-black text-gray-800 tracking-tight">
+      {/* Header Section */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-2 mb-10">
+        {/* Left Side: Titles */}
+        <div className="flex-shrink-0">
+          <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
             Manage Accounts
           </h1>
-          <p className="text-gray-500 text-sm font-medium">
+          <p className="text-gray-500 text-sm">
             View and manage all registered users in the system.
           </p>
+        </div>
+
+        {/* Right Side: Tools (Search, Button, View Switcher) */}
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
+          
+          {/* 1. Modern Search Bar (Now in Header) */}
+          <div className="relative w-full md:w-72 group">
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#1cb35a] transition-colors"
+              size={16}
+            />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 h-11 rounded-2xl border border-slate-200 bg-white focus:ring-4 focus:ring-[#1cb35a]/10 focus:border-[#1cb35a]/30 transition-all outline-none text-xs font-bold text-slate-700 placeholder:text-slate-400"
+            />
+          </div>
+
+          {/* 2. View Mode Switcher (Smaller/Compact) */}
+          <div className="flex items-center bg-slate-100 p-1 rounded-[16px] border border-slate-200/50">
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-2 rounded-[12px] transition-all duration-300 ${
+                viewMode === "table" ? "bg-white text-[#1cb35a] shadow-sm" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <Table size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode("card")}
+              className={`p-2 rounded-[12px] transition-all duration-300 ${
+                viewMode === "card" ? "bg-white text-[#1cb35a] shadow-sm" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <Grid size={16} />
+            </button>
+          </div>
+
+          {/* 3. Create Account Button - Compact & Premium */}
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="group relative flex items-center justify-center gap-2 bg-[#00923f] text-white px-5 h-11 rounded-[16px] font-black transition-all duration-300 hover:-translate-y-0.5 active:scale-95 w-full md:w-auto overflow-hidden shadow-lg shadow-emerald-900/10"
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+            <UserPlus size={14} strokeWidth={3} />
+            <span className="text-[10px] uppercase tracking-widest">Create</span>
+          </button>
         </div>
       </div>
 
       {/* Main Content Card - Matching Chart Card Style */}
       <div className="bg-white p-8 mt-12 rounded-[32px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-slate-100 overflow-hidden">
-        {/* Action Row */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
-          {/* Search Bar - Modern Soft Style */}
-          <div className="relative w-full max-w-md group">
-            <Search
-              className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#1cb35a] transition-colors"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Search by name or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 h-14 rounded-2xl border-none bg-slate-50 focus:ring-2 focus:ring-[#1cb35a]/20 transition-all outline-none text-sm font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-medium shadow-sm"
-            />
-          </div>
-
-          {/* Add Button - Ultra-Premium Modern Style */}
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="group relative flex items-center justify-center gap-3 bg-[#00923f] text-white px-8 py-4 rounded-[22px] font-black transition-all duration-500 hover:-translate-y-1 active:scale-95 w-full md:w-auto overflow-hidden shadow-[0_10px_25px_-5px_rgba(0,146,63,0.3)] hover:shadow-[0_20px_40px_-10px_rgba(0,146,63,0.5)]"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-[#00a34a] via-[#00923f] to-[#1cb35a] transition-all duration-500 group-hover:scale-110" />
-
-            <div className="absolute inset-0">
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-            </div>
-
-            <div className="relative z-10 p-1.5 bg-white/15 rounded-xl group-hover:bg-white/25 transition-all duration-300">
-              <UserPlus
-                size={16}
-                strokeWidth={3}
-                className="group-hover:rotate-12 transition-transform duration-300"
-              />
-            </div>
-
-            {/* 4. Button Text */}
-            <span className="relative z-10 text-[11px] uppercase tracking-[0.2em] whitespace-nowrap drop-shadow-sm">
-              Create Account
-            </span>
-
-            {/* 5. Subtle Glow Layer - Nag-a-activate sa hover */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-white/10 transition-opacity duration-500" />
-
-            {/* 6. Inner Highlight Border */}
-            <div className="absolute inset-0 rounded-[22px] border border-white/20 pointer-events-none" />
-          </button>
-        </div>
-
         {/* Table Section */}
+        {viewMode === "table" ? (
         <div className="overflow-x-hidden">
           <table className="w-full border-separate border-spacing-y-4">
             <thead>
@@ -427,6 +445,84 @@ const ManageAccount = () => {
             </tbody>
           </table>
         </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            {filteredUsers.map((user) => (
+              <div
+                key={user.id}
+                className="group relative bg-white rounded-[38px] p-2 border border-slate-200/60 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] hover:border-slate-300 transition-all duration-500 flex flex-col h-full overflow-hidden"
+              >
+                {/* Premium Glass Background Effect (Visible on Hover) */}
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-slate-50/30 to-emerald-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                <div className="relative z-10 p-6 flex flex-col h-full">
+                  {/* Top Header: ID & Role */}
+                  <div className="flex justify-between items-center mb-8">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="font-mono text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                        ID-{String(user.id).padStart(3, "0")}
+                      </span>
+                    </div>
+                    
+                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.15em] shadow-sm border ${
+                      user.role === "implementor" 
+                        ? "bg-emerald-50/50 text-emerald-600 border-emerald-100" 
+                        : "bg-amber-50/50 text-amber-600 border-amber-100"
+                    }`}>
+                      {user.role}
+                    </span>
+                  </div>
+
+                  {/* User Identity Section */}
+                  <div className="flex flex-col items-center text-center mb-10">
+                    <div className="relative mb-5">
+                      {/* Multi-layered Avatar Container */}
+                      <div className="w-20 h-20 rounded-[28px] bg-[#f5f5f7] flex items-center justify-center border border-slate-100 group-hover:bg-white group-hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] transition-all duration-500 overflow-hidden">
+                        <span className="text-xl font-black text-slate-400 group-hover:text-[#1cb35a] transition-colors duration-500 tracking-tighter">
+                          {user.name.split(" ").map(n => n[0]).join("").toUpperCase()}
+                        </span>
+                      </div>
+                      {/* Subtle Reflection Effect */}
+                      <div className="absolute inset-0 rounded-[28px] bg-gradient-to-tr from-white/0 via-white/40 to-white/0 pointer-events-none" />
+                    </div>
+
+                    <h3 className="font-bold text-[#1d1d1f] text-xl tracking-tight mb-1 group-hover:text-[#1cb35a] transition-colors duration-300">
+                      {user.name}
+                    </h3>
+                    <p className="text-slate-400 text-[13px] font-medium tracking-tight">
+                      {user.email}
+                    </p>
+                  </div>
+
+                  {/* Apple-Style Action Buttons */}
+                  <div className="mt-auto grid grid-cols-2 gap-3 pt-6 border-t border-slate-50">
+                    <button
+                      onClick={() => handleEditClick(user)}
+                      className="group/btn relative flex items-center justify-center gap-2 h-12 rounded-[18px] bg-emerald-50 text-emerald-600 font-black text-[11px] uppercase tracking-widest transition-all duration-300 hover:bg-emerald-600 hover:text-white hover:shadow-[0_10px_20px_-5px_rgba(16,185,129,0.4)] active:scale-95 overflow-hidden"
+                    >
+                      <Edit size={14} strokeWidth={2.5} className="group-hover/btn:rotate-12 transition-transform" />
+                      <span>Edit</span>
+                      {/* Shine effect on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]" />
+                    </button>
+
+                    <button
+                      onClick={() => handleDeleteClick(user)}
+                      className="group/btn relative flex items-center justify-center gap-2 h-12 rounded-[18px] bg-red-50 text-red-500 font-black text-[11px] uppercase tracking-widest transition-all duration-300 hover:bg-red-500 hover:text-white hover:shadow-[0_10px_20px_-5px_rgba(239,68,68,0.4)] active:scale-95 overflow-hidden"
+                    >
+                      <Trash2 size={14} strokeWidth={2.5} className="group-hover/btn:-translate-y-0.5 transition-transform" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Modern High-End Detail: Glass Light Reflection at the top */}
+                <div className="absolute top-0 left-[10%] right-[10%] h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Optional Empty State */}
         {filteredUsers.length === 0 && (

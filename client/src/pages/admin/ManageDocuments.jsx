@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import NotificationBell from "../../components/NotificationBell";
+import DocumentViewerModal from "../../components/instructor/DocumentViewerModal";
+import ReviewerModal from "../../components/instructor/ReviewerModal";
 
 const ManageDocuments = () => {
   const [user, setUser] = useState(null);
@@ -19,6 +21,14 @@ const ManageDocuments = () => {
   const [progress, setProgress] = useState(0);
   const [showNotif, setShowNotif] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [isReviewerOpen, setIsReviewerOpen] = useState(false);
+  const [selectedProposal, setSelectedProposal] = useState(null);
+  const [loadingViewer, setLoadingViewer] = useState(false);
+  const [loadingReviewer, setLoadingReviewer] = useState(false);
+  const [viewerProgress, setViewerProgress] = useState(0);
+  const [reviewerProgress, setReviewerProgress] = useState(0);
+
 
     useEffect(() => {
       // Get user from localStorage
@@ -49,7 +59,7 @@ const ManageDocuments = () => {
         }, 300);
 
         const res = await axios.get("http://127.0.0.1:5000/api/get-all-docs");
-        setDocuments(res.data);
+        setDocuments(res.data || []);
 
         setProgress(100);
       } catch (err) {
@@ -64,22 +74,6 @@ const ManageDocuments = () => {
     fetchDocuments();
 
     return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const res = await axios.get("http://127.0.0.1:5000/api/get-all-docs");
-        setDocuments(res.data);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load documents");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDocuments();
   }, []);
 
     // fetch notifications
@@ -159,6 +153,57 @@ const ManageDocuments = () => {
     }
   };
 
+  // Inside your component
+  const handleOpenViewer = async (doc) => {
+    setLoadingViewer(true);
+    setViewerProgress(0);
+
+    let interval;
+    try {
+
+      interval = setInterval(() => {
+        setViewerProgress((prev) => (prev < 90 ? prev + 5 : prev));
+      }, 200);
+      // Fetch cover page
+      const coverRes = await axios.get(`http://127.0.0.1:5000/api/my-coverpage-proposals/${doc.proposal_id}`);
+      const contentRes = await axios.get(`http://127.0.0.1:5000/api/my-content-proposals/${doc.proposal_id}`);
+
+      setSelectedProposal({
+        ...doc,
+        cover_page: coverRes.data,  
+        full_content: contentRes.data 
+      });
+
+      setIsViewerOpen(true);
+      setViewerProgress(100);
+    } catch (error) {
+      console.error("Error opening viewer:", error);
+    } finally {
+      clearInterval(interval);
+      setTimeout(() => setLoadingViewer(false), 400);
+    }
+};
+
+  const handleOpenReviewer = async (doc) => {
+    setLoadingReviewer(true);
+    setReviewerProgress(0);
+
+    let interval;
+    try {
+      interval = setInterval(() => {
+        setReviewerProgress((prev) => (prev < 90 ? prev + 5 : prev));
+      }, 200);
+
+      setSelectedProposal(doc);
+      setIsReviewerOpen(true);
+      
+    } catch (err) {
+      console.error(err);
+      setLoadingReviewer(false);
+      clearInterval(interval);
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-full h-full bg-white inset-0 z-[60] flex items-center justify-center backdrop-blur-md animate-fade-in">
@@ -188,6 +233,7 @@ const ManageDocuments = () => {
       </div>
     );
   }
+
   if (error) return <p>{error}</p>;
 
   const filteredDocuments = documents.filter(
@@ -218,6 +264,7 @@ const ManageDocuments = () => {
 
   return (
     <div className="p-8 lg:p-10 space-y-10 bg-[#fbfcfb] h-auto animate-in fade-in duration-500">
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
         <div>
           <h1 className="text-3xl font-bold tracking-tight leading-tight">
@@ -283,7 +330,7 @@ const ManageDocuments = () => {
 
             <tbody>
               {filteredDocuments.map((doc) => (
-                <tr key={doc.id} className="group">
+                <tr key={doc.proposal_id} className="group">
                   {/* COLUMN 1: DOCUMENT DETAILS - Premium Glass Edition */}
                   <td className="w-[45%] py-6 px-8 relative overflow-hidden bg-white/70 backdrop-blur-xl first:rounded-l-[32px] border-y border-l border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.03)] group-hover:bg-white/90 transition-all duration-700 ease-in-out">
                     {/* Subsurface Light Effect - Only visible on hover */}
@@ -466,7 +513,7 @@ const ManageDocuments = () => {
                             </div>
                           </div>
 
-                          <button className="p-3 bg-white text-slate-400 rounded-xl border border-slate-100 shadow-sm transition-all duration-300 hover:border-emerald-200 hover:text-emerald-600 hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-500/10 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 active:scale-95">
+                          <button onClick={() => handleOpenViewer(doc)} className="p-3 bg-white text-slate-400 rounded-xl border border-slate-100 shadow-sm transition-all duration-300 hover:border-emerald-200 hover:text-emerald-600 hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-500/10 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 active:scale-95" disabled={loadingViewer}>
                             <FileText size={18} strokeWidth={2} />
                           </button>
                         </div>
@@ -482,7 +529,7 @@ const ManageDocuments = () => {
                             </div>
                           </div>
 
-                          <button className="p-3 bg-white text-slate-400 rounded-xl border border-slate-100 shadow-sm transition-all duration-300 hover:border-indigo-200 hover:text-indigo-600 hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 active:scale-95">
+                          <button onClick={() => handleOpenReviewer(doc)} className="p-3 bg-white text-slate-400 rounded-xl border border-slate-100 shadow-sm transition-all duration-300 hover:border-indigo-200 hover:text-indigo-600 hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 active:scale-95" disabled={loadingReviewer}>
                             <Eye size={18} strokeWidth={2} />
                           </button>
                         </div>
@@ -524,7 +571,76 @@ const ManageDocuments = () => {
           </div>
         )}
       </div>
+      <div>
+        <DocumentViewerModal 
+        isOpen={isViewerOpen}
+        onClose={() => setIsViewerOpen(false)}
+        proposalData={selectedProposal}
+      />
+
+      <ReviewerModal 
+        isOpen={isReviewerOpen}
+        onClose={() => setIsReviewerOpen(false)}
+        proposalData={selectedProposal}
+        onOpen={() => setLoadingReviewer(false)}
+      />
+      {/* Viewer Loading Overlay */}
+        {loadingViewer && (
+          <div className="absolute inset-0 z-[50] flex items-center justify-center bg-white/70 backdrop-blur-md animate-fade-in">
+            <div className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-[450px] rounded-2xl shadow-lg">
+              <p className="text-lg font-semibold shimmer-text mb-2 text-center">
+                Opening Document
+              </p>
+              <p className="text-xs w-full text-gray-500 mb-4 text-center">
+                Loading cover page and content...
+              </p>
+
+              <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500 ease-out relative"
+                  style={{ width: `${viewerProgress}%` }}
+                >
+                  <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                </div>
+              </div>
+
+              <p className="mt-3 text-xs text-gray-500 font-medium">
+                {Math.round(viewerProgress)}%
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Reviewer Loading Overlay */}
+        {loadingReviewer && (
+          <div className="absolute inset-0 z-[50] flex items-center justify-center bg-white/30 backdrop-blur-md animate-fade-in">
+            <div className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-[450px] rounded-2xl shadow-lg">
+              <p className="text-lg font-semibold shimmer-text mb-2 text-center">
+                Opening Reviews
+              </p>
+              <p className="text-xs w-full text-gray-500 mb-4 text-center">
+                Preparing reviewer feedback...
+              </p>
+
+              <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-indigo-400 via-indigo-500 to-indigo-700 transition-all duration-500 ease-out relative"
+                  style={{ width: `${reviewerProgress}%` }}
+                >
+                  <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                </div>
+              </div>
+
+              <p className="mt-3 text-xs text-gray-500 font-medium">
+                {Math.round(reviewerProgress)}%
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
+    
+    
   );
 };
 

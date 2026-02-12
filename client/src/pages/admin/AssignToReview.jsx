@@ -152,104 +152,85 @@ const AssignToReview = () => {
   return (
     
     <div className="p-8 lg:p-10 space-y-10 bg-[#fbfcfb] h-full animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2 mb-10">
+      {/* Header Section */}
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 px-2 mb-10">
         {/* Left Side: Titles */}
-        <div>
+        <div className="flex-shrink-0">
           <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
             Assign to Review
           </h1>
-          <p className="text-slate-500 text-sm">
+          <p className="text-slate-500 text-sm ">
             Select a proposal and assign it to an available reviewer.
           </p>
         </div>
 
-        {/* Right Side: Layout Switcher */}
-        <div className="flex items-center bg-slate-100 p-1.5 rounded-[18px] border border-slate-200/50 shadow-inner">
-          <button
-            onClick={() => setViewMode("table")}
-            className={`p-2.5 rounded-[14px] transition-all duration-300 flex items-center justify-center ${
-              viewMode === "table"
-                ? "bg-white text-[#1cb35a] shadow-sm scale-100 opacity-100"
-                : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 scale-95 opacity-70"
-            }`}
-            title="Table View"
-          >
-            <Table size={18} strokeWidth={viewMode === "table" ? 2.5 : 2} />
-          </button>
+        {/* Right Side: Header Tools (Integrated Search, Metric, and Switcher) */}
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
           
-          <button
-            onClick={() => setViewMode("card")}
-            className={`p-2.5 rounded-[14px] transition-all duration-300 flex items-center justify-center ${
-              viewMode === "card"
-                ? "bg-white text-[#1cb35a] shadow-sm scale-100 opacity-100"
-                : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 scale-95 opacity-70"
-            }`}
-            title="Card View"
-          >
-            <Grid size={18} strokeWidth={viewMode === "card" ? 2.5 : 2} />
-          </button>
+          {/* 1. Search Bar - Integrated in Header */}
+          <div className="relative w-full md:w-80 group">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <Search
+                className="text-slate-400 group-focus-within:text-[#1cb35a] transition-all duration-300"
+                size={16}
+              />
+            </div>
+            <input
+              type="text"
+              placeholder="Search proposals..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 h-11 rounded-2xl border border-slate-200 bg-white focus:ring-4 focus:ring-[#1cb35a]/10 focus:border-[#1cb35a]/30 transition-all outline-none text-[13px] font-semibold text-slate-700 placeholder:text-slate-400 shadow-sm"
+            />
+          </div>
+
+          {/* 2. Professional Metric Badge - Now in Header */}
+          <div className="flex items-center gap-3 px-4 h-11 rounded-2xl bg-white border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-md group/metric w-full md:w-auto">
+            <div className="relative flex items-center justify-center">
+              <span className="absolute w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-25" />
+              <span className="relative w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            </div>
+
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[14px] font-bold text-slate-800 tabular-nums">
+                {filteredDocs.length}
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                Total
+              </span>
+            </div>
+            
+            <div className="h-4 w-[1px] bg-slate-200 mx-1" />
+            
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+              Live
+            </span>
+          </div>
+
+          {/* 3. Layout Switcher - Compact Style */}
+          <div className="flex items-center bg-slate-100 p-1 rounded-[16px] border border-slate-200/50 shadow-inner w-full md:w-auto justify-center">
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-2 rounded-[12px] transition-all duration-300 flex-1 md:flex-none flex items-center justify-center ${
+                viewMode === "table" ? "bg-white text-[#1cb35a] shadow-sm" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <Table size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode("card")}
+              className={`p-2 rounded-[12px] transition-all duration-300 flex-1 md:flex-none flex items-center justify-center ${
+                viewMode === "card" ? "bg-white text-[#1cb35a] shadow-sm" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <Grid size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Main Content Card - Enhanced Professional Look */}
       <div className="bg-white p-8 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/80 overflow-hidden relative">
-        {/* Subtle Background Decoration for a Modern Touch */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none" />
-
-        {/* Action Row - Optimized Spacing */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 relative z-10">
-          {/* Search Bar - Modern Glass style */}
-          <div className="relative w-full max-w-md group">
-            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-              <Search
-                className="text-slate-400 group-focus-within:text-[#1cb35a] transition-all duration-300"
-                size={18}
-              />
-            </div>
-            <input
-              type="text"
-              placeholder="Search by author or document title..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 h-14 rounded-[20px] border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-[#1cb35a]/10 focus:border-[#1cb35a]/30 transition-all outline-none text-sm font-semibold text-slate-700 placeholder:text-slate-400/80 shadow-sm"
-            />
-          </div>
-
-         {/* Professional Metric Badge */}
-          <div className="hidden lg:flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white border border-slate-100 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-md hover:border-slate-200 group/metric">
-            
-            {/* Multi-layered Animated Indicator */}
-            <div className="relative flex items-center justify-center">
-              <span className="absolute w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping opacity-25" />
-              <span className="relative w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-            </div>
-
-            <div className="flex flex-col -space-y-0.5">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] leading-tight">
-                Document Index
-              </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-[14px] font-black text-slate-800 tabular-nums">
-                  {filteredDocs.length}
-                </span>
-                <span className="text-[11px] font-bold text-slate-500 tracking-tight">
-                  Total Proposals
-                </span>
-              </div>
-            </div>
-
-            {/* Subtle Vertical Divider */}
-            <div className="h-6 w-[1px] bg-slate-100 mx-1" />
-
-            {/* Activity Label */}
-            <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 group-hover/metric:bg-emerald-50/50 group-hover/metric:border-emerald-100 transition-colors duration-300">
-              <span className="text-[10px] font-bold text-slate-500 group-hover/metric:text-emerald-600 transition-colors">
-                Live Update
-              </span>
-            </div>
-          </div>
-        </div>
-
         {/* Table Section - Clean Aesthetic */}
         <div className="relative z-10">
           {viewMode === "table" ? (

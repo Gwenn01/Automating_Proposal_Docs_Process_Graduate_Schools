@@ -10,7 +10,7 @@ import EditableNumber from "./EditableNumber";
 import { getHistoryData } from "../../services/api";
 import ReviewList from "./ReviewList";
 
-const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
+const ReviewerModal = ({ isOpen, onClose, proposalData, onOpen }) => {
   if (!isOpen || !proposalData) return null;
   const [canEdit, setCanEdit] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -22,6 +22,12 @@ const ReviewerModal = ({ isOpen, onClose, proposalData }) => {
   const [isDocumentReady, setIsDocumentReady] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const proposalId = proposalData?.proposal_id;
+
+  useEffect(() => {
+    if (isOpen && selectedHistoryData) {
+      onOpen?.(); 
+    }
+  }, [isOpen, selectedHistoryData, onOpen]);
 
 useEffect(() => {
   if (!proposalId) return;
@@ -62,10 +68,12 @@ useEffect(() => {
       } else {
         console.error("Expected array but got:", typeof data);
         setHistory([]);
+        onOpen?.();
       }
     } catch (err) {
       console.error("Failed to fetch history:", err);
       setHistory([]);
+      onOpen?.();
     } finally {
       setLoading(false);
     }
