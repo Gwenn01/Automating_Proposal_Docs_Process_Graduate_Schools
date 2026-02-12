@@ -94,7 +94,11 @@ def view_cover_page_structured_mapper(cover):
             "program_title": cover["board_resolution_title"],
             "approved_budget": {
                 "words": cover["approved_budget_words"],
-                "amount": f"Php {cover['approved_budget_amount']:,.2f}"
+                "amount": (
+                    f"Php {cover['approved_budget_amount']:,.2f}"
+                    if cover["approved_budget_amount"] is not None
+                    else "Php 0.00"
+                ),
             },
             "duration": {
                 "words": cover["duration_words"],
@@ -109,7 +113,11 @@ def view_cover_page_structured_mapper(cover):
             "date": str(cover["activity_date"]),
             "venue": cover["activity_venue"],
             "value_statement": cover["activity_value_statement"],
-            "requested_budget": f"Php {cover['requested_activity_budget']:,.2f}"
+            "requested_budget": (
+                f"Php {cover['requested_activity_budget']:,.2f}"
+                if cover["requested_activity_budget"] is not None
+                else "Php 0.00"
+            ),
         },
 
         "participants": {

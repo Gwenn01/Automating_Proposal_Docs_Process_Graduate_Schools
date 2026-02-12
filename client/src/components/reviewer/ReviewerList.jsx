@@ -29,9 +29,9 @@ const ReviewerList = ({ isOpen, onClose, proposalId, user_id }) => {
         const res = await axios.post(
           "http://127.0.0.1:5000/api/get-reviewer-per-docs",
           { proposal_id: proposalId, user_id },
-          { headers: { "Content-Type": "application/json" } }
+          { headers: { "Content-Type": "application/json" } },
         );
-
+        console.log(res.data);
         setReviewers(res.data || []);
       } catch (err) {
         console.error("Failed to fetch reviewers:", err);
@@ -48,7 +48,6 @@ const ReviewerList = ({ isOpen, onClose, proposalId, user_id }) => {
   return (
     <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-md flex items-center justify-center px-8 py-4">
       <div className="relative w-full max-w-md rounded-md bg-white/90 backdrop-blur-xl shadow-2xl animate-pop-out">
-
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
@@ -62,7 +61,7 @@ const ReviewerList = ({ isOpen, onClose, proposalId, user_id }) => {
           <button
             onClick={onClose}
             className="p-2 flex items-center justify-center rounded-full hover:bg-gray-100 transition gap-2"
-          > 
+          >
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
@@ -83,7 +82,7 @@ const ReviewerList = ({ isOpen, onClose, proposalId, user_id }) => {
             reviewers.map((rev) => {
               const initials = rev.fullname
                 ?.split(" ")
-                .map(n => n[0])
+                .map((n) => n[0])
                 .join("")
                 .slice(0, 2)
                 .toUpperCase();
@@ -104,9 +103,7 @@ const ReviewerList = ({ isOpen, onClose, proposalId, user_id }) => {
                       <p className="font-semibold text-gray-900 group-hover:text-indigo-600 transition">
                         {rev.fullname}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {rev.email}
-                      </p>
+                      <p className="text-xs text-gray-500">{rev.email}</p>
                     </div>
                   </div>
 

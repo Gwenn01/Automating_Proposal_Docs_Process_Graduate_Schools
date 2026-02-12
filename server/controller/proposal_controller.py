@@ -24,7 +24,8 @@ def get_user_coverpage_proposal_controller(proposal_id):
     try:
         cover_page = view_cover_page_structured_mapper(fetch_proposal_cover_page(proposal_id))
         return jsonify({"cover_pages": cover_page}), 200
-    except Exception:
+    except Exception as e:
+        print("ERROR:", e)
         return jsonify({"message": "Failed to fetch cover page"}), 500
 
 
@@ -32,5 +33,6 @@ def get_user_content_proposal_controller(proposal_id):
     try:
         content_page = view_content_mapper(fetch_proposal_content(proposal_id))
         return jsonify({"content_pages": content_page}), 200
-    except Exception:
+    except Exception as e:
+        print("ERROR:", e)
         return jsonify({"message": "Failed to fetch content page"}), 500
