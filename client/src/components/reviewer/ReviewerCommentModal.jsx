@@ -46,7 +46,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
         body: JSON.stringify({
           history_id: historyId,
           user_id: user.user_id,
-          user_type: user.user_type,
+          user_type: "reviewer",
           status: status,
         }),
       });
