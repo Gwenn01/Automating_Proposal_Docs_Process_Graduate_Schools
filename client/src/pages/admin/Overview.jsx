@@ -48,6 +48,7 @@ const PIE_COLORS = ["#f59e0b", "#4ade80"];
 
 const Overview = () => {
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
 
   const [staticCards, setStaticCards] = useState([]);
@@ -58,19 +59,39 @@ const Overview = () => {
   /* ================= FETCH ================= */
 
   useEffect(() => {
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
     const fetchData = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:5000/api/admin-overview"
-        );
+        setLoading(true);
+        setProgress(5);
 
+        await delay(200);
+        setProgress(15);
+
+        const res = await axios.get("http://localhost:5000/api/admin-overview");
+
+        await delay(200);
+        setProgress(40);
         setStaticCards(res.data.static_cards);
+
+        await delay(200);
+        setProgress(65);
         setStatusCycle(res.data.status_cycle);
+
+        await delay(200);
+        setProgress(85);
         setPieData(res.data.pie_data.filter((i) => i.name !== "Total"));
+
+        await delay(200);
+        setProgress(100);
         setBarData(res.data.bar_data);
+
+        await delay(300);
+        setLoading(false);
+
       } catch {
         setError("Failed to load dashboard data.");
-      } finally {
         setLoading(false);
       }
     };
@@ -80,14 +101,36 @@ const Overview = () => {
 
   /* ================= STATES ================= */
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <span className="text-sm text-slate-500 font-semibold uppercase tracking-widest">
-          Loading Dashboard...
-        </span>
+      <div className="w-full h-full bg-white inset-0 z-[60] flex items-center justify-center backdrop-blur-md animate-fade-in">
+        <div className="relative bg-white px-14 py-10 flex flex-col items-center animate-pop-out w-[450px]">
+
+          <p className="text-lg font-semibold shimmer-text mb-2 text-center text-slate-800">
+            Assembling Dashboard Insights
+          </p>
+
+          <p className="text-xs w-full text-gray-500 mb-4 text-center">
+            Aggregating real-time metrics and proposal analytics
+          </p>
+
+          {/* Progress Bar - EXACT MATCH */}
+          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+            <div
+              className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-700 transition-all duration-500 ease-out relative"
+              style={{ width: `${progress}%` }}
+            >
+              <div className="absolute inset-0 bg-white/20 animate-pulse" />
+            </div>
+          </div>
+
+          <p className="mt-3 text-xs text-gray-500 font-medium tabular-nums">
+            {Math.round(progress)}%
+          </p>
+        </div>
       </div>
     );
+  }
 
   if (error)
     return (
