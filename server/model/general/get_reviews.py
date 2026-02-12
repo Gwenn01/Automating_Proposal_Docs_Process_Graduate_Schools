@@ -37,13 +37,18 @@ def get_review_base_proposal_user_id(proposal_id, user_id):
         cur.execute("""
             SELECT 
                 pr.review_id,
+                pr.user_id,
+                pr.decision,
+                pr.is_reviewed,
+                u.fullname,
                 pri.*
             FROM proposal_reviews pr
+            LEFT JOIN users u 
+                ON pr.user_id = u.user_id
             LEFT JOIN proposal_review_items pri
                 ON pr.review_id = pri.review_id
             WHERE pr.proposal_id = %s
               AND pr.user_id = %s
-              AND pr.is_reviewed = 1
         """, (proposal_id, user_id))
 
         review = cur.fetchone()  #  safe
