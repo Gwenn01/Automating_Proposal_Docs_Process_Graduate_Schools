@@ -92,7 +92,7 @@ def post_reviews_item_docs_controller():
         
         # check if the reviews is exist to avoid duplicate
         if check_reviews_item(review_id):
-            return {"error": "Review already exist"}, 400
+            return {"error": "A review already exists. Please wait for the implementor to revise the proposal."}, 400
         
         #change the decision
         change_decision = put_decision_review(proposal_id, reviewer_id, 'need_revision')
@@ -102,7 +102,7 @@ def post_reviews_item_docs_controller():
         # check if its already review 
         is_reviewed = update_is_reviewed(review_id)
         if not is_reviewed:
-            return {"error": "Failed to update is_review, because reviewer already reviewed"}, 500 
+            return {"error": "Failed to insert review. The reviewer has already submitted a review. wait for the implementor to revise the proposal"}, 500 
 
         # now after the updated insert it to the table
         success = insert_review_item(review_id, data)
@@ -157,7 +157,7 @@ def update_review_items_controller():
         
         is_reviewed = update_is_reviewed(review_id)
         if not is_reviewed:
-            return {"error": "Failed to update is_review, because reviewer already reviewed"}, 500
+            return {"error": "Failed to update. The reviewer has already submitted a review. wait for the implementor to revise the proposal"}, 500
 
         success = put_review_item(review_id, reviews)
         if not success:
