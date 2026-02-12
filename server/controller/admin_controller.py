@@ -213,7 +213,7 @@ def get_all_docs_controller():
             format_data = get_docs_mapper(row)
 
             # unique key (user + title)
-            unique_key = (format_data["id"], format_data["title"])
+            unique_key = (format_data["proposal_id"], format_data["title"])
 
             if unique_key not in seen:
                 seen.add(unique_key)

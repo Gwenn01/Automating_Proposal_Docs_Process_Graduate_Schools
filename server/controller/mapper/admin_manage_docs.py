@@ -2,7 +2,8 @@
 def get_docs_mapper(row):
     ...
     data = {
-        "id": row["proposal_id"],
+        "proposal_id": row["proposal_id"],
+        "implementor_id": row["user_id"],
         "name": row["fullname"],
         "title": row["title"],
         "submissionDate": row["submission_date"],
