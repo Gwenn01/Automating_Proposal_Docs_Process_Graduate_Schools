@@ -8,6 +8,8 @@ import {
   FileText,
   Users,
   X,
+  AlertTriangle,
+  CheckCircle,
 } from "lucide-react";
 import DocumentViewerModal from "../../components/instructor/DocumentViewerModal";
 import axios from "axios";
@@ -182,6 +184,8 @@ const ReviewProposal = () => {
         const mappedProposals = data.map((row) => ({
           proposal_id: row.proposal_id,
           status: row.status,
+          review_status: row.review_status,
+          is_reviewed: row.is_reviewed,
           title: row.title,
           description: row.name,
           date: row.date,
@@ -227,39 +231,38 @@ const ReviewProposal = () => {
     }
   };
 
-    const fetchHistory   = async (proposalId) => {
+  const fetchHistory = async (proposalId) => {
     try {
-             const response = await fetch("http://127.0.0.1:5000/api/get-history", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            proposal_id: proposalId,
-          }),
-        });
+      const response = await fetch("http://127.0.0.1:5000/api/get-history", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          proposal_id: proposalId,
+        }),
+      });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-        const data = await response.json();
-        console.log("Fetched history data:", data);
+      const data = await response.json();
+      console.log("Fetched history data:", data);
 
-        if (Array.isArray(data)) {
-          const mappedHistory = data
-            .map((item) => ({
-              history_id: item.history_id,
-              proposal_id: item.proposal_id,
-              status: item.status,
-              version_no: item.version_no,
-              created_at: item.created_at,
-            }))
-        .sort((a, b) => a.history_id - b.history_id);
+      if (Array.isArray(data)) {
+        const mappedHistory = data
+          .map((item) => ({
+            history_id: item.history_id,
+            proposal_id: item.proposal_id,
+            status: item.status,
+            version_no: item.version_no,
+            created_at: item.created_at,
+          }))
+          .sort((a, b) => a.history_id - b.history_id);
 
-
-          setHistory(mappedHistory);
-        }
+        setHistory(mappedHistory);
+      }
     } catch (error) {
       console.error("Error fetching proposal history:", error);
       return null;
@@ -502,11 +505,29 @@ const ReviewProposal = () => {
                       >
                         {proposal.title}
                       </h3>
-                      <p className="text-gray-500 text-sm leading-relaxed line-clamp-3 mb-6">
+                      <p className="text-gray-500 text-sm leading-relaxed line-clamp-3 mb-1">
                         {proposal.description}
                       </p>
-                    </div>
+                      {proposal.review_status && (
+                        <p
+                          className={`flex items-center gap-2 text-xs rounded-md px-3 py-2 mt-1 mb-3 border
+                                      ${
+                                        proposal.is_reviewed === 1
+                                          ? "text-amber-700 bg-amber-50 border-amber-200"
+                                          : "text-green-700 bg-green-50 border-green-200"
+                                      }
+                                    `}
+                        >
+                          {proposal.is_reviewed === 1 ? (
+                            <AlertTriangle className="w-4 h-4" />
+                          ) : (
+                            <CheckCircle className="w-4 h-4" />
+                          )}
 
+                          <span>{proposal.review_status}</span>
+                        </p>
+                      )}
+                    </div>
                     <div>
                       <p className="text-gray-400 text-xs font-bold mb-5">
                         {proposal.date}
@@ -549,10 +570,12 @@ const ReviewProposal = () => {
                             const content = await fetchProposalContent(
                               proposal.proposal_id,
                             );
-                            const historyData = await fetchHistory(proposal.proposal_id);
+                            const historyData = await fetchHistory(
+                              proposal.proposal_id,
+                            );
 
                             setSelectedDoc({
-                              ...proposal
+                              ...proposal,
                             });
 
                             setShowReviewerModal(true);
@@ -566,7 +589,7 @@ const ReviewProposal = () => {
 
                         <button
                           onClick={() => {
-                            setSelectedProposalId(proposal.id);
+                            setSelectedProposalId(proposal.proposal_id);
                             setShowReviewerList(true);
                           }}
                           className="flex-none flex items-center justify-center bg-gray-900 text-white p-3 hover:bg-gray-700 transition-colors rounded-md"

@@ -29,11 +29,19 @@ def normalize_number(value):
 
 
 def get_docs_mapper(row):
+    review_message = ""
+    if row["is_reviewed"] == 1:
+        review_message = "Already reviewed. Please wait for revision before reviewing again."
+    else:
+        review_message = "Not yet reviewed. You may proceed."
+        
     data = {
         "proposal_id": row["proposal_id"],
         "reviewer_id": row["reviewer_id"],
         "implementor_id": row["implementor_id"],
         "review_id": row["review_id"],
+        "review_status": review_message,
+        "is_reviewed": row["is_reviewed"],
         "status": row["status"],
         "name": row["fullname"],
         "title": row["title"],

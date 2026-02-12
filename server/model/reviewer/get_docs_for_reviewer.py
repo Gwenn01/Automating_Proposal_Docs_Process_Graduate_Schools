@@ -9,6 +9,7 @@ def get_docs_for_reviewers(reviewer_id):
             pr.proposal_id,
             pr.user_id as reviewer_id,
             pr.review_id,
+            pr.is_reviewed,
             pd.title,
             pd.user_id as implementor_id,
             pd.status,
