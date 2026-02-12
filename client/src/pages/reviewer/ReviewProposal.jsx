@@ -9,6 +9,7 @@ import {
   Users,
   X,
   AlertTriangle,
+  Clock,
   CheckCircle,
 } from "lucide-react";
 import DocumentViewerModal from "../../components/instructor/DocumentViewerModal";
@@ -184,6 +185,7 @@ const ReviewProposal = () => {
         const mappedProposals = data.map((row) => ({
           proposal_id: row.proposal_id,
           status: row.status,
+          decision: row.decision,
           review_status: row.review_status,
           is_reviewed: row.is_reviewed,
           title: row.title,
@@ -511,17 +513,21 @@ const ReviewProposal = () => {
                       {proposal.review_status && (
                         <p
                           className={`flex items-center gap-2 text-xs rounded-md px-3 py-2 mt-1 mb-3 border
-                                      ${
-                                        proposal.is_reviewed === 1
-                                          ? "text-amber-700 bg-amber-50 border-amber-200"
-                                          : "text-green-700 bg-green-50 border-green-200"
-                                      }
-                                    `}
+                                  ${
+                                    proposal.decision === "Approved"
+                                      ? "text-green-700 bg-green-50 border-green-200"
+                                      : proposal.is_reviewed === 1
+                                        ? "text-red-700 bg-red-50 border-red-200"
+                                        : "text-orange-700 bg-orange-50 border-orange-200"
+                                  }
+                                `}
                         >
-                          {proposal.is_reviewed === 1 ? (
+                          {proposal.decision === "Approved" ? (
+                            <CheckCircle className="w-4 h-4" />
+                          ) : proposal.is_reviewed === 1 ? (
                             <AlertTriangle className="w-4 h-4" />
                           ) : (
-                            <CheckCircle className="w-4 h-4" />
+                            <Clock className="w-4 h-4" />
                           )}
 
                           <span>{proposal.review_status}</span>
