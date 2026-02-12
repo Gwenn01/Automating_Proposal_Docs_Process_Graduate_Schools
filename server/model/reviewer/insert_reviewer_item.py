@@ -23,63 +23,82 @@ def check_reviews_item(review_id):
 
 
 def insert_review_item(review_id, data):
-    db = get_db_connection()
-    cursor = db.cursor()
+    db = None
+    cursor = None
 
-    query = """
-        INSERT INTO proposal_review_items (
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        reviews = data.get("reviews", {})
+
+        if not reviews:
+            raise ValueError("Missing 'reviews' object in request body")
+
+        query = """
+            INSERT INTO proposal_review_items (
+                review_id,
+                review_round,
+                proposal_type,
+                source_of_fund,
+                cover_letter_feedback,
+                form1_proposal_feedback,
+                project_profile_feedback,
+                rationale_feedback,
+                significance_feedback,
+                general_objectives_feedback,
+                specific_objectives_feedback,
+                methodology_feedback,
+                expected_output_feedback,
+                potential_impact_feedback,
+                sustainability_plan_feedback,
+                org_staffing_feedback,
+                work_financial_plan_feedback,
+                budget_summary_feedback
+            ) VALUES (
+                %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s
+            )
+        """
+
+        values = (
             review_id,
-            review_round,
-            proposal_type,
-            source_of_fund,
-            cover_letter_feedback,
-            form1_proposal_feedback,
-            project_profile_feedback,
-            rationale_feedback,
-            significance_feedback,
-            general_objectives_feedback,
-            specific_objectives_feedback,
-            methodology_feedback,
-            expected_output_feedback,
-            potential_impact_feedback,
-            sustainability_plan_feedback,
-            org_staffing_feedback,
-            work_financial_plan_feedback,
-            budget_summary_feedback
-        ) VALUES (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, %s, %s, %s
+            reviews.get("review_round", "1st"),
+            reviews.get("proposal_type"),
+            reviews.get("source_of_fund"),
+            reviews.get("cover_letter_feedback"),
+            reviews.get("form1_proposal_feedback"),
+            reviews.get("project_profile_feedback"),
+            reviews.get("rationale_feedback"),
+            reviews.get("significance_feedback"),
+            reviews.get("general_objectives_feedback"),
+            reviews.get("specific_objectives_feedback"),
+            reviews.get("methodology_feedback"),
+            reviews.get("expected_output_feedback"),
+            reviews.get("potential_impact_feedback"),
+            reviews.get("sustainability_plan_feedback"),
+            reviews.get("org_staffing_feedback"),
+            reviews.get("work_financial_plan_feedback"),
+            reviews.get("budget_summary_feedback")
         )
-    """
 
-    values = (
-        review_id,
-        data.get("review_round", "1st"),
-        data.get("proposal_type"),
-        data.get("source_of_fund"),
-        data.get("cover_letter_feedback"),
-        data.get("form1_proposal_feedback"),
-        data.get("project_profile_feedback"),
-        data.get("rationale_feedback"),
-        data.get("significance_feedback"),
-        data.get("general_objectives_feedback"),
-        data.get("specific_objectives_feedback"),
-        data.get("methodology_feedback"),
-        data.get("expected_output_feedback"),
-        data.get("potential_impact_feedback"),
-        data.get("sustainability_plan_feedback"),
-        data.get("org_staffing_feedback"),
-        data.get("work_financial_plan_feedback"),
-        data.get("budget_summary_feedback")
-    )
+        cursor.execute(query, values)
+        db.commit()
 
-    cursor.execute(query, values)
-    db.commit()
+        return cursor.rowcount == 1
 
-    cursor.close()
-    db.close()
+    except Exception as e:
+        if db:
+            db.rollback()
 
-    return True
+        print("ERROR inserting review item:", str(e))
+        return False
+
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
 
 def updated_reviewed_count(proposal_id):
     try:

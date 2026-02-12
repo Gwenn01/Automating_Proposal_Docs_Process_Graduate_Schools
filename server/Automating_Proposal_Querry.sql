@@ -474,10 +474,29 @@ SELECT * FROM proposal_review_items_history;
 SELECT * FROM notifications;
 
 ALTER TABLE proposal_reviews
+MODIFY decision ENUM('pending', 'approved', 'rejected', 'need_revision') default 'pending' NOT NULL;
+UPDATE proposal_reviews
+SET decision = 'pending'
+WHERE review_id = 56;
+
+UPDATE proposal_reviews
+SET decision = 'pending'
+WHERE review_id = 58;
+
+UPDATE proposal_reviews
+SET is_reviewed = 0
+WHERE review_id = 57;
+
+
+
+ALTER TABLE proposal_reviews
 MODIFY review_deadline DATETIME
 DEFAULT (DATE_ADD(NOW(), INTERVAL 7 DAY));
 
-DELETE FROM proposal_review_items WHERE review_item_id = 23;
+DELETE FROM proposal_review_items WHERE review_item_id = 31;
+
+DELETE FROM proposal_reviews WHERE review_id = 56;
+UPDATE proposal_reviews SET is_reviewed = 0 where review_id = 57;
 
 CREATE TABLE notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,

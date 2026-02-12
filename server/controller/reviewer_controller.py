@@ -93,28 +93,32 @@ def post_reviews_item_docs_controller():
         # check if the reviews is exist to avoid duplicate
         if check_reviews_item(review_id):
             return {"error": "Review already exist"}, 400
+        
+        #change the decision
+        change_decision = put_decision_review(proposal_id, reviewer_id, 'need_revision')
+        if not change_decision:
+            return {"error": "Failed to change decision"}, 500
+        
+        # check if its already review 
+        is_reviewed = update_is_reviewed(review_id)
+        if not is_reviewed:
+            return {"error": "Failed to update is_review, because reviewer already reviewed"}, 500 
 
+        # now after the updated insert it to the table
         success = insert_review_item(review_id, data)
         if not success:
             return {"error": "Failed to insert review"}, 500
         
+         # increase reviewed count
         is_updated = updated_reviewed_count(proposal_id)
         if not is_updated:
-            return {"error": "Failed to update reviewed count"}, 500
-        
-        is_reviewed = update_is_reviewed(review_id)
-        if not is_reviewed:
-            return {"error": "Failed to update is reviewed"}, 500 
-        
-        change_decision = put_decision_review(proposal_id, reviewer_id, 'need_revision')
-        if not change_decision:
-            return {"error": "Failed to change decision"}, 500
+            return {"error": "Failed to update reviewed count"}, 500  
         
         success_notif = handle_insert_notification(user_id, "Your proposal has been reviewed by", reviewer_name)
         if not success_notif:
             return {"error": "Failed to insert notification"}, 500
 
-        return jsonify({"message": "Review inserted successfully"}), 200
+        return jsonify({"message": "Review to proposal inserted successfully"}), 200
 
     except Exception as e:
         return {"error": str(e)}, 500
@@ -150,6 +154,10 @@ def update_review_items_controller():
 
         if not review_id or not proposal_id or not reviews:
             return {"error": "Invalid payload"}, 400
+        
+        is_reviewed = update_is_reviewed(review_id)
+        if not is_reviewed:
+            return {"error": "Failed to update is_review, because reviewer already reviewed"}, 500
 
         success = put_review_item(review_id, reviews)
         if not success:
@@ -158,10 +166,6 @@ def update_review_items_controller():
         is_review_count = updated_reviewed_count(proposal_id)
         if not is_review_count:
             return {"error": "Failed to update reviewed count"}, 500
-        
-        is_reviewed = update_is_reviewed(review_id)
-        if not is_reviewed:
-            return {"error": "Failed to update is_reviewed"}, 500
         
         success_notif = handle_insert_notification(user_id, "Your proposal has been reviewed by", reviewer_name)
         if not success_notif:
