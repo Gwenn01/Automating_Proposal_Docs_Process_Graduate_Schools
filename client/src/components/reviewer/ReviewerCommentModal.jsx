@@ -45,7 +45,8 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
         },
         body: JSON.stringify({
           history_id: historyId,
-          reviewer_id: user.user_id,
+          user_id: user.user_id,
+          user_type: user.user_type,
           status: status,
         }),
       });
@@ -58,7 +59,6 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
 
       const data = await response.json();
       // check if already reviewed
-
       if (data.status === "current" && data.is_reviewed === true) {
         setAlreadyReviewed(true);
       } else {
@@ -839,7 +839,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                             InputValue="general_objectives_feedback"
                             value={
                               selectedHistoryData?.full_content?.content_pages
-                                ?.general_objectives?.reviews?.[0]?.comment ||
+                                ?.objectives?.general?.reviews?.[0]?.comment ||
                               ""
                             }
                             disabled={alreadyReviewed}
@@ -854,7 +854,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                       ) : (
                         <div className="mt-10 p-5 bg-green-50 border-l-4 border-green-400">
                           <div className="space-y-4">
-                            {content?.objectives?.reviews_general?.map(
+                            {content?.objectives?.general?.reviews?.map(
                               (review) => (
                                 <PreviousComment
                                   key={review.id}
@@ -882,7 +882,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                             InputValue="specific_objectives_feedback"
                             value={
                               selectedHistoryData?.full_content?.content_pages
-                                ?.specific_objectives?.reviews?.[0]?.comment ||
+                                ?.objectives?.specific?.reviews?.[0]?.comment ||
                               ""
                             }
                             disabled={alreadyReviewed}
@@ -897,7 +897,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                       ) : (
                         <div className="mt-10 p-5 bg-green-50 border-l-4 border-green-400">
                           <div className="space-y-4">
-                            {content?.objectives?.reviews_specific?.map(
+                            {content?.objectives?.specific?.reviews?.map(
                               (review) => (
                                 <PreviousComment
                                   key={review.id}
@@ -1059,7 +1059,8 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                             InputValue="expected_output_feedback"
                             value={
                               selectedHistoryData?.full_content?.content_pages
-                                ?.expected_output?.reviews?.[0]?.comment || ""
+                                ?.expected_output_outcome?.reviews?.[0]
+                                ?.comment || ""
                             }
                             disabled={alreadyReviewed}
                           />
@@ -1217,7 +1218,8 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                             InputValue="org_staffing_feedback"
                             value={
                               selectedHistoryData?.full_content?.content_pages
-                                ?.org_staffing?.reviews?.[0]?.comment || ""
+                                ?.organization_and_staffing?.reviews?.[0]
+                                ?.comment || ""
                             }
                             disabled={alreadyReviewed}
                           />
@@ -1320,7 +1322,7 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                             InputValue="work_financial_plan_feedback"
                             value={
                               selectedHistoryData?.full_content?.content_pages
-                                ?.work_financial_plan?.reviews?.[0]?.comment ||
+                                ?.plan_of_activities?.reviews?.[0]?.comment ||
                               ""
                             }
                             disabled={alreadyReviewed}
@@ -1478,7 +1480,8 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
                             InputValue="budget_summary_feedback"
                             value={
                               selectedHistoryData?.full_content?.content_pages
-                                ?.budget_summary?.reviews?.[0]?.comment || ""
+                                ?.plan_of_activities?.reviews?.[0]?.comment ||
+                              ""
                             }
                             disabled={alreadyReviewed}
                           />

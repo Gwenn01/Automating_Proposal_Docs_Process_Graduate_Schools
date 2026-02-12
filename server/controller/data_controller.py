@@ -17,8 +17,9 @@ def get_data_controller():
         ...
         data = request.get_json()
         history_id = data.get('history_id')
-        reviewer_id = data.get('reviewer_id')
+        user_id = data.get('user_id')
         status = data.get('status')
+        user_type = data.get('user_type')
         
         if not history_id and status:
             return jsonify({'error': 'history_id and status is required'}), 400
@@ -46,16 +47,24 @@ def get_data_controller():
             if not proposal_content:
                 return jsonify({'error': 'content not found'}), 404
             # if the proposal is current return the reviews by user only
-            #proposal_review = get_reviews(proposal_id)
-            proposal_review = get_review_base_proposal_user_id(proposal_id, reviewer_id)
-            data = []
-            data.append(proposal_review)
-            if not proposal_review:
-                return jsonify({'error': 'reviews not found'}), 404
-            result = get_review_per_docs_mapper(proposal_cover[0], proposal_content[0], data)
-            result['status'] = status
-            # passed the is reviewed 
-            result['is_reviewed'] = proposal_review['is_reviewed']
-            return jsonify(result), 200
+            if user_type == "implementor":
+                proposal_review = get_reviews(proposal_id)
+                if not proposal_review:
+                    return jsonify({'error': 'reviews not found'}), 404
+                result = get_review_per_docs_mapper(proposal_cover[0], proposal_content[0], proposal_review)
+                result['status'] = status
+                return jsonify(result), 200
+            elif user_type == "reviewer":
+                proposal_review = get_review_base_proposal_user_id(proposal_id, user_id)
+                data = []
+                data.append(proposal_review)
+                if not proposal_review:
+                    return jsonify({'error': 'reviews not found'}), 404
+                result = get_review_per_docs_mapper(proposal_cover[0], proposal_content[0], data)
+                result['is_reviewed'] = bool(proposal_review['is_reviewed'])
+                result['status'] = status
+                return jsonify(result), 200
+            else:
+                return jsonify({'error': 'user type not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
