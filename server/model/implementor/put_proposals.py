@@ -46,7 +46,7 @@ def update_proposal_cover_page_db(cover_id, proposal_id, data):
         })
 
         conn.commit()
-        return cursor.rowcount >= 1
+        return True
 
     except Exception as e:
         conn.rollback()
@@ -127,7 +127,7 @@ def update_proposal_content_db(content_id, proposal_id, data):
         })
 
         conn.commit()
-        return cursor.rowcount >= 1
+        return True
 
     except Exception as e:
         conn.rollback()
@@ -200,7 +200,7 @@ def update_review_item(review_id):
 
         cursor.execute(query, (review_id,))
         conn.commit()
-        return cursor.rowcount == 1
+        return True
 
     except Exception as e:
         conn.rollback()
@@ -209,28 +209,25 @@ def update_review_item(review_id):
     finally:
         cursor.close()
         conn.close()
-   
 
-def updated_reviewed_count_zero(proposal_id):
+def handle_update_status_db(proposal_id):
     try:
         db = get_db_connection()
         cursor = db.cursor()
-        
-        query = """
-            UPDATE proposals_docs SET reviewed_count = 0 WHERE proposal_id = %s
-        """
-        values = (proposal_id,)
 
-        cursor.execute(query, values)
+        cursor.execute("UPDATE proposals_docs SET reviewed_count = 0 WHERE proposal_id = %s", (proposal_id,))
+        cursor.execute("UPDATE proposals_docs SET status = 'for_revision' WHERE proposal_id = %s", (proposal_id,))
+
         db.commit()
+        return True, None
 
+    except Exception as e:
+        db.rollback()
+        return False, str(e)
+
+    finally:
         cursor.close()
         db.close()
-        
-        return cursor.rowcount >= 0  
-    except Exception as e:
-        print(e)
-        return False
 
 def update_is_reviewed(review_id):
     try:
@@ -248,28 +245,7 @@ def update_is_reviewed(review_id):
         cursor.close()
         db.close()
 
-        return cursor.rowcount >= 1
-    except Exception as e:
-        print(e)
-        return False
-    
-def update_proposal_status(proposal_id):
-    try:
-        db = get_db_connection()
-        cursor = db.cursor()
-
-        query = """
-            UPDATE proposals_docs SET status = 'for_revision' WHERE proposal_id = %s
-        """
-        values = (proposal_id,)
-
-        cursor.execute(query, values)
-        db.commit()
-
-        cursor.close()
-        db.close()
-
-        return cursor.rowcount >= 1
+        return True
     except Exception as e:
         print(e)
         return False
@@ -291,7 +267,7 @@ def update_proposal_status_for_approval(proposal_id):
         cursor.close()
         db.close()
 
-        return cursor.rowcount >= 1
+        return True
     except Exception as e:
         print(e)
         return False

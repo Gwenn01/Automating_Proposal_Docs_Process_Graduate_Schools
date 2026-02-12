@@ -30,9 +30,8 @@ from model.implementor.put_proposals import (
     update_proposal_content_db,
     update_reviews,
     update_review_item,
-    updated_reviewed_count_zero,
+    handle_update_status_db,
     update_is_reviewed,
-    update_proposal_status
 )
 from middleware.proposal_validator import validate_proposal_data, validate_proposal_cover_page_data, validate_proposal_content_data
 from model.implementor.handle_check_edit_proposal import handle_check_edit_proposal
@@ -97,11 +96,11 @@ def update_proposal_content(proposal_id, data):
     }), 200
     
 # FOR REVISION PROPOSAL CONTROLLER ONLY ==================================================================================================
-def handle_insert_notification(user_id, message, title):
+def handle_insert_notification(user_id, title):
     try:
         insert_notification_db(
             user_id,
-            f"{message} {title}"
+            f'The proposal "{title["title"]}" has been revised. Please review the updated version.'
         )
         return True
     except Exception as e:
@@ -142,44 +141,17 @@ def handle_insertion_history(proposal_id, user_id):
             # put the proposal deadline
             put_proposal_deadline_db(proposal_id, reviewer["user_id"])
             # put notification to reviewer after the implementor revise the docs
-            handle_insert_notification(reviewer["user_id"], "The proposal has already been revised.", title)
+            handle_insert_notification(reviewer["user_id"], title)
             if review_item:
                 #insert review
                 insert_review_items_history(review_history_id, review_item)
                 
-        return True, None
+        return True, "Insert History Successfully"
 
     except Exception as e:
         print(e)
-        return False
+        return False, "Failed to insert history"
     
-
-def handle_clean_reviews(proposal_id):
-    try:
-     #clean the reviewed 
-        #get the reviewer id so that we can clean the review item
-        review_id = update_reviews(proposal_id)
-        for r in review_id:
-            update_is_reviewed(r)
-            update_review_item(r)
-        return True
-    except Exception as e:
-        print(e)
-        return False
-
-
-def handle_update_status(proposal_id):
-    try:
-        is_update_zero = updated_reviewed_count_zero(proposal_id)
-        if not is_update_zero:
-            return False, "Failed to update reviewed count to zero"
-        is_update_status = update_proposal_status(proposal_id)
-        if not is_update_status:
-            return False, "Failed to update proposal status"
-        return True, None
-    except  Exception as e:
-        print(e)
-        return False
     
     
 def handle_updating_proposals(proposal_id, cover_id, content_id, data):
@@ -196,7 +168,32 @@ def handle_updating_proposals(proposal_id, cover_id, content_id, data):
         return True, "Proposal updated successfully"
     except Exception as e:
         print(e)
-        return False
+        return False, "Failed to update proposal"
+    
+    
+def handle_clean_reviews(proposal_id):
+    try:
+     #clean the reviewed 
+        #get the reviewer id so that we can clean the review item
+        review_id = update_reviews(proposal_id)
+        for r in review_id:
+            update_is_reviewed(r)
+            update_review_item(r)
+        return True, "Updated Successfully"
+    except Exception as e:
+        print(e)
+        return False, "Failed to clean the reviews"
+    
+    
+def handle_update_status(proposal_id):
+    try:
+        is_update_status = handle_update_status_db(proposal_id)
+        if not is_update_status:
+            return False, "Proposal status not updated"
+        return True, "Updated successfully"
+    except  Exception as e:
+        print(e)
+        return False, None, "Failed to update the proposal status"
     
 def revise_proposals_controller():
     try:
@@ -207,12 +204,13 @@ def revise_proposals_controller():
         user_id = data.get("user_id")
         content_id = data.get("content_id")
         cover_id = data.get("cover_id")
-      
-        
+
         # Step 1: Insert history
         success, error = handle_insertion_history(proposal_id, user_id)
         if not success:
             return jsonify({"error": error}), 500
+        else:
+            print("History inserted successfully")
         
          # Step 2: Update proposal
         success, error = handle_updating_proposals(
@@ -220,16 +218,22 @@ def revise_proposals_controller():
         )
         if not success:
             return jsonify({"error": error}), 500
+        else:
+            print("Proposal updated successfully")
         
         # Step 3: Clean reviews
         success, error = handle_clean_reviews(proposal_id)
         if not success:
             return jsonify({"error": error}), 500
+        else:
+            print("Reviews cleaned successfully")
 
         # Step 4: Update status
         success, error = handle_update_status(proposal_id)
         if not success:
             return jsonify({"error": error}), 500
+        else:
+            print("Status updated successfully")
 
         return jsonify({"message": "Proposal revised successfully"}), 200
         

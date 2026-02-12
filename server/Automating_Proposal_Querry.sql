@@ -487,6 +487,8 @@ UPDATE proposal_reviews
 SET is_reviewed = 0
 WHERE review_id = 57;
 
+update proposals_docs SET reviewed_count = 2
+where proposal_id = 7;
 
 
 ALTER TABLE proposal_reviews

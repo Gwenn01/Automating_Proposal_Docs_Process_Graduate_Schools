@@ -42,9 +42,6 @@ from model.implementor.put_proposals import (
     update_proposal_content_db,
     update_reviews,
     update_review_item,
-    updated_reviewed_count_zero,
-    update_is_reviewed,
-    update_proposal_status
 )
 from model.implementor.put_proposal_deadline import put_proposal_deadline_db
 from model.general.get_review_deadline import get_review_deadline_db
