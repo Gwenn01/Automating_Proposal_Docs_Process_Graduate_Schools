@@ -1,14 +1,22 @@
 from utils.execute_query import execute_query
 
-def check_notification(user_id):
+def check_notification(user_id, title, days_left):
     try:
         query = """
-            SELECT 1 FROM notifications
-            WHERE user_id = %s AND DATE(created_at) = CURDATE()
+            SELECT 1
+            FROM notifications
+            WHERE user_id = %s
+            AND message = %s
+            AND DATE(CONVERT_TZ(created_at, '+00:00', '+08:00')) = CURDATE()
+            LIMIT 1
         """
-        params = (user_id,)
+
+        message = f"You have {days_left} day(s) remaining to review the task titled '{title}'."
+
+        params = (user_id, message)
         result = execute_query(query, params, True)
-        return result
+        return result is not None
+
     except Exception as e:
         print(e)
-        return None
+        return False

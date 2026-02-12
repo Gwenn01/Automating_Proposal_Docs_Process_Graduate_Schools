@@ -7,18 +7,20 @@ def format_review_data(data):
     formatted = []
 
     for r in data:
-        days_left = (r["review_deadline"] - datetime.now()).days
-        title = r["title"]
+        now = datetime.now(r["review_deadline"].tzinfo)
+        days_left = (r["review_deadline"].date() - now.date()).days
+
         if days_left < 0:
             continue
 
         formatted.append({
             "user_id": r["user_id"],
             "days_left": days_left,
-            "title": title,
+            "title": r["title"],
         })
 
     return formatted
+
 
 def process_review_deadline():
     try:
@@ -29,7 +31,11 @@ def process_review_deadline():
         formatted_data = format_review_data(data)
 
         for r in formatted_data:
-            already_notified = bool(check_notification(r["user_id"]))
+            already_notified = check_notification(
+                r["user_id"],
+                r["title"],
+                r["days_left"]
+            )
             if already_notified:
                 continue
 
