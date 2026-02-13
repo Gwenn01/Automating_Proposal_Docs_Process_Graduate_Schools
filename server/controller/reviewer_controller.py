@@ -195,7 +195,7 @@ def handle_admin_notification(reviewer_name, title):
 def check_all_reviewer_approved(proposal_id):
     ...
     reviews = get_reviews(proposal_id)
-    
+   
     for r in reviews:
         if r['decision'] != "approved":
             return False
@@ -216,8 +216,8 @@ def approve_proposal_controller():
             return {"error": "Invalid payload"}, 400
 
         success = put_decision_review(proposal_id, user_id, "approved")
-        if not success and not success_insert:
-            return {"error": "You already approved this proposal"}, 404
+        if not success:
+            return jsonify({"message": "You already Approved this proposal"}), 404
         
         if check_all_reviewer_approved(proposal_id):
             success_insert = handle_admin_notification(reviewer_name, title)
@@ -226,7 +226,9 @@ def approve_proposal_controller():
             is_updated = update_proposal_status_for_approval(proposal_id)
             if not is_updated:
                 return {"error": "No rows updated. Check proposal_id/user_id"}, 404
-
+            print("Already check all reviewer approved")
+        
+        
         return jsonify({"message": "Proposal approved successfully"}), 200
         
     except Exception as e:
