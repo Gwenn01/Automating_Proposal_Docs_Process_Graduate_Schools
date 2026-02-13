@@ -13,7 +13,7 @@ def get_profile_controller(user_id):
         implementor_profile = get_profile_implementor(user_id)
         
         if implementor_profile[0]['role'] == 'implementor':
-            return jsonify(implementor_profile[0])
+            return jsonify(implementor_profile)
         else:
             profile = get_profile_reviewer(user_id)
             return jsonify(profile)
