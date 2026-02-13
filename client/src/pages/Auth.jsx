@@ -60,7 +60,7 @@ const handleLogin = async () => {
     localStorage.setItem("user", JSON.stringify(data.user));
 
     // ✅ REDIRECT TO HOME
-    showToast("Login successful!", "success");
+    showToast(`Login successful! Welcome back!! ${data?.user?.fullname}`, "success");
     setTimeout(() => navigate("/home"), 800);
 
 

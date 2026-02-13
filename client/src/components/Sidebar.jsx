@@ -13,9 +13,11 @@ import {
 import { prmsuLogo } from "../assets";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../utils/auth";
+import { useToast } from "../context/ToastContext";
 
 const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role, user }) => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const menuByRole = {
@@ -40,7 +42,7 @@ const Sidebar = ({ active, setActive, isOpen, toggleSidebar, role, user }) => {
 
 const handleLogout = () => {
   logout();
-
+  showToast("Logging Out Successfully!", "success")
   setTimeout(() => {
     navigate("/auth", { replace: true });
   }, 1000); 
