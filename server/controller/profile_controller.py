@@ -1,6 +1,7 @@
 from flask import jsonify, request
 from model.general.get_post_profile_db import (
-    get_profile,
+    get_profile_implementor,
+    get_profile_reviewer,
     put_profile_implementor,
     put_profile_reviewer
 )
@@ -9,8 +10,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 def get_profile_controller(user_id):
     ...
     try:
-        profile = get_profile(user_id)
-        return jsonify(profile)
+        implementor_profile = get_profile_implementor(user_id)
+        
+        if implementor_profile[0]['role'] == 'implementor':
+            return jsonify(implementor_profile[0])
+        else:
+            profile = get_profile_reviewer(user_id)
+            return jsonify(profile)
     except Exception as e:
         return jsonify({"error": str(e)})
     

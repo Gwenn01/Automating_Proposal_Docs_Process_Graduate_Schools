@@ -217,7 +217,7 @@ def approve_proposal_controller():
 
         success = put_decision_review(proposal_id, user_id, "approved")
         if not success and not success_insert:
-            return {"error": "No rows updated. Check proposal_id/user_id"}, 404
+            return {"error": "You already approved this proposal"}, 404
         
         if check_all_reviewer_approved(proposal_id):
             success_insert = handle_admin_notification(reviewer_name, title)

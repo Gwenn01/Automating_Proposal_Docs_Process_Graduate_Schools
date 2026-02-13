@@ -1,11 +1,26 @@
 from utils.execute_query import execute_query
 
-def get_profile(user_id):
+def get_profile_reviewer(user_id):
     try:
         ...
         query = """
-            SELECT * 
-            FROM users u 
+            SELECT *
+            FROM users u
+            WHERE u.user_id = %s
+        """
+        params = (user_id,)
+        result = execute_query(query, params, True)
+        return result
+    except Exception as e:
+        print(e)
+        return None
+
+def get_profile_implementor(user_id):
+    try:
+        ...
+        query = """
+            SELECT *
+            FROM users u
             LEFT JOIN implementor_info i 
                 ON u.user_id = i.user_id
             WHERE u.user_id = %s
