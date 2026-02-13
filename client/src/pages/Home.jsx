@@ -71,11 +71,13 @@ const Home = () => {
       />
 
       <main className="flex-1 flex flex-col overflow-y-auto relative">
+        {/* SHARED / COMMON */}
+        {active === "Profile Overview" && <ProfileOverview />}
+
         {/* IMPLEMENTOR / INSTRUCTOR */}
         {active === "Create Proposal" && <CreateProposal />}
         {active === "View Proposal" && <ViewProposal />}
         {active === "Edit Proposal" && <EditProposal />}
-        {active === "Profile Overview" && <ProfileOverview />}
 
         {/* ADMIN */}
         {active === "Overview" && <Overview />}
@@ -85,7 +87,6 @@ const Home = () => {
 
         {/* REVIEWER */}
         {active === "Review Proposal" && <ReviewProposal />}
-        {active === "Profile Overview" && <ProfileOverview />}
       </main>
     </div>
   );
