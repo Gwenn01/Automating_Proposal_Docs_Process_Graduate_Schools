@@ -514,7 +514,7 @@ const ReviewProposal = () => {
                         <p
                           className={`flex items-center gap-2 text-xs rounded-md px-3 py-2 mt-1 mb-3 border
                                   ${
-                                    proposal.decision === "Approved"
+                                    proposal.decision === "approved"
                                       ? "text-green-700 bg-green-50 border-green-200"
                                       : proposal.is_reviewed === 1
                                         ? "text-red-700 bg-red-50 border-red-200"
@@ -522,7 +522,7 @@ const ReviewProposal = () => {
                                   }
                                 `}
                         >
-                          {proposal.decision === "Approved" ? (
+                          {proposal.decision === "approved" ? (
                             <CheckCircle className="w-4 h-4" />
                           ) : proposal.is_reviewed === 1 ? (
                             <AlertTriangle className="w-4 h-4" />

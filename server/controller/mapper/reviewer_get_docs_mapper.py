@@ -30,7 +30,7 @@ def normalize_number(value):
 
 def get_docs_mapper(row):
     review_message = ""
-    if row['decision'] == 'Approved':
+    if row['decision'] == 'approved':
         review_message = "Approved. No further action required."
     elif row["is_reviewed"] == 1:
         review_message = "Already reviewed. Please wait for revision before reviewing again."
