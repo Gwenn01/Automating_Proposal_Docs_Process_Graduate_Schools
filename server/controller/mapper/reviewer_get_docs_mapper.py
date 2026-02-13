@@ -158,7 +158,7 @@ def get_review_per_docs_mapper(proposal_cover, proposal_content, proposal_review
                 "program_title": proposal_cover["board_resolution_title"],
                 "approved_budget": {
                     "words": proposal_cover["approved_budget_words"],
-                    "amount": normalize_money(proposal_cover.get("approved_budget_amount"))
+                    "amount": proposal_cover.get("approved_budget_amount")
                 },
                 "duration": {
                     "words": proposal_cover["duration_words"],
@@ -173,9 +173,7 @@ def get_review_per_docs_mapper(proposal_cover, proposal_content, proposal_review
                 "date": str(proposal_cover["activity_date"]),
                 "venue": proposal_cover["activity_venue"],
                 "value_statement": proposal_cover["activity_value_statement"],
-                "requested_budget": normalize_money(
-                    proposal_cover.get("requested_activity_budget")
-                )
+                "requested_budget": proposal_cover.get("requested_activity_budget")
             },
 
             "participants": {
