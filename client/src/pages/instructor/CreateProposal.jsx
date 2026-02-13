@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { InlineInput } from '../../components';
+import { useToast } from '../../context/ToastContext';
 
 const InputField = ({
   label,
@@ -71,6 +72,8 @@ const TextAreaField = ({ label, value, onChange, rows = 6 }) => (
 const CreateProposal = () => {
   const navigate = useNavigate();
   const [proposalId, setProposalId] = useState(null);
+  const { showToast } = useToast();
+
   //const [userId] = useState(1);
   const [title, setTitle] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -422,17 +425,18 @@ const renderRows = (category) =>
 
   const handleSubmit = async () => {
     if (!title || title.trim() === '') {
-      alert('Please enter a proposal title before submitting.');
+      showToast('Please enter a proposal title before submitting.', "info");
+
       return;
     }
 
     if (!cover.activity_date || cover.activity_date.trim() === '') {
-      alert('Please fill in the Activity Date in the Cover Page section.');
+      showToast('Please fill in the Activity Date in the Cover Page section.', "info");
       return;
     }
 
     if (!cover.activity_title || cover.activity_title.trim() === '') {
-      alert('Please fill in the Activity Title in the Cover Page section.');
+      showToast('Please fill in the Activity Title in the Cover Page section.', "info");
       return;
     }
 
@@ -582,26 +586,20 @@ const renderRows = (category) =>
           const errorMessages = Object.entries(errorData.errors)
             .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
             .join('\n');
-          alert(`Validation failed:\n\n${errorMessages}`);
+          showToast(`Validation failed:\n\n${errorMessages}`, "error");
+          
         }
         
         throw new Error(errorData.error || 'Failed to update proposal content');
       }
 
-      alert('Proposal submitted successfully!');
+      showToast('Proposal submitted successfully!', "success")
       
       resetForm();
-      // Clear the form after successful submission if you want to create a new proposal
-      // Uncomment these lines if you want to reset the form after submission:
-      // setProposalId(null);
-      // setTitle("");
-      // setCover({...initial cover state...});
-      // setContent({...initial content state...});
-      // etc.
 
     } catch (error) {
       console.error('Error submitting proposal:', error);
-      alert(`Error: ${error.message}`);
+      showToast(`Error: ${error.message}`, "info")
     } finally {
       setIsSubmitting(false);
     }

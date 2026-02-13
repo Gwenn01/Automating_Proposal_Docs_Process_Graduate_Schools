@@ -19,8 +19,10 @@ import { getStatusStyle } from "../../utils/statusStyles";
 import ReviewerCommentModal from "../../components/reviewer/ReviewerCommentModal";
 import ReviewerList from "../../components/reviewer/ReviewerList";
 import NotificationBell from "../../components/NotificationBell";
+import { useToast } from "../../context/ToastContext";
 
 const ReviewProposal = () => {
+  const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
@@ -314,11 +316,11 @@ const ReviewProposal = () => {
   };
 
   const handleReview = (proposal) => {
-    alert(`Opening review form for: ${proposal.title}`);
+    showToast(`Opening review form for: ${proposal.title}`, "info")
   };
 
   const handleViewOthers = (proposal) => {
-    alert(`Viewing other reviewers for: ${proposal.title}`);
+    showToast(`Viewing other reviewers for: ${proposal.title}`, "info")
   };
 
   // ================= LOADING =================

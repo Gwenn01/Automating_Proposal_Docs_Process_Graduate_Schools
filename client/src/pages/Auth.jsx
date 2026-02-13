@@ -4,9 +4,10 @@ import { BarChart3, Globe, ShieldCheck, Zap } from "lucide-react";
 import { CustomButton, FormInput } from "../components";
 import { useNavigate } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-
+import { useToast } from "../context/ToastContext";
 
 const Auth = () => {
+  const { showToast } = useToast();
   const [mode, setMode] = useState("login");
 
   const [loginLoading, setLoginLoading] = useState(false);
@@ -59,7 +60,9 @@ const handleLogin = async () => {
     localStorage.setItem("user", JSON.stringify(data.user));
 
     // ✅ REDIRECT TO HOME
-    navigate("/home");
+    showToast("Login successful!", "success");
+    setTimeout(() => navigate("/home"), 800);
+
 
   } catch (error) {
     console.error("LOGIN ERROR:", error);
@@ -93,7 +96,8 @@ const handleRegister = async () => {
     const data = await response.json();
 
     if (!response.ok) {
-      alert(data.message || "Registration failed");
+      //alert(data.message || "Registration failed");
+      showToast(data.message || "Registration failed", "error")
       return;
     }
 
@@ -110,7 +114,7 @@ const handleRegister = async () => {
 
   } catch (error) {
     console.error("REGISTER ERROR:", error);
-    alert("Server error. Please try again.");
+    showToast("Server error. Please try again.", "error")
   } finally {
     setRegisterLoading(false);
   }

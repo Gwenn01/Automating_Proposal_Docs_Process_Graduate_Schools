@@ -9,9 +9,11 @@ import EditableText from "./EditableText";
 import EditableNumber from "./EditableNumber";
 import { getHistoryData } from "../../services/api";
 import ReviewList from "./ReviewList";
+import { useToast } from "../../context/ToastContext";
 
 const ReviewerModal = ({ isOpen, onClose, proposalData, onOpen }) => {
   if (!isOpen || !proposalData) return null;
+  const { showToast } = useToast();
   const [canEdit, setCanEdit] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState(null);
@@ -311,7 +313,8 @@ const ReviewerModal = ({ isOpen, onClose, proposalData, onOpen }) => {
     } catch (error) {
       console.error("Failed to fetch history data:", error);
       console.error("Error stack:", error.stack);
-      alert("Failed to load history data. Please try again.");
+      showToast("Failed to load history data. Please try again.", "error")
+      
     } finally {
       setLoadingHistoryData(false);
     }
@@ -485,12 +488,12 @@ const ReviewerModal = ({ isOpen, onClose, proposalData, onOpen }) => {
 
       // Validate that we have the required IDs
       if (!editedData?.proposal_id) {
-        alert("Error: Missing proposal ID");
+        showToast("Error: Missing proposal ID", "error")
         return;
       }
 
       if (!userId) {
-        alert("Error: User not logged in");
+        showToast("Error: User not logged in", "error")
         return;
       }
 
@@ -500,9 +503,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData, onOpen }) => {
       const coverId = selectedHistoryData?.cover_id || editedData?.cover_id;
 
       if (!contentId || !coverId) {
-        alert(
-          "Error: Missing content or cover ID. Please reload the document.",
-        );
+        showToast("Error: Missing content or cover ID. Please reload the document.", "error")
         return;
       }
 
@@ -723,9 +724,9 @@ const ReviewerModal = ({ isOpen, onClose, proposalData, onOpen }) => {
         // Try to parse as JSON for better error message
         try {
           const errorJson = JSON.parse(errorText);
-          alert(`Save failed: ${errorJson.message || errorText}`);
+          showToast(`Save failed: ${errorJson.message || errorText}`, "error")
         } catch {
-          alert(`Save failed: ${errorText}`);
+          showToast(`Save failed: ${errorText}`, "error")
         }
 
         throw new Error(errorText);
@@ -734,7 +735,7 @@ const ReviewerModal = ({ isOpen, onClose, proposalData, onOpen }) => {
       const result = await response.json();
       console.log("✅ Update success:", result);
 
-      alert("Changes saved successfully!");
+      showToast("Changes saved successfully!","error")
 
       // Reset editing state
       setIsEditing(false);

@@ -4,8 +4,10 @@ import CommentInput from "./CommentInput";
 import { getStatusStyle } from "../../utils/statusStyles";
 import axios from "axios";
 import PreviousComment from "./PreviousComment";
+import { useToast } from "../../context/ToastContext";
 
 const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
+  const { showToast } = useToast();
   const [comments, setComments] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [history, setHistory] = useState([]);
@@ -187,7 +189,8 @@ const ReviewerCommentModal = ({ isOpen, onClose, proposalData, reviewe }) => {
     } catch (err) {
       console.error("Failed to fetch history data:", err);
       console.error("Error stack:", err.stack);
-      alert("Failed to load history data. Please try again.");
+      showToast("Failed to load history data. Please try again.", "error")
+
     } finally {
       setLoadingHistoryData(false);
     }
@@ -345,7 +348,8 @@ console.log("has Comment", hasAnyComment)
         headers: { "Content-Type": "application/json" },
       });
 
-      alert(res.data.message || "Review submitted successfully!");
+      //alert(res.data.message || "Review submitted successfully!");
+      showToast(res.data.message || "Review submitted successfully!", "error")
       setComments({});
       onClose();
     } catch (error) {
@@ -359,8 +363,7 @@ console.log("has Comment", hasAnyComment)
         error.response?.data?.error ||
         error.message ||
         "Failed to submit review";
-
-      alert(`Failed to submit review: ${errorMessage}`);
+      showToast(`Failed to submit review: ${errorMessage}`, "error")
     } finally {
       setIsSubmitting(false);
     }
@@ -388,7 +391,8 @@ console.log("has Comment", hasAnyComment)
       }
     );
 
-    alert(response.data.message || "Proposal approved successfully!");
+    //alert(response.data.message || "Proposal approved successfully!");
+    showToast(response.data.message || "Proposal approved successfully!", "error")
 
     onClose(); // close modal after approve
   } catch (error) {
@@ -400,7 +404,7 @@ console.log("has Comment", hasAnyComment)
       error.message ||
       "Failed to approve proposal";
 
-    alert(errorMessage);
+    showToast(errorMessage, "error")
   } finally {
     setIsApproving(false);
   }
